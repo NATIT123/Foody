@@ -1,14 +1,14 @@
-import UserRepository from "../repo/userrepo.js";
-import UserService from "../services/userService.js";
+import FoodRepo from "../repo/foodRepo.js";
+import FoodService from "../services/foodService.js";
 
-import UserModel from "../models/userModel.js";
+import FoodModel from "../models/FoodModel.js";
 
-const userRepo = new UserRepository(UserModel);
-const userService = new UserService(userRepo);
+const foodRepo = new FoodRepo(FoodModel);
+const foodService = new FoodService(foodRepo);
 
-export const addUser = async (req, res, next) => {
+export const addFood = async (req, res, next) => {
   try {
-    const response = await userService.addUser(req);
+    const response = await foodService.addFood(req);
     res.statusCode = response.statusCode;
     return res.json({ message: response.message, data: response.data });
   } catch (err) {
@@ -16,9 +16,9 @@ export const addUser = async (req, res, next) => {
   }
 };
 
-export const getAllUsers = async (req, res, next) => {
+export const getAllFoods = async (req, res, next) => {
   try {
-    const response = await userService.getAllUsers(req);
+    const response = await foodService.getAllFoods(req);
     res.statusCode = response.statusCode;
     return res.json({ message: response.message, data: response.data });
   } catch (err) {
@@ -26,9 +26,9 @@ export const getAllUsers = async (req, res, next) => {
   }
 };
 
-export const getUserById = async (req, res, next) => {
+export const getFoodById = async (req, res, next) => {
   try {
-    const response = await userService.getUserById(req);
+    const response = await foodService.getFoodById(req);
     res.statusCode = response.statusCode;
     return res.json({ message: response.message, data: response.data });
   } catch (err) {
@@ -36,9 +36,9 @@ export const getUserById = async (req, res, next) => {
   }
 };
 
-export const updateUserById = async (req, res, next) => {
+export const updateFoodById = async (req, res, next) => {
   try {
-    const response = await userService.updateUserById(req);
+    const response = await foodService.updateFoodById(req);
     res.statusCode = response.statusCode;
     return res.json({ message: response.message, data: response.data });
   } catch (err) {
@@ -46,9 +46,9 @@ export const updateUserById = async (req, res, next) => {
   }
 };
 
-export const deleteUserById = async (req, res, next) => {
+export const deleteFoodById = async (req, res, next) => {
   try {
-    const response = await userService.deleteUserById(req);
+    const response = await foodService.deleteFoodById(req);
     res.statusCode = response.statusCode;
     return res.json({ message: response.message, data: response.data });
   } catch (err) {

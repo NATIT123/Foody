@@ -1,30 +1,57 @@
 import customResourceResponse from "../utils/constant.js";
 
-class UserService {
-  constructor(userRepo) {
-    this.userRepo = userRepo;
+class RestaurantService {
+  constructor(restaurantRepo) {
+    this.restaurantRepo = restaurantRepo;
   }
 
-  async addUser(req) {
-    const { name, email, address, phone, password, image } = req.body;
+  async addRestaurant(req) {
+    const {
+      name,
+      image,
+      address,
+      location,
+      district,
+      area,
+      category,
+      cusines,
+      audiences,
+      qualityRate,
+      serviceRate,
+      postionRate,
+      priceRate,
+      spaceRate,
+      timeOpen,
+      priceRange,
+    } = req.body;
 
     const response = {};
-    if (!fullName || !email) {
+    if (!name || !image) {
       response.message = customResourceResponse.validationError.message;
       response.statusCode = customResourceResponse.validationError.statusCode;
       return response;
     }
 
-    const user = await this.userRepo.addUser(
-      fullName,
-      email,
+    const restaurant = await this.restaurantRepo.addRestaurant(
+      name,
+      image,
       address,
-      phone,
-      password,
-      image
+      location,
+      district,
+      area,
+      category,
+      cusines,
+      audiences,
+      qualityRate,
+      serviceRate,
+      postionRate,
+      priceRate,
+      spaceRate,
+      timeOpen,
+      priceRange
     );
 
-    if (!user) {
+    if (!restaurant) {
       response.message = customResourceResponse.serverError.message;
       response.statusCode = customResourceResponse.serverError.statusCode;
       return response;
@@ -32,16 +59,16 @@ class UserService {
 
     response.message = customResourceResponse.created.message;
     response.statusCode = customResourceResponse.created.statusCode;
-    response.data = user._id;
+    response.data = restaurant._id;
 
     return response;
   }
 
-  async getAllUsers() {
+  async getAllRestaurants() {
     const response = {};
     response.data = [];
-    const users = await this.userRepo.getAllUsers();
-    if (!users) {
+    const restaurants = await this.restaurantRepo.getAllRestaurants();
+    if (!restaurants) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
@@ -49,16 +76,16 @@ class UserService {
 
     response.message = customResourceResponse.success.message;
     response.statusCode = customResourceResponse.success.statusCode;
-    response.data = users;
+    response.data = restaurants;
     return response;
   }
 
-  async getUserById(req) {
+  async getRestaurantById(req) {
     const response = {};
     response.data = {};
     const { id } = req.params;
-    const user = await this.userRepo.getUserById(id);
-    if (!user) {
+    const restaurant = await this.restaurantRepo.getRestaurantById(id);
+    if (!restaurant) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
@@ -66,55 +93,75 @@ class UserService {
 
     response.message = customResourceResponse.success.message;
     response.statusCode = customResourceResponse.success.statusCode;
-    response.data = user;
+    response.data = restaurant;
     return response;
   }
 
-  async updateUserById(req) {
-    const { fullName, email, address, phone, password, image } = req.body;
+  async updateRestaurantById(req) {
+    const {
+      name,
+      image,
+      address,
+      location,
+      district,
+      area,
+      category,
+      cusines,
+      audiences,
+      qualityRate,
+      serviceRate,
+      postionRate,
+      priceRate,
+      spaceRate,
+      timeOpen,
+      priceRange,
+    } = req.body;
     const { id } = req.params;
     const response = {};
-    if (!fullName || !email) {
+    if (!name || !image) {
       response.message = customResourceResponse.validationError.message;
       response.statusCode = customResourceResponse.validationError.statusCode;
       return response;
     }
 
-    const user = await this.userRepo.getUserById(id);
-    if (!user) {
+    const restaurant = await this.restaurantRepo.getRestaurantById(id);
+    if (!restaurant) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
     }
 
-    const updatedUser = await this.userRepo.updateUserById(id, user);
-    if (!updatedUser) {
+    const updatedRestaurant = await this.restaurantRepo.updateRestaurantById(
+      id,
+      restaurant
+    );
+    if (!updatedRestaurant) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
-      response.data = updatedUser._id;
+      response.data = updatedRestaurant._id;
       return response;
     }
   }
 
-  async deleteUserById(req) {
+  async deleteRestaurantById(req) {
     const { id } = req.params;
     const response = {};
 
-    const user = await this.userRepo.getUserById(id);
+    const user = await this.restaurantRepo.getRestaurantById(id);
     if (!user) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
     }
 
-    const deleteUser = await this.userRepo.deleteUserById(id);
-    if (!deleteUser) {
+    const deleteRestaurant = await this.restaurantRepo.deleteRestaurantById(id);
+    if (!deleteRestaurant) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
-      response.data = deleteUser._id;
+      response.data = deleteRestaurant._id;
       return response;
     }
   }
 }
 
-export default UserService;
+export default RestaurantService;

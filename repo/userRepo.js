@@ -12,7 +12,7 @@ class UserRepository {
   }
 
   getUserById(id) {
-    return this.userModel.findOne({});
+    return this.userModel.findOne({ id });
   }
 
   updateUserById(id, user) {

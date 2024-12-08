@@ -1,30 +1,23 @@
 import customResourceResponse from "../utils/constant.js";
 
-class UserService {
-  constructor(userRepo) {
-    this.userRepo = userRepo;
+class AlbumService {
+  constructor(albumRepo) {
+    this.albumRepo = albumRepo;
   }
 
-  async addUser(req) {
-    const { name, email, address, phone, password, image } = req.body;
+  async addAlbum(req) {
+    const { image, type, timeVideo } = req.body;
 
     const response = {};
-    if (!fullName || !email) {
+    if (!name || !image) {
       response.message = customResourceResponse.validationError.message;
       response.statusCode = customResourceResponse.validationError.statusCode;
       return response;
     }
 
-    const user = await this.userRepo.addUser(
-      fullName,
-      email,
-      address,
-      phone,
-      password,
-      image
-    );
+    const album = await this.albumRepo.addAlbum(image, type, timeVideo);
 
-    if (!user) {
+    if (!album) {
       response.message = customResourceResponse.serverError.message;
       response.statusCode = customResourceResponse.serverError.statusCode;
       return response;
@@ -32,16 +25,16 @@ class UserService {
 
     response.message = customResourceResponse.created.message;
     response.statusCode = customResourceResponse.created.statusCode;
-    response.data = user._id;
+    response.data = album._id;
 
     return response;
   }
 
-  async getAllUsers() {
+  async getAllAlbums() {
     const response = {};
     response.data = [];
-    const users = await this.userRepo.getAllUsers();
-    if (!users) {
+    const restaurants = await this.albumRepo.getAllAlbums();
+    if (!restaurants) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
@@ -49,16 +42,16 @@ class UserService {
 
     response.message = customResourceResponse.success.message;
     response.statusCode = customResourceResponse.success.statusCode;
-    response.data = users;
+    response.data = restaurants;
     return response;
   }
 
-  async getUserById(req) {
+  async getAlbumById(req) {
     const response = {};
     response.data = {};
     const { id } = req.params;
-    const user = await this.userRepo.getUserById(id);
-    if (!user) {
+    const album = await this.albumRepo.getAlbumById(id);
+    if (!album) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
@@ -66,55 +59,55 @@ class UserService {
 
     response.message = customResourceResponse.success.message;
     response.statusCode = customResourceResponse.success.statusCode;
-    response.data = user;
+    response.data = album;
     return response;
   }
 
-  async updateUserById(req) {
-    const { fullName, email, address, phone, password, image } = req.body;
+  async updateAlbumById(req) {
+    const { image, type, timeVideo } = req.body;
     const { id } = req.params;
     const response = {};
-    if (!fullName || !email) {
+    if (!type || !image) {
       response.message = customResourceResponse.validationError.message;
       response.statusCode = customResourceResponse.validationError.statusCode;
       return response;
     }
 
-    const user = await this.userRepo.getUserById(id);
-    if (!user) {
+    const album = await this.albumRepo.getAlbumById(id);
+    if (!album) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
     }
 
-    const updatedUser = await this.userRepo.updateUserById(id, user);
-    if (!updatedUser) {
+    const updatedAlbum = await this.albumRepo.updateAlbumById(id, album);
+    if (!updatedAlbum) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
-      response.data = updatedUser._id;
+      response.data = updatedAlbum._id;
       return response;
     }
   }
 
-  async deleteUserById(req) {
+  async deleteAlbumById(req) {
     const { id } = req.params;
     const response = {};
 
-    const user = await this.userRepo.getUserById(id);
+    const user = await this.userRepo.getAlbumById(id);
     if (!user) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
     }
 
-    const deleteUser = await this.userRepo.deleteUserById(id);
-    if (!deleteUser) {
+    const deleteAlbum = await this.userRepo.deleteAlbumById(id);
+    if (!deleteAlbum) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
-      response.data = deleteUser._id;
+      response.data = deleteAlbum._id;
       return response;
     }
   }
 }
 
-export default UserService;
+export default AlbumService;

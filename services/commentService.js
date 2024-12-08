@@ -1,30 +1,40 @@
 import customResourceResponse from "../utils/constant.js";
 
-class UserService {
-  constructor(userRepo) {
-    this.userRepo = userRepo;
+class CommentService {
+  constructor(commentRepo) {
+    this.commentRepo = commentRepo;
   }
 
-  async addUser(req) {
-    const { name, email, address, phone, password, image } = req.body;
+  async addcommentRepo(req) {
+    const { userImage, userName, time, rate, description, type } = req.body;
 
     const response = {};
-    if (!fullName || !email) {
+    if (!name || !image) {
       response.message = customResourceResponse.validationError.message;
       response.statusCode = customResourceResponse.validationError.statusCode;
       return response;
     }
 
-    const user = await this.userRepo.addUser(
-      fullName,
-      email,
+    const comment = await this.commentRepo.addcommentRepo(
+      name,
+      image,
       address,
-      phone,
-      password,
-      image
+      location,
+      district,
+      area,
+      category,
+      cusines,
+      audiences,
+      qualityRate,
+      serviceRate,
+      postionRate,
+      priceRate,
+      spaceRate,
+      timeOpen,
+      priceRange
     );
 
-    if (!user) {
+    if (!comment) {
       response.message = customResourceResponse.serverError.message;
       response.statusCode = customResourceResponse.serverError.statusCode;
       return response;
@@ -32,16 +42,16 @@ class UserService {
 
     response.message = customResourceResponse.created.message;
     response.statusCode = customResourceResponse.created.statusCode;
-    response.data = user._id;
+    response.data = commentRepo._id;
 
     return response;
   }
 
-  async getAllUsers() {
+  async getAllcommentRepos() {
     const response = {};
     response.data = [];
-    const users = await this.userRepo.getAllUsers();
-    if (!users) {
+    const comments = await this.commentRepo.getAllcommentRepos();
+    if (!comments) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
@@ -49,16 +59,16 @@ class UserService {
 
     response.message = customResourceResponse.success.message;
     response.statusCode = customResourceResponse.success.statusCode;
-    response.data = users;
+    response.data = comments;
     return response;
   }
 
-  async getUserById(req) {
+  async getcommentRepoById(req) {
     const response = {};
     response.data = {};
     const { id } = req.params;
-    const user = await this.userRepo.getUserById(id);
-    if (!user) {
+    const comment = await this.commentRepo.getcommentRepoById(id);
+    if (!comment) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
@@ -66,55 +76,58 @@ class UserService {
 
     response.message = customResourceResponse.success.message;
     response.statusCode = customResourceResponse.success.statusCode;
-    response.data = user;
+    response.data = comment;
     return response;
   }
 
-  async updateUserById(req) {
-    const { fullName, email, address, phone, password, image } = req.body;
+  async updatecommentRepoById(req) {
+    const { userImage, userName, time, rate, description, type } = req.body;
     const { id } = req.params;
     const response = {};
-    if (!fullName || !email) {
+    if (!userImage || !userName) {
       response.message = customResourceResponse.validationError.message;
       response.statusCode = customResourceResponse.validationError.statusCode;
       return response;
     }
 
-    const user = await this.userRepo.getUserById(id);
-    if (!user) {
+    const comment = await this.commentRepo.getcommentRepoById(id);
+    if (!comment) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
     }
 
-    const updatedUser = await this.userRepo.updateUserById(id, user);
-    if (!updatedUser) {
+    const updatedcomment = await this.commentRepo.updatecommentRepoById(
+      id,
+      comment
+    );
+    if (!updatedcomment) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
-      response.data = updatedUser._id;
+      response.data = updatedcomment._id;
       return response;
     }
   }
 
-  async deleteUserById(req) {
+  async deletecommentRepoById(req) {
     const { id } = req.params;
     const response = {};
 
-    const user = await this.userRepo.getUserById(id);
+    const user = await this.commentRepo.getcommentRepoById(id);
     if (!user) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
     }
 
-    const deleteUser = await this.userRepo.deleteUserById(id);
-    if (!deleteUser) {
+    const deletecomment = await this.commentRepo.deletecommentRepoById(id);
+    if (!deletecomment) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
-      response.data = deleteUser._id;
+      response.data = deletecomment._id;
       return response;
     }
   }
 }
 
-export default UserService;
+export default CommentService;

@@ -1,30 +1,23 @@
 import customResourceResponse from "../utils/constant.js";
 
-class UserService {
-  constructor(userRepo) {
-    this.userRepo = userRepo;
+class FoodService {
+  constructor(foodRepo) {
+    this.foodRepo = foodRepo;
   }
 
-  async addUser(req) {
-    const { name, email, address, phone, password, image } = req.body;
+  async addFood(req) {
+    const { name, image, price, amount } = req.body;
 
     const response = {};
-    if (!fullName || !email) {
+    if (!name || !image) {
       response.message = customResourceResponse.validationError.message;
       response.statusCode = customResourceResponse.validationError.statusCode;
       return response;
     }
 
-    const user = await this.userRepo.addUser(
-      fullName,
-      email,
-      address,
-      phone,
-      password,
-      image
-    );
+    const food = await this.foodRepo.addFood(name, image, price, amount);
 
-    if (!user) {
+    if (!food) {
       response.message = customResourceResponse.serverError.message;
       response.statusCode = customResourceResponse.serverError.statusCode;
       return response;
@@ -32,16 +25,16 @@ class UserService {
 
     response.message = customResourceResponse.created.message;
     response.statusCode = customResourceResponse.created.statusCode;
-    response.data = user._id;
+    response.data = food._id;
 
     return response;
   }
 
-  async getAllUsers() {
+  async getAllFoods() {
     const response = {};
     response.data = [];
-    const users = await this.userRepo.getAllUsers();
-    if (!users) {
+    const foods = await this.foodRepo.getAllFoods();
+    if (!foods) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
@@ -49,16 +42,16 @@ class UserService {
 
     response.message = customResourceResponse.success.message;
     response.statusCode = customResourceResponse.success.statusCode;
-    response.data = users;
+    response.data = foods;
     return response;
   }
 
-  async getUserById(req) {
+  async getFoodById(req) {
     const response = {};
     response.data = {};
     const { id } = req.params;
-    const user = await this.userRepo.getUserById(id);
-    if (!user) {
+    const food = await this.foodRepo.getFoodById(id);
+    if (!food) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
@@ -66,55 +59,55 @@ class UserService {
 
     response.message = customResourceResponse.success.message;
     response.statusCode = customResourceResponse.success.statusCode;
-    response.data = user;
+    response.data = food;
     return response;
   }
 
-  async updateUserById(req) {
-    const { fullName, email, address, phone, password, image } = req.body;
+  async updateFoodById(req) {
+    const { name, image, price, amount } = req.body;
     const { id } = req.params;
     const response = {};
-    if (!fullName || !email) {
+    if (!name || !image) {
       response.message = customResourceResponse.validationError.message;
       response.statusCode = customResourceResponse.validationError.statusCode;
       return response;
     }
 
-    const user = await this.userRepo.getUserById(id);
-    if (!user) {
+    const food = await this.foodRepo.getFoodById(id);
+    if (!food) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
     }
 
-    const updatedUser = await this.userRepo.updateUserById(id, user);
-    if (!updatedUser) {
+    const updatedFood = await this.foodRepo.updateFoodById(id, food);
+    if (!updatedFood) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
-      response.data = updatedUser._id;
+      response.data = updatedFood._id;
       return response;
     }
   }
 
-  async deleteUserById(req) {
+  async deleteFoodById(req) {
     const { id } = req.params;
     const response = {};
 
-    const user = await this.userRepo.getUserById(id);
+    const user = await this.foodRepo.getFoodById(id);
     if (!user) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
       return response;
     }
 
-    const deleteUser = await this.userRepo.deleteUserById(id);
-    if (!deleteUser) {
+    const deleteFood = await this.foodRepo.deleteFoodById(id);
+    if (!deleteFood) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
-      response.data = deleteUser._id;
+      response.data = deleteFood._id;
       return response;
     }
   }
 }
 
-export default UserService;
+export default FoodService;
