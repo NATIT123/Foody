@@ -9,7 +9,7 @@ class UserService {
     const { name, email, address, phone, password, image } = req.body;
 
     const response = {};
-    if (!fullName || !email) {
+    if (!name || !email) {
       response.message = customResourceResponse.validationError.message;
       response.statusCode = customResourceResponse.validationError.statusCode;
       return response;
@@ -40,7 +40,7 @@ class UserService {
   async getAllUsers() {
     const response = {};
     response.data = [];
-    const users = await this.userRepo.getAllUsers();
+    const users = await this.userRepo.getAll();
     if (!users) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;

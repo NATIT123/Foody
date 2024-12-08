@@ -18,7 +18,7 @@ export const addUser = async (req, res, next) => {
 
 export const getAllUsers = async (req, res, next) => {
   try {
-    const response = await userService.getAllUsers(req);
+    const response = await userService.getAllUsers();
     res.statusCode = response.statusCode;
     return res.json({ message: response.message, data: response.data });
   } catch (err) {

@@ -7,8 +7,8 @@ class UserRepository {
     return this.userModel.create(user);
   }
 
-  getAllUsers() {
-    return this.userModel.findAll();
+  async getAll() {
+    return await this.userModel.find();
   }
 
   getUserById(id) {
