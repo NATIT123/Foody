@@ -1,13 +1,49 @@
 import mongoose from "mongoose";
-
+const saltRounds = parseInt(process.env.SALT_ROUNDS) || 12;
+import validator from "validator";
+import bcrypt from "bcryptjs";
 const UserDetailSchema = new mongoose.Schema(
   {
-    fullName: String,
-    email: String,
+    fullName: {
+      type: String,
+      required: [true, "Please tell us your fullname"],
+    },
+    email: {
+      type: String,
+      required: [true, "Please provide your email"],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, "Please provide a valid email"],
+    },
     phone: String,
-    password: String,
-    image: String,
+    password: {
+      type: String,
+      required: [true, "Plese provide your password"],
+      minlength: 8,
+      ////Not show password
+      select: false,
+    },
+    confirmPassword: {
+      type: String,
+      required: [true, "Plase provide your confirm password"],
+      validate: {
+        ///This only works on CREATE AND SAVE!!!
+        validator: function (el) {
+          return el === this.password;
+        },
+        message: "Password are not the same",
+      },
+    },
+    photo: {
+      type: String,
+      default: "default.jpg",
+    },
     address: String,
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
   },
   {
     timestamps: true,
@@ -19,7 +55,7 @@ UserDetailSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   ///Hash the password with round of 12
-  this.password = await bcrypt.hash(this.password, 12);
+  this.password = await bcrypt.hash(this.password, saltRounds);
 
   ///Delete confirmPassowrd field
   this.confirmPassword = undefined;

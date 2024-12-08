@@ -2,9 +2,12 @@ import mongoose, { Schema, model } from "mongoose";
 
 const AlbumDetailSchema = new Schema(
   {
-    image: String,
-    type: String,
-    timeVideo: String,
+    image: { type: String, required: [true, "Please tell us your image"] },
+    type: { type: String, required: [true, "Please tell us your type"] },
+    timeVideo: {
+      type: String,
+      required: [true, "Please tell us your timeVideo"],
+    },
   },
   {
     timestamps: true,

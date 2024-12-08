@@ -2,22 +2,55 @@ import mongoose, { Schema, model } from "mongoose";
 
 const RestaurantDetailSchema = new Schema(
   {
-    name: String,
+    name: { type: String, required: [true, "Please tell us your name"] },
     image: String,
-    address: String,
-    location: String,
-    district: String,
-    area: String,
-    category: String,
-    cusines: String,
-    audiences: String,
-    qualityRate: Number,
-    serviceRate: Number,
-    postionRate: Number,
-    priceRate: Number,
-    spaceRate: Number,
-    timeOpen: String,
-    priceRange: String,
+    address: { type: String, required: [true, "Please tell us your address"] },
+    location: {
+      type: String,
+      required: [true, "Please tell us your location"],
+    },
+    district: {
+      type: String,
+      required: [true, "Please tell us your district"],
+    },
+    area: { type: String, required: [true, "Please tell us your area"] },
+    category: {
+      type: String,
+      required: [true, "Please tell us your category"],
+    },
+    cusines: { type: String, required: [true, "Please tell us your cusines"] },
+    audiences: {
+      type: String,
+      required: [true, "Please tell us your audiences"],
+    },
+    qualityRate: {
+      type: Number,
+      required: [true, "Please tell us your qualityRate"],
+    },
+    serviceRate: {
+      type: Number,
+      required: [true, "Please tell us your serviceRate"],
+    },
+    postionRate: {
+      type: Number,
+      required: [true, "Please tell us your positionRate"],
+    },
+    priceRate: {
+      type: Number,
+      required: [true, "Please tell us your priceRate"],
+    },
+    spaceRate: {
+      type: Number,
+      required: [true, "Please tell us your spaceRate"],
+    },
+    timeOpen: {
+      type: Number,
+      required: [true, "Please tell us your timeOpen"],
+    },
+    priceRange: {
+      type: Number,
+      required: [true, "Please tell us your priceRange"],
+    },
   },
   {
     timestamps: true,

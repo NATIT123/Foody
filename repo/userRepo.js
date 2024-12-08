@@ -1,3 +1,5 @@
+import { getOne } from "../controllers/handleFactory.js";
+
 class UserRepository {
   constructor(userModel) {
     this.userModel = userModel;

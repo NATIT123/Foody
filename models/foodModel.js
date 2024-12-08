@@ -2,10 +2,10 @@ import mongoose, { Schema, model } from "mongoose";
 
 const FoodDetailSchema = new Schema(
   {
-    name: String,
-    price: Number,
-    image: String,
-    amount: String,
+    name: { type: String, required: [true, "Please tell us your name"] },
+    price: { type: String, required: [true, "Please tell us your price"] },
+    image: { type: String, required: [true, "Please tell us your image"] },
+    amount: { type: String, required: [true, "Please tell us your amount"] },
   },
   {
     timestamps: true,

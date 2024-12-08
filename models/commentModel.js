@@ -2,12 +2,21 @@ import mongoose, { Schema, model } from "mongoose";
 
 const CommentDetailSchema = new Schema(
   {
-    userImage: String,
-    userName: String,
-    time: String,
-    rate: Number,
-    description: String,
-    type: String,
+    userImage: {
+      type: String,
+      required: [true, "Please tell us your userImage"],
+    },
+    userName: {
+      type: String,
+      required: [true, "Please tell us your userName"],
+    },
+    time: { type: String, required: [true, "Please tell us your time"] },
+    rate: { type: Number, required: [true, "Please tell us your rate"] },
+    description: {
+      type: String,
+      required: [true, "Please tell us your description"],
+    },
+    type: { type: String, required: [true, "Please tell us your type"] },
   },
   {
     timestamps: true,
