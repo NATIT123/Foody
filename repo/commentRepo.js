@@ -3,24 +3,24 @@ class CommentRepository {
     this.commentModel = commentModel;
   }
 
-  addComment(user) {
-    return this.commentModel.create(user);
+  async addComment(user) {
+    return await this.commentModel.create(user);
   }
 
-  getAllComments() {
-    return this.commentModel.findAll();
+  async getAllComments() {
+    return await this.commentModel.findAll();
   }
 
-  getCommentById(id) {
-    return this.commentModel.findOne({ id });
+  async getCommentById(id) {
+    return await this.commentModel.findOne({ id });
   }
 
-  updateCommentById(id, user) {
-    return this.commentModel.update(id, user);
+  async updateCommentById(id, user) {
+    return await this.commentModel.update(id, user);
   }
 
-  deleteCommentById(id) {
-    return this.commentModel.delete(id);
+  async deleteCommentById(id) {
+    return await this.commentModel.delete(id);
   }
 }
 export default CommentRepository;

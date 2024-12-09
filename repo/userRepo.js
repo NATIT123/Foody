@@ -1,28 +1,28 @@
-import { getOne } from "../controllers/handleFactory.js";
+import { getAll } from "../controllers/handleFactory.js";
 
 class UserRepository {
   constructor(userModel) {
     this.userModel = userModel;
   }
 
-  addUser(user) {
-    return this.userModel.create(user);
+  async addUser(user) {
+    return await this.userModel.create(user);
   }
 
-  async getAll() {
-    return await this.userModel.find();
+  getAll() {
+    return getAll(this.userModel);
   }
 
-  getUserById(id) {
-    return this.userModel.findOne({ id });
+  async getUserById(id) {
+    return await this.userModel.findOne({ id });
   }
 
-  updateUserById(id, user) {
-    return this.userModel.update(id, user);
+  async updateUserById(id, user) {
+    return await this.userModel.update(id, user);
   }
 
-  deleteUserById(id) {
-    return this.userModel.delete(id);
+  async deleteUserById(id) {
+    return await this.userModel.delete(id);
   }
 }
 export default UserRepository;

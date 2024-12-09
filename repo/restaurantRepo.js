@@ -3,24 +3,24 @@ class RestaurantRepository {
     this.restaurantModel = restaurantModel;
   }
 
-  addRestaurant(user) {
-    return this.restaurantModel.create(user);
+  async addRestaurant(user) {
+    return await this.restaurantModel.create(user);
   }
 
-  getAllRestaurants() {
-    return this.restaurantModel.findAll();
+  async getAllRestaurants() {
+    return await this.restaurantModel.findAll();
   }
 
-  getRestaurantById(id) {
-    return this.restaurantModel.findOne({ id });
+  async getRestaurantById(id) {
+    return await this.restaurantModel.findOne({ id });
   }
 
-  updateRestaurantById(id, user) {
-    return this.restaurantModel.update(id, user);
+  async updateRestaurantById(id, user) {
+    return await this.restaurantModel.update(id, user);
   }
 
-  deleteRestaurantById(id) {
-    return this.restaurantModel.delete(id);
+  async deleteRestaurantById(id) {
+    return await this.restaurantModel.delete(id);
   }
 }
 export default RestaurantRepository;

@@ -3,24 +3,24 @@ class AlbumRepository {
     this.albumModel = albumModel;
   }
 
-  addAlbum(user) {
-    return this.albumModel.create(user);
+  async addAlbum(user) {
+    return await this.albumModel.create(user);
   }
 
-  getAllAlbums() {
-    return this.albumModel.findAll();
+  async getAllAlbums() {
+    return await this.albumModel.findAll();
   }
 
-  getAlbumById(id) {
-    return this.albumModel.findOne({ id });
+  async getAlbumById(id) {
+    return await this.albumModel.findOne({ id });
   }
 
-  updateAlbumById(id, user) {
-    return this.albumModel.update(id, user);
+  async updateAlbumById(id, user) {
+    return await this.albumModel.update(id, user);
   }
 
-  deleteAlbumById(id) {
-    return this.albumModel.delete(id);
+  async deleteAlbumById(id) {
+    return await this.albumModel.delete(id);
   }
 }
 export default AlbumRepository;

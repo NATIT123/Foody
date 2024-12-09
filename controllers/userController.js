@@ -1,6 +1,8 @@
 import UserRepository from "../repo/userrepo.js";
 import UserService from "../services/userService.js";
 
+import { getAll } from "./handleFactory.js";
+
 import UserModel from "../models/userModel.js";
 
 const userRepo = new UserRepository(UserModel);
@@ -16,15 +18,17 @@ export const addUser = async (req, res, next) => {
   }
 };
 
-export const getAllUsers = async (req, res, next) => {
-  try {
-    const response = await userService.getAllUsers();
-    res.statusCode = response.statusCode;
-    return res.json({ message: response.message, data: response.data });
-  } catch (err) {
-    next(err);
-  }
-};
+export const getAllUsers = userService.getAllUsers();
+
+// async (req, res, next) => {
+//   try {
+//     const response = await userService.getAllUsers();
+//     res.statusCode = response.statusCode;
+//     return res.json({ message: response.message, data: response.data });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 export const getUserById = async (req, res, next) => {
   try {

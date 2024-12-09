@@ -37,20 +37,22 @@ class UserService {
     return response;
   }
 
-  async getAllUsers() {
-    const response = {};
-    response.data = [];
-    const users = await this.userRepo.getAll();
-    if (!users) {
-      response.message = customResourceResponse.recordNotFound.message;
-      response.statusCode = customResourceResponse.recordNotFound.statusCode;
-      return response;
-    }
+  getAllUsers() {
+    // const response = {};
+    // response.data = [];
+    // const users = await this.userRepo.getAll();
+    // console.log(users);
+    // if (!users) {
+    //   response.message = customResourceResponse.recordNotFound.message;
+    //   response.statusCode = customResourceResponse.recordNotFound.statusCode;
+    //   return response;
+    // }
 
-    response.message = customResourceResponse.success.message;
-    response.statusCode = customResourceResponse.success.statusCode;
-    response.data = users;
-    return response;
+    // response.message = customResourceResponse.success.message;
+    // response.statusCode = customResourceResponse.success.statusCode;
+    // response.data = users;
+    // return response;
+    return this.userRepo.getAll();
   }
 
   async getUserById(req) {
@@ -87,7 +89,7 @@ class UserService {
       return response;
     }
 
-    const updatedUser = await this.userRepo.updateUserById(id, user);
+    const updatedUser = this.userRepo.updateUserById(id, user);
     if (!updatedUser) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;
@@ -107,7 +109,7 @@ class UserService {
       return response;
     }
 
-    const deleteUser = await this.userRepo.deleteUserById(id);
+    const deleteUser = this.userRepo.deleteUserById(id);
     if (!deleteUser) {
       response.message = customResourceResponse.recordNotFound.message;
       response.statusCode = customResourceResponse.recordNotFound.statusCode;

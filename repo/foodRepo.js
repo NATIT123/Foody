@@ -3,24 +3,24 @@ class FoodRepository {
     this.foodModel = foodModel;
   }
 
-  addFood(user) {
-    return this.foodModel.create(user);
+ async addFood(user) {
+    return await this.foodModel.create(user);
   }
 
-  getAllFoods() {
-    return this.foodModel.findAll();
+  async getAllFoods() {
+    return await this.foodModel.findAll();
   }
 
-  getFoodById(id) {
-    return this.foodModel.findOne({ id });
+  async getFoodById(id) {
+    return await this.foodModel.findOne({ id });
   }
 
-  updateFoodById(id, user) {
-    return this.foodModel.update(id, user);
+  async updateFoodById(id, user) {
+    return await this.foodModel.update(id, user);
   }
 
-  deleteFoodById(id) {
-    return this.foodModel.delete(id);
+  async deleteFoodById(id) {
+    return await this.foodModel.delete(id);
   }
 }
 export default FoodRepository;
