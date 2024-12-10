@@ -1,26 +1,34 @@
+import {
+  getAll,
+  getOne,
+  updateOne,
+  deleteOne,
+  createOne,
+} from "../controllers/handleFactory.js";
+
 class RestaurantRepository {
   constructor(restaurantModel) {
     this.restaurantModel = restaurantModel;
   }
 
-  async addRestaurant(user) {
-    return await this.restaurantModel.create(user);
+  addRestaurant() {
+    return createOne(this.restaurantModel);
   }
 
-  async getAllRestaurants() {
-    return await this.restaurantModel.findAll();
+  getAllRestaurants() {
+    return getAll(this.restaurantModel);
   }
 
-  async getRestaurantById(id) {
-    return await this.restaurantModel.findOne({ id });
+  getRestaurantById() {
+    return getOne(this.restaurantModel);
   }
 
-  async updateRestaurantById(id, user) {
-    return await this.restaurantModel.update(id, user);
+  updateRestaurantById() {
+    return updateOne(this.restaurantModel);
   }
 
-  async deleteRestaurantById(id) {
-    return await this.restaurantModel.delete(id);
+  deleteRestaurantById() {
+    return deleteOne(this.restaurantModel);
   }
 }
 export default RestaurantRepository;

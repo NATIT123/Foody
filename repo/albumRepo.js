@@ -1,26 +1,33 @@
+import {
+  getAll,
+  getOne,
+  updateOne,
+  deleteOne,
+  createOne,
+} from "../controllers/handleFactory.js";
 class AlbumRepository {
   constructor(albumModel) {
     this.albumModel = albumModel;
   }
 
-  async addAlbum(user) {
-    return await this.albumModel.create(user);
+  addAlbum() {
+    return createOne(this.albumModel);
   }
 
-  async getAllAlbums() {
-    return await this.albumModel.findAll();
+  getAllAlbums() {
+    return getAll(this.albumModel);
   }
 
-  async getAlbumById(id) {
-    return await this.albumModel.findOne({ id });
+  getAlbumById() {
+    return getOne(this.albumModel);
   }
 
-  async updateAlbumById(id, user) {
-    return await this.albumModel.update(id, user);
+  updateAlbumById() {
+    return updateOne(this.albumModel);
   }
 
-  async deleteAlbumById(id) {
-    return await this.albumModel.delete(id);
+  deleteAlbumById() {
+    return deleteOne(this.albumModel);
   }
 }
 export default AlbumRepository;

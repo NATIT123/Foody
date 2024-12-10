@@ -6,52 +6,12 @@ import AlbumModel from "../models/AlbumModel.js";
 const albumRepo = new AlbumRepo(AlbumModel);
 const albumService = new AlbumService(albumRepo);
 
-export const addAlbum = async (req, res, next) => {
-  try {
-    const response = await albumService.addAlbum(req);
-    res.statusCode = response.statusCode;
-    return res.json({ message: response.message, data: response.data });
-  } catch (err) {
-    next(err);
-  }
-};
+export const addAlbum = albumService.addAlbum();
 
-export const getAllAlbums = async (req, res, next) => {
-  try {
-    const response = await albumService.getAllAlbums(req);
-    res.statusCode = response.statusCode;
-    return res.json({ message: response.message, data: response.data });
-  } catch (err) {
-    next(err);
-  }
-};
+export const getAllAlbums = albumService.getAllAlbums();
 
-export const getAlbumById = async (req, res, next) => {
-  try {
-    const response = await albumService.getAlbumById(req);
-    res.statusCode = response.statusCode;
-    return res.json({ message: response.message, data: response.data });
-  } catch (err) {
-    next(err);
-  }
-};
+export const getAlbumById = albumService.getAlbumById();
 
-export const updateAlbumById = async (req, res, next) => {
-  try {
-    const response = await albumService.updateAlbumById(req);
-    res.statusCode = response.statusCode;
-    return res.json({ message: response.message, data: response.data });
-  } catch (err) {
-    next(err);
-  }
-};
+export const updateAlbumById = albumService.updateAlbumById();
 
-export const deleteAlbumById = async (req, res, next) => {
-  try {
-    const response = await albumService.deleteAlbumById(req);
-    res.statusCode = response.statusCode;
-    return res.json({ message: response.message, data: response.data });
-  } catch (err) {
-    next(err);
-  }
-};
+export const deleteAlbumById = albumService.deleteAlbumById();

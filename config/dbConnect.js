@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 dotenv.config();
 ///Enviroment Variables
 dotenv.config({ path: "./config.env" });
-const mongoUrl = process.env.mongoUrl || "";
+const mongoUrl =
+  process.env.URL.replace("<PASSWORD>", process.env.PASSWORD_MONGODB) || "";
 const connectDb = async () => {
   try {
     await mongoose.connect(mongoUrl, {});

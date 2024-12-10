@@ -10,9 +10,19 @@ customResourceResponse.created = {
   message: "Record has been created successfully",
 };
 
+customResourceResponse.notValidId = {
+  statusCode: 404,
+  message: "Id is not valid",
+};
+
 customResourceResponse.recordNotFound = {
   statusCode: 404,
   message: "No Record found",
+};
+
+customResourceResponse.recordNotFoundOne = {
+  statusCode: 404,
+  message: "No Recod not found with that ID",
 };
 
 customResourceResponse.serverError = {

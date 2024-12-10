@@ -1,26 +1,33 @@
+import {
+  getAll,
+  getOne,
+  updateOne,
+  deleteOne,
+  createOne,
+} from "../controllers/handleFactory.js";
 class FoodRepository {
   constructor(foodModel) {
     this.foodModel = foodModel;
   }
 
- async addFood(user) {
-    return await this.foodModel.create(user);
+  addFood() {
+    return createOne(this.foodModel);
   }
 
-  async getAllFoods() {
-    return await this.foodModel.findAll();
+  getAllFoods() {
+    return getAll(this.foodModel);
   }
 
-  async getFoodById(id) {
-    return await this.foodModel.findOne({ id });
+  getFoodById() {
+    return getOne(this.foodModel);
   }
 
-  async updateFoodById(id, user) {
-    return await this.foodModel.update(id, user);
+  updateFoodById() {
+    return updateOne(this.foodModel);
   }
 
-  async deleteFoodById(id) {
-    return await this.foodModel.delete(id);
+  deleteFoodById() {
+    return deleteOne(this.foodModel);
   }
 }
 export default FoodRepository;

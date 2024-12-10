@@ -7,7 +7,6 @@ const handleCastErrorDB = (err) => {
 
 const handleDuplicateFieldsDB = (err) => {
   const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-  console.log(value);
 
   const message = `Duplicate field value: ${value}. Please use another value!`;
   return new AppError(message, 400);
@@ -68,7 +67,6 @@ const sendErrorProd = (err, req, res) => {
   // B) RENDERED WEBSITE
   // A) Operational, trusted error: send message to client
   if (err.isOperational) {
-    console.log(err);
     return res.status(err.statusCode).render("error", {
       title: "Something went wrong!",
       msg: err.message,
@@ -96,12 +94,11 @@ const handleErrorGlobal = (err, req, res, next) => {
     let error = { ...err };
     error.message = err.message;
 
-    if (error.name === "CastError") error = handleCastErrorDB(error);
+    if (err.name === "CastError") error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
-    if (error.name === "ValidationError")
-      error = handleValidationErrorDB(error);
-    if (error.name === "JsonWebTokenError") error = handleJWTError();
-    if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
+    if (err.name === "ValidationError") error = handleValidationErrorDB(error);
+    if (err.name === "JsonWebTokenError") error = handleJWTError();
+    if (err.name === "TokenExpiredError") error = handleJWTExpiredError();
 
     sendErrorProd(error, req, res);
   }

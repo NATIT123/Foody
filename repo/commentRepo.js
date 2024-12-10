@@ -1,26 +1,33 @@
+import {
+  getAll,
+  getOne,
+  updateOne,
+  deleteOne,
+  createOne,
+} from "../controllers/handleFactory.js";
 class CommentRepository {
   constructor(commentModel) {
     this.commentModel = commentModel;
   }
 
-  async addComment(user) {
-    return await this.commentModel.create(user);
+  addComment() {
+    return createOne(this.commentModel);
   }
 
-  async getAllComments() {
-    return await this.commentModel.findAll();
+  getAllComments() {
+    return getAll(this.commentModel);
   }
 
-  async getCommentById(id) {
-    return await this.commentModel.findOne({ id });
+  getCommentById() {
+    return getOne(this.commentModel);
   }
 
-  async updateCommentById(id, user) {
-    return await this.commentModel.update(id, user);
+  updateCommentById() {
+    return updateOne(this.commentModel);
   }
 
-  async deleteCommentById(id) {
-    return await this.commentModel.delete(id);
+  deleteCommentById() {
+    return deleteOne(this.commentModel);
   }
 }
 export default CommentRepository;
