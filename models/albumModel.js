@@ -8,6 +8,11 @@ const AlbumDetailSchema = new Schema(
       type: String,
       required: [true, "Please tell us your timeVideo"],
     },
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
   },
   {
     timestamps: true,

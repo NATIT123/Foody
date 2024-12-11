@@ -6,6 +6,11 @@ const CommentDetailSchema = new Schema(
       type: String,
       required: [true, "Please tell us your userImage"],
     },
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
     userName: {
       type: String,
       required: [true, "Please tell us your userName"],

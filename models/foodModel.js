@@ -6,6 +6,11 @@ const FoodDetailSchema = new Schema(
     price: { type: String, required: [true, "Please tell us your price"] },
     image: { type: String, required: [true, "Please tell us your image"] },
     amount: { type: String, required: [true, "Please tell us your amount"] },
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
   },
   {
     timestamps: true,

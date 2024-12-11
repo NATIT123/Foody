@@ -3,6 +3,43 @@ import AppError from "../utils/appError.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
 
+export const filterObj = (obj, ...allowedFileds) => {
+  const newObj = {};
+  Object.keys(obj).forEach((el) => {
+    if (allowedFileds.includes(el)) newObj[el] = obj[el];
+  });
+  return newObj;
+};
+
+const signInToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECERT, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
+export const createSendToken = (user, statusCode, res) => {
+  const token = signInToken(user._id);
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+
+  res.cookie("jwt", token, cookieOptions);
+
+  user.password = undefined;
+  res.status(statusCode).json({
+    status: "success",
+    token,
+    data: {
+      user: user,
+    },
+  });
+};
+
 export const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const document = await Model.create(req.body);
@@ -18,37 +55,6 @@ export const createOne = (Model) =>
       status: "success",
       message: customResourceResponse.created.message,
       data: { data: doc._id },
-    });
-  });
-
-export const deleteOne = (Model) =>
-  catchAsync(async (req, res, next) => {
-    const id = req.params.id;
-
-    // ///Check ID is valid
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return next(
-        new AppError(
-          customResourceResponse.notValidId.message,
-          customResourceResponse.notValidId.statusCode
-        )
-      );
-    }
-
-    const document = await Model.findByIdAndDelete(id);
-
-    if (!document) {
-      return next(
-        new AppError(
-          customResourceResponse.recordNotFoundOne.message,
-          customResourceResponse.recordNotFoundOne.statusCode
-        )
-      );
-    }
-    res.status(customResourceResponse.success.statusCode).json({
-      status: "success",
-      message: customResourceResponse.success.message,
-      data: { data: doc },
     });
   });
 
@@ -160,5 +166,36 @@ export const getAll = (Model) =>
       data: {
         data: doc,
       },
+    });
+  });
+
+export const deleteOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const id = req.params.id;
+
+    // ///Check ID is valid
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return next(
+        new AppError(
+          customResourceResponse.notValidId.message,
+          customResourceResponse.notValidId.statusCode
+        )
+      );
+    }
+
+    const document = await Model.findByIdAndUpdate(id, { active: false });
+
+    if (!document) {
+      return next(
+        new AppError(
+          customResourceResponse.recordNotFoundOne.message,
+          customResourceResponse.recordNotFoundOne.statusCode
+        )
+      );
+    }
+    res.status(customResourceResponse.success.statusCode).json({
+      status: "success",
+      message: customResourceResponse.success.message,
+      data: { data: null },
     });
   });

@@ -9,6 +9,11 @@ const RestaurantDetailSchema = new Schema(
       type: String,
       required: [true, "Please tell us your location"],
     },
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
     district: {
       type: String,
       required: [true, "Please tell us your district"],
