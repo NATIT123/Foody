@@ -2,6 +2,7 @@ import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
+import jwt from "jsonwebtoken";
 
 export const filterObj = (obj, ...allowedFileds) => {
   const newObj = {};
@@ -16,24 +17,37 @@ const signInToken = (id) => {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
+const createRefreshToken = (payload) => {
+  const refreshToken = jwt.sign(
+    { payload },
+    process.env.JWT_REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.JWT_REFRESH_EXPIRE,
+    }
+  );
+  return refreshToken;
+};
 
 export const createSendToken = (user, statusCode, res) => {
   const token = signInToken(user._id);
+  const refreshToken = createRefreshToken(user._id);
   const cookieOptions = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + process.env.JWT_REFRESH_EXPIRE * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
   };
 
   if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
 
-  res.cookie("jwt", token, cookieOptions);
+  res.clearCookie("refreshToken");
+  res.cookie("refreshToken", refreshToken, cookieOptions);
 
   user.password = undefined;
   res.status(statusCode).json({
+    message: customResourceResponse.register.message,
     status: "success",
-    token,
+    access_token: token,
     data: {
       user: user,
     },

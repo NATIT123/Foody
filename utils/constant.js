@@ -10,6 +10,16 @@ customResourceResponse.created = {
   message: "Record has been created successfully",
 };
 
+customResourceResponse.jwtNotValid = {
+  statusCode: 404,
+  message: "Refresh token is not valid.Please sign in again",
+};
+
+customResourceResponse.register = {
+  statusCode: 200,
+  message: "Register successfully",
+};
+
 customResourceResponse.notValidId = {
   statusCode: 404,
   message: "Id is not valid",

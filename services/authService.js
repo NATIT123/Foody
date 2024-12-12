@@ -1,16 +1,10 @@
-import customResourceResponse from "../utils/constant.js";
-
 class AuthService {
   constructor(authRepo) {
     this.authRepo = authRepo;
   }
 
-  restricTo() {
-    return this.authRepo.restricTo();
-  }
-
-  isLoggedIn() {
-    return this.authRepo.isLoggedIn();
+  restrictTo() {
+    return this.authRepo.restrictTo();
   }
 
   protect() {
@@ -25,7 +19,7 @@ class AuthService {
     return this.authRepo.signUp();
   }
 
-  logout() {
+  logOut() {
     return this.authRepo.logout();
   }
 
@@ -41,8 +35,12 @@ class AuthService {
     return this.authRepo.changePassword();
   }
 
-  updateUser() {
-    return this.authRepo.updateUser();
+  getMe() {
+    return this.authRepo.getMe();
+  }
+
+  deleteMe() {
+    return this.authRepo.deleteMe();
   }
 }
 

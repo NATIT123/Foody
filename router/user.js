@@ -8,6 +8,40 @@ import {
   getUserById,
 } from "../controllers/userController.js";
 
+import {
+  signUp,
+  logIn,
+  forgotPassword,
+  changePassword,
+  protect,
+  resetPassword,
+  restrictTo,
+  logOut,
+  getMe,
+  updateMe,
+  deleteMe,
+} from "../controllers/authController.js";
+
+router.post("/signUp", signUp);
+router.post("/login", logIn);
+
+router.post("/forgotPassword", forgotPassword);
+router.patch("/resetPassword/:token", resetPassword);
+
+router.post("/logOut", logOut);
+
+///Protect all route
+router.use(protect);
+
+router.patch("/updatePassword", changePassword);
+router.get("/me", getMe, getUserById);
+
+router.patch("/updateMe", updateMe);
+
+router.delete("/deleteMe", deleteMe);
+
+router.use(restrictTo("admin"));
+
 router.get("/getAllUsers", getAllUsers);
 router.post("/addUser", addUser);
 router.delete("/deleteUser/:id", deleteUserById);

@@ -22,6 +22,10 @@ class UserService {
   deleteUserById() {
     return this.userRepo.deleteUserById();
   }
+
+  getMe() {
+    return this.userRepo.getMe();
+  }
 }
 
 export default UserService;

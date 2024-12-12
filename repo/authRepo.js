@@ -1,20 +1,46 @@
 import { filterObj, createSendToken } from "../controllers/handleFactory";
-
+import catchAsync from "../utils/catchAsync";
+import mongoose from "mongoose";
+import customResourceResponse from "../utils/constant";
+import AppError from "../utils/appError";
+import jwt from "jsonwebtoken";
 class AuthRepository {
   constructor(userModel) {
     this.userModel = userModel;
   }
 
   logOut() {
-    return (req, res) => {
-      res.cookie("jwt", "loggedout", {
-        expires: new Date(Date.now() + 10 * 1000),
-        httpOnly: true,
-      });
-      res.status(200).json({
+    return catchAsync(async (req, res) => {
+      res.clearCookie("refreshToken");
+      this.userModel.updateUserToken("", req.user._id);
+    });
+  }
+
+  updateUserToken(refreshToken, _id) {
+    return catchAsync(async (req, res) => {
+      if (!mongoose.Types.ObjectId.isValid(_id)) {
+        return next(
+          new AppError(
+            customResourceResponse.notValidId.message,
+            customResourceResponse.notValidId.statusCode
+          )
+        );
+      }
+      let user = await this.userModel.findById(_id);
+      if (!user) {
+        return next(
+          new AppError(
+            customResourceResponse.recordNotFound.message,
+            customResourceResponse.recordNotFound.statusCode
+          )
+        );
+      }
+      await user.updateOne({ refreshToken });
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
         status: "success",
       });
-    };
+    });
   }
 
   signUp() {
@@ -58,8 +84,8 @@ class AuthRepository {
         req.headers.authorization.startsWith("Bearer")
       ) {
         token = req.headers.authorization.split(" ")[1];
-      } else if (req.cookies.jwt) {
-        token = req.cookies.jwt;
+      } else if (req.cookies.refreshToken) {
+        token = req.cookies.refreshToken;
       }
       console.log(token);
 
@@ -101,36 +127,7 @@ class AuthRepository {
     });
   }
 
-  isLoggedIn() {
-    return catchAsync(async (req, res, next) => {
-      if (req.cookies.jwt) {
-        //Verification token
-        const decoded = await promisify(jwt.verify)(
-          req.cookies.jwt,
-          process.env.JWT_SECERT
-        );
-
-        ///Check if users is exist
-        const freshUser = await User.findById(decoded.id);
-        if (!freshUser) {
-          return next();
-        }
-
-        ///Check if user changed password after the token was issued
-        if (freshUser.changePasswordAfter(decoded.iat)) {
-          return next();
-        }
-        ///Grant access to protected route
-        res.locals.user = freshUser;
-        // req.user = freshUser;
-        return next();
-      }
-
-      next();
-    });
-  }
-
-  restricTo(...roles) {
+  restrictTo(...roles) {
     return (req, res, next) => {
       if (!roles.includes(req.user.role)) {
         return next(
@@ -242,7 +239,7 @@ class AuthRepository {
     });
   }
 
-  updateUser() {
+  updateMe() {
     return catchAsync(async (req, res, next) => {
       ////11Crate Error if user POSTs password data
       if (req.body.password || req.body.confirmPassword) {
@@ -268,9 +265,49 @@ class AuthRepository {
 
       res.status(200).json({
         status: "success",
-        user: updateUser,
+        user: updateUser._id,
       });
     });
   }
+
+  processNewToken(refreshToken) {
+    return catchAsync(async (req, res) => {
+      try {
+        jwt.verify(refreshToken, {
+          secret: this.configService.get < string > "JWT_REFRESH_TOKEN_SECRET",
+        });
+
+        let user = await this.userModel.findUserByToken(refreshToken);
+        if (user) {
+          createSendToken(user, 201, res);
+        } else {
+          return next(
+            AppError(
+              customResourceResponse.jwtNotValid.message,
+              customResourceResponse.jwtNotValid.statusCode
+            )
+          );
+        }
+      } catch (err) {
+        // throw new BadRequestException(
+        //   "Refresh token is not valid.Please sign in again"
+        // );
+        next(err);
+      }
+    });
+  }
+
+  findUserByToken = async (refreshToken) => {
+    return await this.userModel.findOne({ refreshToken });
+  };
+
+  deleteMe = catchAsync(async (req, res, next) => {
+    await User.findByIdAndUpdate(req.user.id, { active: false });
+
+    res.status(204).json({
+      status: "success",
+      data: null,
+    });
+  });
 }
 export default AuthRepository;
