@@ -28,9 +28,7 @@ router.post("/login", logIn);
 router.post("/forgotPassword", forgotPassword);
 router.patch("/resetPassword/:token", resetPassword);
 
-router.post("/logOut", logOut);
-
-///Protect all route
+// ///Protect all route
 router.use(protect);
 
 router.patch("/updatePassword", changePassword);
@@ -39,6 +37,8 @@ router.get("/me", getMe, getUserById);
 router.patch("/updateMe", updateMe);
 
 router.delete("/deleteMe", deleteMe);
+
+router.post("/logOut", logOut);
 
 router.use(restrictTo("admin"));
 

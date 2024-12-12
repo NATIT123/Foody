@@ -1,23 +1,24 @@
-import { filterObj, createSendToken } from "../controllers/handleFactory";
-import catchAsync from "../utils/catchAsync";
+import { filterObj, createSendToken } from "../controllers/handleFactory.js";
+import catchAsync from "../utils/catchAsync.js";
 import mongoose from "mongoose";
-import customResourceResponse from "../utils/constant";
-import AppError from "../utils/appError";
+import customResourceResponse from "../utils/constant.js";
+import AppError from "../utils/appError.js";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import { promisify } from "util";
 class AuthRepository {
   constructor(userModel) {
     this.userModel = userModel;
   }
 
-  logOut() {
-    return catchAsync(async (req, res) => {
+  logOut = () =>
+    catchAsync(async (req, res) => {
       res.clearCookie("refreshToken");
-      this.userModel.updateUserToken("", req.user._id);
+      this.updateUserToken("", req.user._id);
     });
-  }
 
-  updateUserToken(refreshToken, _id) {
-    return catchAsync(async (req, res) => {
+  updateUserToken = (refreshToken, _id) =>
+    catchAsync(async (req, res) => {
       if (!mongoose.Types.ObjectId.isValid(_id)) {
         return next(
           new AppError(
@@ -41,20 +42,18 @@ class AuthRepository {
         status: "success",
       });
     });
-  }
 
-  signUp() {
-    return catchAsync(async (req, res, next) => {
+  signUp = () =>
+    catchAsync(async (req, res, next) => {
       const newUser = await this.userModel.create(req.body);
 
       const url = `${req.protocol}://${req.get("host")}/me`;
       await new Email(newUser, url).sendWelcome();
       createSendToken(newUser, 201, res);
     });
-  }
 
-  login() {
-    return catchAsync(async (req, res, next) => {
+  login = () =>
+    catchAsync(async (req, res, next) => {
       const { email, password } = req.body;
 
       // 1) Check if email and password exist
@@ -73,10 +72,9 @@ class AuthRepository {
       // 3) If everything ok, send token to client
       createSendToken(user, 200, res);
     });
-  }
 
-  protect() {
-    return catchAsync(async (req, res, next) => {
+  protect = () =>
+    catchAsync(async (req, res, next) => {
       /////Getting token and check of it's there
       let token;
       if (
@@ -87,7 +85,6 @@ class AuthRepository {
       } else if (req.cookies.refreshToken) {
         token = req.cookies.refreshToken;
       }
-      console.log(token);
 
       if (!token) {
         return next(
@@ -125,21 +122,22 @@ class AuthRepository {
       res.locals.user = freshUser;
       next();
     });
-  }
 
-  restrictTo(...roles) {
-    return (req, res, next) => {
+  restrictTo = (...roles) =>
+    catchAsync((req, res, next) => {
       if (!roles.includes(req.user.role)) {
         return next(
           new AppError("You do not have permission to perform this action", 403)
         );
       }
       next();
-    };
-  }
+    });
 
-  forgotPassword() {
+  forgotPassword = () =>
     catchAsync(async (req, res, next) => {
+      if (!req.body.email) {
+        return next(new AppError("Please input your email", 404));
+      }
       ///Get user based on POST email
       const user = await this.userModel.findOne({ email: req.body.email });
       if (!user) {
@@ -180,10 +178,9 @@ class AuthRepository {
         );
       }
     });
-  }
 
-  resetPassword() {
-    return catchAsync(async (req, res, next) => {
+  resetPassword = () =>
+    catchAsync(async (req, res, next) => {
       ///Get user based on the token
       const hashedToken = crypto
         .createHash("sha256")
@@ -211,10 +208,9 @@ class AuthRepository {
       ///Log the user in, send JWT
       createSendToken(user, 201, res);
     });
-  }
 
-  changePassword() {
-    return catchAsync(async (req, res, next) => {
+  changePassword = () =>
+    catchAsync(async (req, res, next) => {
       ///Get user from collection
       const user = await this.userModel
         .findById(req.params.id)
@@ -237,10 +233,9 @@ class AuthRepository {
       ////Log user in,send JWT
       createSendToken(user, 201, res);
     });
-  }
 
-  updateMe() {
-    return catchAsync(async (req, res, next) => {
+  updateMe = () =>
+    catchAsync(async (req, res, next) => {
       ////11Crate Error if user POSTs password data
       if (req.body.password || req.body.confirmPassword) {
         return next(
@@ -268,10 +263,9 @@ class AuthRepository {
         user: updateUser._id,
       });
     });
-  }
 
-  processNewToken(refreshToken) {
-    return catchAsync(async (req, res) => {
+  processNewToken = (refreshToken) =>
+    catchAsync(async (req, res) => {
       try {
         jwt.verify(refreshToken, {
           secret: this.configService.get < string > "JWT_REFRESH_TOKEN_SECRET",
@@ -295,19 +289,24 @@ class AuthRepository {
         next(err);
       }
     });
-  }
 
   findUserByToken = async (refreshToken) => {
     return await this.userModel.findOne({ refreshToken });
   };
 
-  deleteMe = catchAsync(async (req, res, next) => {
-    await User.findByIdAndUpdate(req.user.id, { active: false });
+  deleteMe = () =>
+    catchAsync(async (req, res, next) => {
+      await User.findByIdAndUpdate(req.user.id, { active: false });
 
-    res.status(204).json({
-      status: "success",
-      data: null,
+      res.status(204).json({
+        status: "success",
+        data: null,
+      });
     });
-  });
+
+  getMe = () => (req, res, next) => {
+    req.params.id = req.user.id;
+    next();
+  };
 }
 export default AuthRepository;

@@ -3,9 +3,9 @@ class AuthService {
     this.authRepo = authRepo;
   }
 
-  restrictTo() {
-    return this.authRepo.restrictTo();
-  }
+  restrictTo = (...roles) => {
+    return this.authRepo.restrictTo(...roles);
+  };
 
   protect() {
     return this.authRepo.protect();
@@ -20,7 +20,7 @@ class AuthService {
   }
 
   logOut() {
-    return this.authRepo.logout();
+    return this.authRepo.logOut();
   }
 
   forgotPassword() {
@@ -41,6 +41,10 @@ class AuthService {
 
   deleteMe() {
     return this.authRepo.deleteMe();
+  }
+
+  updateMe() {
+    return this.authRepo.updateMe();
   }
 }
 

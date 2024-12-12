@@ -12,8 +12,8 @@ export const filterObj = (obj, ...allowedFileds) => {
   return newObj;
 };
 
-const signInToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECERT, {
+const signInToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECERT, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
@@ -29,8 +29,8 @@ const createRefreshToken = (payload) => {
 };
 
 export const createSendToken = (user, statusCode, res) => {
-  const token = signInToken(user._id);
-  const refreshToken = createRefreshToken(user._id);
+  const token = signInToken(user._id, user.role);
+  const refreshToken = createRefreshToken(user._id, user.role);
   const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_REFRESH_EXPIRE * 24 * 60 * 60 * 1000

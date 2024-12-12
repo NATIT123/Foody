@@ -12,9 +12,8 @@ import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import morgan from "morgan";
 import handleErrorGlobal from "./controllers/errorController.js";
-const PORT = parseInt(process.env.PORT) || 3000;
 import connectDb from "./config/dbConnect.js";
-
+import cookieParser from "cookie-parser";
 import userRoute from "./router/user.js";
 import restaurantRoute from "./router/restaurant.js";
 import foodRoute from "./router/food.js";
@@ -50,6 +49,9 @@ app.use(
 //Body parser, reading data  from body into req.body
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: "10kb" }));
+
+///Cookie-Parser
+app.use(cookieParser());
 
 //Data santization againts NOSQL query injection
 app.use(mongoSanitize());

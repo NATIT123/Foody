@@ -1,9 +1,9 @@
-import AuthRepository from "../repo/userrepo.js";
+import AuthRepository from "../repo/authRepo.js";
 import AuthService from "../services/authService.js";
 
-import userModel from "../models/userModel.js";
+import UserModel from "../models/userModel.js";
 
-const userRepo = new AuthRepository(userModel);
+const userRepo = new AuthRepository(UserModel);
 const authService = new AuthService(userRepo);
 
 export const logOut = authService.logOut();
@@ -14,7 +14,7 @@ export const logIn = authService.login();
 
 export const protect = authService.protect();
 
-export const restrictTo = authService.restrictTo();
+export const restrictTo = authService.restrictTo;
 
 export const forgotPassword = authService.forgotPassword();
 
@@ -22,7 +22,7 @@ export const resetPassword = authService.resetPassword();
 
 export const changePassword = authService.changePassword();
 
-export const updateMe = authService.updateUser();
+export const updateMe = authService.updateMe();
 
 export const getMe = authService.getMe();
 
