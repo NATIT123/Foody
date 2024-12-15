@@ -28,7 +28,33 @@ const createRefreshToken = (payload) => {
   return refreshToken;
 };
 
-export const createSendToken = (user, statusCode, res) => {
+export const updateUserToken = (Model, refreshToken, _id) =>
+  catchAsync(async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(_id)) {
+      return next(
+        new AppError(
+          customResourceResponse.notValidId.message,
+          customResourceResponse.notValidId.statusCode
+        )
+      );
+    }
+    let user = await this.userModel.findById(_id);
+    if (!user) {
+      return next(
+        new AppError(
+          customResourceResponse.recordNotFound.message,
+          customResourceResponse.recordNotFound.statusCode
+        )
+      );
+    }
+    await user.updateOne({ refreshToken });
+    res.status(customResourceResponse.success.statusCode).json({
+      message: customResourceResponse.success.message,
+      status: "success",
+    });
+  });
+
+export const createSendToken = (Model, user, statusCode, res) => {
   const token = signInToken(user._id, user.role);
   const refreshToken = createRefreshToken(user._id, user.role);
   const cookieOptions = {
@@ -43,7 +69,8 @@ export const createSendToken = (user, statusCode, res) => {
   res.clearCookie("refreshToken");
   res.cookie("refreshToken", refreshToken, cookieOptions);
 
-  user.password = undefined;
+  updateUserToken(Model, refreshToken, user._id);
+
   res.status(statusCode).json({
     message: customResourceResponse.register.message,
     status: "success",

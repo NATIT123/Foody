@@ -1,0 +1,302 @@
+[
+  {
+    "name": "Sang trọng",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Buffet",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Nhà hàng",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Ăn vặt/Vỉa hè",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Ăn chay",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Café/Dessert",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Quán ăn",
+    "categoryId": "675ef0662bcc2c35acdba86f"
+  },
+  {
+    "name": "Bar/Pub",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Quán nhậu",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Beer club",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Tiệm bánh",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Tiệc tận nơi",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Shop Online",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Giao cơm văn phòng",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Khu Ẩm Thực",
+    "categoryId": "675ef0662bcc2c35acdba84f"
+  },
+  {
+    "name": "Thăm quan & chụp ảnh",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Khách sạn",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Khu nghỉ dưỡng",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Du lịch sinh thái",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Tàu du lịch",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Công viên vui chơi",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Bảo tàng & Di tích",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Chùa & Nhà thờ",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Phòng Vé Máy Bay",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Phương Tiện Xe Cộ",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Homestay",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Căn hộ",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Nhà nghỉ",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Hãng Du Lịch",
+    "categoryId": "675ef0662bcc2c35acdba850"
+  },
+  {
+    "name": "Tiệc cưới/Hội nghị",
+    "categoryId": "675ef0662bcc2c35acdba851"
+  },
+  {
+    "name": "Chụp hình cưới",
+    "categoryId": "675ef0662bcc2c35acdba851"
+  },
+  {
+    "name": "Trang điểm",
+    "categoryId": "675ef0662bcc2c35acdba851"
+  },
+  {
+    "name": "Áo cưới",
+    "categoryId": "675ef0662bcc2c35acdba851"
+  },
+  {
+    "name": "Hoa cưới - Shop hoa",
+    "categoryId": "675ef0662bcc2c35acdba851"
+  },
+  {
+    "name": "Spa/Massage",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Làm tóc/Gội đầu/Nối mi",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Thể dục thẩm mỹ",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Tiệm nail",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Chăm sóc da",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Shop hóa mỹ phẩm",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Thể dục thể thao",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Thẩm mỹ viện",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Xăm hình",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Phòng khám",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Nha khoa",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Nhà thuốc",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Bệnh viện",
+    "categoryId": "675ef0662bcc2c35acdba852"
+  },
+  {
+    "name": "Karaoke",
+    "categoryId": "675ef0662bcc2c35acdba853"
+  },
+  {
+    "name": "Billiards",
+    "categoryId": "675ef0662bcc2c35acdba853"
+  },
+  {
+    "name": "Rạp chiếu phim",
+    "categoryId": "675ef0662bcc2c35acdba853"
+  },
+  {
+    "name": "Sân khấu",
+    "categoryId": "675ef0662bcc2c35acdba853"
+  },
+  {
+    "name": "Khu chơi Game",
+    "categoryId": "675ef0662bcc2c35acdba853"
+  },
+  {
+    "name": "Shop/Cửa hàng",
+    "categoryId": "675ef0662bcc2c35acdba854"
+  },
+  {
+    "name": "Siêu thị",
+    "categoryId": "675ef0662bcc2c35acdba854"
+  },
+  {
+    "name": "Trung tâm thương mại",
+    "categoryId": "675ef0662bcc2c35acdba854"
+  },
+  {
+    "name": "Chợ",
+    "categoryId": "675ef0662bcc2c35acdba854"
+  },
+  {
+    "name": "Mua sắm Online",
+    "categoryId": "675ef0662bcc2c35acdba854"
+  },
+  {
+    "name": "Đại Học & Cao Đẳng",
+    "categoryId": "675ef0662bcc2c35acdba855"
+  },
+  {
+    "name": "Trung tâm giáo dục",
+    "categoryId": "675ef0662bcc2c35acdba855"
+  },
+  {
+    "name": "Trung tâm ngoại ngữ",
+    "categoryId": "675ef0662bcc2c35acdba855"
+  },
+  {
+    "name": "Nhà sách & Thư viện",
+    "categoryId": "675ef0662bcc2c35acdba855"
+  },
+  {
+    "name": "Nhà trẻ & Mẫu giáo",
+    "categoryId": "675ef0662bcc2c35acdba855"
+  },
+  {
+    "name": "Trung học & Phổ Thông",
+    "categoryId": "675ef0662bcc2c35acdba855"
+  },
+  {
+    "name": "Trường dạy nghề",
+    "categoryId": "675ef0662bcc2c35acdba855"
+  },
+  {
+    "name": "Bank - ATM",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Trạm xăng",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Viễn thông",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Vận tải",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Giặt ủi",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Vật nuôi",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Trụ Sở Ban Ngành",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Dịch Vụ Vệ Sinh",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Dịch Vụ Sửa Chữa Nhà Cửa",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Dịch Vụ Vận Chuyển Đồ Đạc",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  },
+  {
+    "name": "Cửa Hàng - Phụ Kiện",
+    "categoryId": "675ef0662bcc2c35acdba856"
+  }
+]

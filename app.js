@@ -20,6 +20,10 @@ import foodRoute from "./router/food.js";
 import commentRoute from "./router/comment.js";
 import albumRoute from "./router/album.js";
 import countryRoute from "./router/country.js";
+import cityRoute from "./router/city.js";
+import districtRoute from "./router/district.js";
+import categoryRoute from "./router/category.js";
+import subCategoryRoute from "./router/subCategory.js";
 
 ///Connect DB
 await connectDb();
@@ -109,6 +113,18 @@ app.use("/api/v1/album", albumRoute);
 
 //Country
 app.use("/api/v1/country", countryRoute);
+
+//City
+app.use("/api/v1/city", cityRoute);
+
+//District
+app.use("/api/v1/district", districtRoute);
+
+//Category
+app.use("/api/v1/category", categoryRoute);
+
+//SubCategory
+app.use("/api/v1/subCategory", subCategoryRoute);
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

@@ -1,5 +1,6 @@
 import mongoose, { Schema, model } from "mongoose";
-
+import fs from "fs";
+import { importData } from "../controllers/handleFactory.js";
 const DistrictDetailSchema = new Schema(
   {
     name: {
@@ -19,5 +20,14 @@ const DistrictDetailSchema = new Schema(
 );
 
 const DistrictModel = model("district", DistrictDetailSchema);
+
+// Load JSON and add timestamps
+const district = JSON.parse(
+  fs.readFileSync("./data/district.json", "utf8")
+).map((district) => ({
+  ...district,
+}));
+
+importData(DistrictModel, district, mongoose);
 
 export default DistrictModel;

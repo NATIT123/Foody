@@ -20,6 +20,7 @@ import {
   getMe,
   updateMe,
   deleteMe,
+  refreshToken,
 } from "../controllers/authController.js";
 
 router.post("/signUp", signUp);
@@ -39,6 +40,8 @@ router.patch("/updateMe", updateMe);
 router.delete("/deleteMe", deleteMe);
 
 router.post("/logOut", logOut);
+
+router.post("/refresh", refreshToken);
 
 router.use(restrictTo("admin"));
 

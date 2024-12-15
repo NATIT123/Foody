@@ -1,4 +1,8 @@
-import { filterObj, createSendToken } from "../controllers/handleFactory.js";
+import {
+  filterObj,
+  createSendToken,
+  updateUserToken,
+} from "../controllers/handleFactory.js";
 import catchAsync from "../utils/catchAsync.js";
 import mongoose from "mongoose";
 import customResourceResponse from "../utils/constant.js";
@@ -14,33 +18,7 @@ class AuthRepository {
   logOut = () =>
     catchAsync(async (req, res) => {
       res.clearCookie("refreshToken");
-      this.updateUserToken("", req.user._id);
-    });
-
-  updateUserToken = (refreshToken, _id) =>
-    catchAsync(async (req, res) => {
-      if (!mongoose.Types.ObjectId.isValid(_id)) {
-        return next(
-          new AppError(
-            customResourceResponse.notValidId.message,
-            customResourceResponse.notValidId.statusCode
-          )
-        );
-      }
-      let user = await this.userModel.findById(_id);
-      if (!user) {
-        return next(
-          new AppError(
-            customResourceResponse.recordNotFound.message,
-            customResourceResponse.recordNotFound.statusCode
-          )
-        );
-      }
-      await user.updateOne({ refreshToken });
-      res.status(customResourceResponse.success.statusCode).json({
-        message: customResourceResponse.success.message,
-        status: "success",
-      });
+      updateUserToken(this.userModel, "", req.user._id);
     });
 
   signUp = () =>
@@ -206,6 +184,7 @@ class AuthRepository {
       //update changePasswordAt property for the user
 
       ///Log the user in, send JWT
+      user.password = undefined;
       createSendToken(user, 201, res);
     });
 
@@ -264,14 +243,15 @@ class AuthRepository {
       });
     });
 
-  processNewToken = (refreshToken) =>
+  processNewToken = () =>
     catchAsync(async (req, res) => {
       try {
+        const refreshToken = req.cookies.refreshToken;
         jwt.verify(refreshToken, {
-          secret: this.configService.get < string > "JWT_REFRESH_TOKEN_SECRET",
+          secret: process.env.JWT_REFRESH_TOKEN_SECRET,
         });
 
-        let user = await this.userModel.findUserByToken(refreshToken);
+        let user = await this.findUserByToken(refreshToken);
         if (user) {
           createSendToken(user, 201, res);
         } else {
@@ -283,10 +263,9 @@ class AuthRepository {
           );
         }
       } catch (err) {
-        // throw new BadRequestException(
-        //   "Refresh token is not valid.Please sign in again"
-        // );
-        next(err);
+        return next(
+          AppError("Refresh token is not valid.Please sign in again", 500)
+        );
       }
     });
 

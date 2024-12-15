@@ -8,10 +8,10 @@ import {
   deleteCountryById,
 } from "../controllers/countryController.js";
 
-router.get("/getAllAlbums", getAllCountrys);
-router.post("/addAlbum", addCountry);
-router.delete("/deleteAlbum/:id", deleteCountryById);
-router.patch("/updateAlbum/:id", updateCountryById);
-router.get("/getAlbum/:id", getCountryById);
+router.get("/getAllCountry", getAllCountrys);
+router.post("/addCountry", addCountry);
+router.delete("/deleteCountry/:id", deleteCountryById);
+router.patch("/updateCountry/:id", updateCountryById);
+router.get("/getCountry/:id", getCountryById);
 
 export default router;
