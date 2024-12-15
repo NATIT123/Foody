@@ -13,12 +13,13 @@ const AlbumDetailSchema = new Schema(
       default: true,
       select: false,
     },
+    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: "restaurant" },
   },
   {
     timestamps: true,
   }
 );
 
-const AlbumModel = model("Albums", AlbumDetailSchema);
+const AlbumModel = model("album", AlbumDetailSchema);
 
 export default AlbumModel;

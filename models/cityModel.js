@@ -6,8 +6,7 @@ const CityDetailSchema = new Schema(
     selected: { type: Boolean, default: false },
     displayName: String,
     displayNameEn: String,
-    countryName: { type: mongoose.Schema.Types.ObjectId, ref: "country" },
-    districts: { type: mongoose.Schema.Types.ObjectId, ref: "district" },
+    countryId: { type: mongoose.Schema.Types.ObjectId, ref: "country" },
   },
   {
     timestamps: true,

@@ -36,7 +36,7 @@ const RestaurantDetailSchema = new Schema(
       type: Number,
       required: [true, "Please tell us your serviceRate"],
     },
-    postionRate: {
+    positionRate: {
       type: Number,
       required: [true, "Please tell us your positionRate"],
     },
@@ -53,7 +53,7 @@ const RestaurantDetailSchema = new Schema(
       required: [true, "Please tell us your timeOpen"],
     },
     priceRange: {
-      type: Number,
+      type: String,
       required: [true, "Please tell us your priceRange"],
     },
   },
@@ -62,6 +62,6 @@ const RestaurantDetailSchema = new Schema(
   }
 );
 
-const RestaurantModel = model("Restaurants", RestaurantDetailSchema);
+const RestaurantModel = model("restaurant", RestaurantDetailSchema);
 
 export default RestaurantModel;

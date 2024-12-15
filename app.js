@@ -19,9 +19,10 @@ import restaurantRoute from "./router/restaurant.js";
 import foodRoute from "./router/food.js";
 import commentRoute from "./router/comment.js";
 import albumRoute from "./router/album.js";
+import countryRoute from "./router/country.js";
 
 ///Connect DB
-connectDb();
+await connectDb();
 
 ///Set up views Pug
 app.set("view engine", "pug");
@@ -105,6 +106,9 @@ app.use("/api/v1/commnet", commentRoute);
 
 ///Album
 app.use("/api/v1/album", albumRoute);
+
+//Country
+app.use("/api/v1/country", countryRoute);
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

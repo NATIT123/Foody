@@ -213,3 +213,18 @@ export const deleteOne = (Model) =>
       data: { data: null },
     });
   });
+
+export const importData = (Model, dataAdd, mongoose) => {
+  Model.find()
+    .then((data) => {
+      if (data.length === 0) {
+        Model.insertMany(dataAdd)
+          .then(() => {
+            console.log("Data imported successfully");
+            mongoose.disconnect();
+          })
+          .catch((err) => console.error("Error importing data:", err));
+      }
+    })
+    .catch((err) => console.error("Error fetching data:", err));
+};
