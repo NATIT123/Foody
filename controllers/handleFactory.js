@@ -3,6 +3,7 @@ import AppError from "../utils/appError.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
 import jwt from "jsonwebtoken";
+import fs from "fs";
 
 export const filterObj = (obj, ...allowedFileds) => {
   const newObj = {};
@@ -241,17 +242,36 @@ export const deleteOne = (Model) =>
     });
   });
 
-export const importData = (Model, dataAdd, mongoose) => {
-  Model.find()
-    .then((data) => {
-      if (data.length === 0) {
-        Model.insertMany(dataAdd)
-          .then(() => {
-            console.log("Data imported successfully");
-            mongoose.disconnect();
-          })
-          .catch((err) => console.error("Error importing data:", err));
-      }
-    })
-    .catch((err) => console.error("Error fetching data:", err));
+export const importData = (Model, nameData) => {
+  try {
+    if (!nameData || typeof nameData !== "string") {
+      throw new Error("Invalid nameData value. It must be a non-empty string.");
+    }
+
+    // Sử dụng đường dẫn tuyệt đối
+    const dataPath = `./data/${nameData}.json`;
+    console.log(`Reading file from path: ${dataPath}`);
+
+    // Đọc dữ liệu từ file JSON
+    const dataAdd = JSON.parse(fs.readFileSync(dataPath, "utf8")).map(
+      (dataAdd) => ({
+        ...dataAdd,
+      })
+    );
+
+    // Tìm kiếm dữ liệu trong cơ sở dữ liệu
+    Model.find()
+      .then((data) => {
+        if (data.length === 0) {
+          Model.insertMany(dataAdd)
+            .then(() => console.log("Data imported successfully"))
+            .catch((err) => console.error("Error importing data:", err));
+        } else {
+          console.log(`Data ${nameData} already exists in the database.`);
+        }
+      })
+      .catch((err) => console.error("Error fetching data:", err));
+  } catch (err) {
+    console.error("Error reading or importing data:", err.message);
+  }
 };

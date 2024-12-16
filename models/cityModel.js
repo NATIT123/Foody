@@ -22,13 +22,4 @@ const CityDetailSchema = new Schema(
 
 const CityModel = model("city", CityDetailSchema);
 
-// Load JSON and add timestamps
-const city = JSON.parse(fs.readFileSync("./data/city.json", "utf8")).map(
-  (city) => ({
-    ...city,
-  })
-);
-
-importData(CityModel, city, mongoose);
-
 export default CityModel;

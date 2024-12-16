@@ -5,24 +5,13 @@ const RestaurantDetailSchema = new Schema(
     name: { type: String, required: [true, "Please tell us your name"] },
     image: String,
     address: { type: String, required: [true, "Please tell us your address"] },
-    location: {
-      type: String,
-      required: [true, "Please tell us your location"],
-    },
     active: {
       type: Boolean,
       default: true,
       select: false,
     },
-    district: {
-      type: String,
-      required: [true, "Please tell us your district"],
-    },
-    area: { type: String, required: [true, "Please tell us your area"] },
-    category: {
-      type: String,
-      required: [true, "Please tell us your category"],
-    },
+    districtId: { type: mongoose.Schema.Types.ObjectId, ref: "district" },
+    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "subCategory" },
     cusines: { type: String, required: [true, "Please tell us your cusines"] },
     audiences: {
       type: String,

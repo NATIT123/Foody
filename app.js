@@ -24,6 +24,13 @@ import cityRoute from "./router/city.js";
 import districtRoute from "./router/district.js";
 import categoryRoute from "./router/category.js";
 import subCategoryRoute from "./router/subCategory.js";
+import { importData } from "./controllers/handleFactory.js";
+import UserModel from "./models/userModel.js";
+import CountryModel from "./models/CountryModel.js";
+import CityModel from "./models/cityModel.js";
+import CategoryModel from "./models/categoryModel.js";
+import SubCategoryModel from "./models/subCategoryModel.js";
+import DistrictModel from "./models/districtModel.js";
 
 ///Connect DB
 await connectDb();
@@ -98,6 +105,8 @@ app.use((req, res, next) => {
 
 //User
 app.use("/api/v1/user", userRoute);
+///Add Data
+importData(UserModel, "user");
 
 //Restaurant
 app.use("/api/v1/restaurant", restaurantRoute);
@@ -106,22 +115,26 @@ app.use("/api/v1/restaurant", restaurantRoute);
 app.use("/api/v1/food", foodRoute);
 
 //Comment
-app.use("/api/v1/commnet", commentRoute);
+app.use("/api/v1/comment", commentRoute);
 
 ///Album
 app.use("/api/v1/album", albumRoute);
 
 //Country
 app.use("/api/v1/country", countryRoute);
+importData(CountryModel, "country");
 
 //City
 app.use("/api/v1/city", cityRoute);
+importData(CityModel, "city");
 
 //District
 app.use("/api/v1/district", districtRoute);
+importData(DistrictModel, "district");
 
 //Category
 app.use("/api/v1/category", categoryRoute);
+importData(CategoryModel, "category");
 
 //SubCategory
 app.use("/api/v1/subCategory", subCategoryRoute);

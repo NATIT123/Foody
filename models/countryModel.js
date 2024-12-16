@@ -32,13 +32,4 @@ const CountryDetailSchema = new Schema(
 
 const CountryModel = model("country", CountryDetailSchema);
 
-// Load JSON and add timestamps
-const countries = JSON.parse(
-  fs.readFileSync("./data/country.json", "utf8")
-).map((country) => ({
-  ...country,
-}));
-
-importData(CountryModel, countries, mongoose);
-
 export default CountryModel;

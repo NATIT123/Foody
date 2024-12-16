@@ -21,13 +21,4 @@ const CategoryDetailSchema = new Schema(
 
 const CategoryModel = model("category", CategoryDetailSchema);
 
-// Load JSON and add timestamps
-const category = JSON.parse(
-  fs.readFileSync("./data/category.json", "utf8")
-).map((category) => ({
-  ...category,
-}));
-
-importData(CategoryModel, category, mongoose);
-
 export default CategoryModel;
