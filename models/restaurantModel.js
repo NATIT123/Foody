@@ -2,8 +2,12 @@ import mongoose, { Schema, model } from "mongoose";
 
 const RestaurantDetailSchema = new Schema(
   {
-    name: { type: String, required: [true, "Please tell us your name"] },
-    image: String,
+    name: {
+      type: String,
+      required: [true, "Please tell us your name"],
+      unique: true,
+    },
+    image: { type: String, required: [true, "Please tell us your image"] },
     address: { type: String, required: [true, "Please tell us your address"] },
     active: {
       type: Boolean,
@@ -12,10 +16,9 @@ const RestaurantDetailSchema = new Schema(
     },
     districtId: { type: mongoose.Schema.Types.ObjectId, ref: "district" },
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "subCategory" },
-    cusines: { type: String, required: [true, "Please tell us your cusines"] },
+    cusines: { type: String },
     audiences: {
       type: String,
-      required: [true, "Please tell us your audiences"],
     },
     qualityRate: {
       type: Number,
@@ -25,9 +28,9 @@ const RestaurantDetailSchema = new Schema(
       type: Number,
       required: [true, "Please tell us your serviceRate"],
     },
-    positionRate: {
+    locationRate: {
       type: Number,
-      required: [true, "Please tell us your positionRate"],
+      required: [true, "Please tell us your locationRate"],
     },
     priceRate: {
       type: Number,
@@ -38,7 +41,7 @@ const RestaurantDetailSchema = new Schema(
       required: [true, "Please tell us your spaceRate"],
     },
     timeOpen: {
-      type: Number,
+      type: String,
       required: [true, "Please tell us your timeOpen"],
     },
     priceRange: {

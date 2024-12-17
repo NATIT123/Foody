@@ -31,9 +31,10 @@ import CityModel from "./models/cityModel.js";
 import CategoryModel from "./models/categoryModel.js";
 import SubCategoryModel from "./models/subCategoryModel.js";
 import DistrictModel from "./models/districtModel.js";
+import RestaurantModel from "./models/restaurantModel.js";
 
 ///Connect DB
-await connectDb();
+connectDb();
 
 ///Set up views Pug
 app.set("view engine", "pug");
@@ -110,6 +111,7 @@ importData(UserModel, "user");
 
 //Restaurant
 app.use("/api/v1/restaurant", restaurantRoute);
+importData(RestaurantModel, "restaurants");
 
 //Food
 app.use("/api/v1/food", foodRoute);
@@ -138,6 +140,7 @@ importData(CategoryModel, "category");
 
 //SubCategory
 app.use("/api/v1/subCategory", subCategoryRoute);
+importData(SubCategoryModel, "subCategory");
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

@@ -3,9 +3,15 @@ import mongoose, { Schema, model } from "mongoose";
 const FoodDetailSchema = new Schema(
   {
     name: { type: String, required: [true, "Please tell us your name"] },
-    price: { type: String, required: [true, "Please tell us your price"] },
     image: { type: String, required: [true, "Please tell us your image"] },
-    amount: { type: Number, required: [true, "Please tell us your amount"] },
+    priceOriginal: {
+      type: Number,
+      required: [true, "Please tell us your priceOriginal"],
+    },
+    priceDiscount: {
+      type: Number,
+      required: [true, "Please tell us your priceDiscount"],
+    },
     active: {
       type: Boolean,
       default: true,
