@@ -32,6 +32,9 @@ import CategoryModel from "./models/categoryModel.js";
 import SubCategoryModel from "./models/subCategoryModel.js";
 import DistrictModel from "./models/districtModel.js";
 import RestaurantModel from "./models/restaurantModel.js";
+import FoodModel from "./models/foodModel.js";
+import CommentModel from "./models/commentModel.js";
+import AlbumModel from "./models/AlbumModel.js";
 
 ///Connect DB
 connectDb();
@@ -115,13 +118,15 @@ importData(RestaurantModel, "restaurants");
 
 //Food
 app.use("/api/v1/food", foodRoute);
+importData(FoodModel, "foods");
 
 //Comment
 app.use("/api/v1/comment", commentRoute);
+importData(CommentModel, "comments");
 
 ///Album
 app.use("/api/v1/album", albumRoute);
-
+importData(AlbumModel, "albums");
 //Country
 app.use("/api/v1/country", countryRoute);
 importData(CountryModel, "country");

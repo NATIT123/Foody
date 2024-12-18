@@ -5,11 +5,11 @@ const FoodDetailSchema = new Schema(
     name: { type: String, required: [true, "Please tell us your name"] },
     image: { type: String, required: [true, "Please tell us your image"] },
     priceOriginal: {
-      type: Number,
+      type: String,
       required: [true, "Please tell us your priceOriginal"],
     },
     priceDiscount: {
-      type: Number,
+      type: String,
       required: [true, "Please tell us your priceDiscount"],
     },
     active: {

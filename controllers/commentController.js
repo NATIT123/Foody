@@ -1,7 +1,6 @@
 import CommentRepo from "../repo/commentRepo.js";
 import CommentService from "../services/commentService.js";
-
-import CommentModel from "../models/CommentModel.js";
+import CommentModel from "../models/commentModel.js";
 
 const commentRepo = new CommentRepo(CommentModel);
 const commentService = new CommentService(commentRepo);
