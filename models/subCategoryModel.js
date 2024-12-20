@@ -1,6 +1,4 @@
 import mongoose, { Schema, model } from "mongoose";
-import fs from "fs";
-import { importData } from "../controllers/handleFactory.js";
 const SubCategoryDetailSchema = new Schema(
   {
     name: { type: String, required: [true, "Please tell us your image"] },
@@ -9,13 +7,13 @@ const SubCategoryDetailSchema = new Schema(
       default: true,
       select: false,
     },
-    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "category" },
+    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "categories" },
   },
   {
     timestamps: true,
   }
 );
 
-const SubCategoryModel = model("subCategory", SubCategoryDetailSchema);
+const SubCategoryModel = model("subcategories", SubCategoryDetailSchema);
 
 export default SubCategoryModel;

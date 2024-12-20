@@ -2,8 +2,6 @@ import mongoose from "mongoose";
 const saltRounds = parseInt(process.env.SALT_ROUNDS) || 12;
 import validator from "validator";
 import bcrypt from "bcryptjs";
-import fs from "fs";
-import { importData } from "../controllers/handleFactory.js";
 const UserDetailSchema = new mongoose.Schema(
   {
     fullname: {
@@ -124,6 +122,6 @@ UserDetailSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-const UserModel = mongoose.model("user", UserDetailSchema);
+const UserModel = mongoose.model("users", UserDetailSchema);
 
 export default UserModel;

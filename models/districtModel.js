@@ -1,6 +1,4 @@
 import mongoose, { Schema, model } from "mongoose";
-import fs from "fs";
-import { importData } from "../controllers/handleFactory.js";
 const DistrictDetailSchema = new Schema(
   {
     name: {
@@ -12,13 +10,13 @@ const DistrictDetailSchema = new Schema(
       default: true,
       select: false,
     },
-    cityId: { type: mongoose.Schema.Types.ObjectId, ref: "city" },
+    cityId: { type: mongoose.Schema.Types.ObjectId, ref: "cities" },
   },
   {
     timestamps: true,
   }
 );
 
-const DistrictModel = model("district", DistrictDetailSchema);
+const DistrictModel = model("districts", DistrictDetailSchema);
 
 export default DistrictModel;

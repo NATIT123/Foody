@@ -1,6 +1,4 @@
 import mongoose, { Schema, model } from "mongoose";
-import { importData } from "../controllers/handleFactory.js";
-import fs from "fs";
 
 const CityDetailSchema = new Schema(
   {
@@ -8,7 +6,7 @@ const CityDetailSchema = new Schema(
     selected: { type: Boolean, default: false },
     displayName: String,
     displayNameEn: String,
-    countryId: { type: mongoose.Schema.Types.ObjectId, ref: "country" },
+    countryId: { type: mongoose.Schema.Types.ObjectId, ref: "countries" },
     active: {
       type: Boolean,
       default: true,
@@ -20,6 +18,6 @@ const CityDetailSchema = new Schema(
   }
 );
 
-const CityModel = model("city", CityDetailSchema);
+const CityModel = model("cities", CityDetailSchema);
 
 export default CityModel;

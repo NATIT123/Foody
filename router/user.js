@@ -30,7 +30,7 @@ router.post("/forgotPassword", forgotPassword);
 router.patch("/resetPassword/:token", resetPassword);
 
 // ///Protect all route
-router.use(protect);
+// router.use(protect);
 
 router.patch("/updatePassword", changePassword);
 router.get("/me", getMe, getUserById);
@@ -43,7 +43,7 @@ router.post("/logOut", logOut);
 
 router.post("/refresh", refreshToken);
 
-router.use(restrictTo("admin"));
+// router.use(restrictTo("admin"));
 
 router.get("/getAllUsers", getAllUsers);
 router.post("/addUser", addUser);

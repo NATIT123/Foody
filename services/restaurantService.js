@@ -1,5 +1,3 @@
-import customResourceResponse from "../utils/constant.js";
-
 class RestaurantService {
   constructor(restaurantRepo) {
     this.restaurantRepo = restaurantRepo;
@@ -23,6 +21,10 @@ class RestaurantService {
 
   deleteRestaurantById() {
     return this.restaurantRepo.deleteRestaurantById();
+  }
+
+  getRestaurantByCity() {
+    return this.restaurantRepo.getByCity();
   }
 }
 

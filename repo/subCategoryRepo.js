@@ -20,7 +20,7 @@ class SubCategoryRepository {
   }
 
   getsubCategoryById() {
-    return getOne(this.subCategoryModel);
+    return getOne(this.subCategoryModel, "categoryId");
   }
 
   updatesubCategoryById() {

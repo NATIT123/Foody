@@ -19,7 +19,7 @@ class AlbumRepository {
   }
 
   getAlbumById() {
-    return getOne(this.albumModel);
+    return getOne(this.albumModel, "restaurantId");
   }
 
   updateAlbumById() {

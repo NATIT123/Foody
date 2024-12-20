@@ -17,13 +17,13 @@ const FoodDetailSchema = new Schema(
       default: true,
       select: false,
     },
-    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: "restaurant" },
+    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: "restaurants" },
   },
   {
     timestamps: true,
   }
 );
 
-const FoodModel = model("food", FoodDetailSchema);
+const FoodModel = model("foods", FoodDetailSchema);
 
 export default FoodModel;

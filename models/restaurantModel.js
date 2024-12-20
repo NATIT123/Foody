@@ -14,8 +14,11 @@ const RestaurantDetailSchema = new Schema(
       default: true,
       select: false,
     },
-    districtId: { type: mongoose.Schema.Types.ObjectId, ref: "district" },
-    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "subCategory" },
+    districtId: { type: mongoose.Schema.Types.ObjectId, ref: "districts" },
+    subCategoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "subcategories",
+    },
     cusines: { type: String },
     audiences: {
       type: String,
@@ -54,6 +57,6 @@ const RestaurantDetailSchema = new Schema(
   }
 );
 
-const RestaurantModel = model("restaurant", RestaurantDetailSchema);
+const RestaurantModel = model("restaurants", RestaurantDetailSchema);
 
 export default RestaurantModel;

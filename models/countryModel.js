@@ -1,6 +1,4 @@
 import mongoose, { Schema, model } from "mongoose";
-import fs from "fs";
-import { importData } from "../controllers/handleFactory.js";
 const CountryDetailSchema = new Schema(
   {
     name: {
@@ -30,6 +28,6 @@ const CountryDetailSchema = new Schema(
   }
 );
 
-const CountryModel = model("country", CountryDetailSchema);
+const CountryModel = model("countries", CountryDetailSchema);
 
 export default CountryModel;

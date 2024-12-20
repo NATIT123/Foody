@@ -1,6 +1,4 @@
 import mongoose, { Schema, model } from "mongoose";
-import fs from "fs";
-import { importData } from "../controllers/handleFactory.js";
 const CategoryDetailSchema = new Schema(
   {
     name: { type: String, required: [true, "Please tell us your name"] },
@@ -8,6 +6,7 @@ const CategoryDetailSchema = new Schema(
       type: String,
       required: [true, "Please tell us your description"],
     },
+    selected: { type: Boolean, default: false },
     active: {
       type: Boolean,
       default: true,
@@ -19,6 +18,6 @@ const CategoryDetailSchema = new Schema(
   }
 );
 
-const CategoryModel = model("category", CategoryDetailSchema);
+const CategoryModel = model("categories", CategoryDetailSchema);
 
 export default CategoryModel;

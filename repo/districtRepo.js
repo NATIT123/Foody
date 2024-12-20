@@ -20,7 +20,7 @@ class DistrictRepository {
   }
 
   getDistrictById() {
-    return getOne(this.districtModel);
+    return getOne(this.districtModel, "districtId");
   }
 
   updateDistrictById() {

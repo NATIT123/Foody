@@ -20,7 +20,7 @@ class CityRepository {
   }
 
   getCityById() {
-    return getOne(this.cityModel);
+    return getOne(this.cityModel, "CountryId");
   }
 
   updateCityById() {
