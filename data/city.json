@@ -1,602 +1,600 @@
 [
   {
     "name": "TP. HCM",
-    "selected": false,
     "displayName": "TP. HCM",
     "displayNameEn": "HCM City",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Bangkok",
-    "selected": false,
+
     "displayName": "Bangkok",
     "displayNameEn": "Bangkok",
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Jakarta",
-    "selected": false,
     "displayName": "Jakarta",
     "displayNameEn": "Jakarta",
     "countryId": "675e78747e954370b5142b10"
   },
   {
     "name": "Taipei City",
-    "selected": false,
+
     "displayName": "Taipei City",
     "displayNameEn": "Taipei City",
     "countryId": "675e78747e954370b5142b11"
   },
   {
     "name": "Phnom Penh",
-    "selected": false,
+
     "displayName": "Phnom Penh",
     "displayNameEn": "Phnom Penh",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Malacca",
-    "selected": false,
+
     "displayName": "Malacca",
     "displayNameEn": "Malacca",
     "countryId": "675e78747e954370b5142b13"
   },
   {
     "name": "Tokyo",
-    "selected": false,
+
     "displayName": "Tokyo",
     "displayNameEn": "Tokyo",
     "countryId": "675e78747e954370b5142b14"
   },
   {
     "name": "Yangon",
-    "selected": false,
+
     "displayName": "Yangon",
     "displayNameEn": "Yangon",
     "countryId": "675e78747e954370b5142b15"
   },
   {
     "name": "Manila",
-    "selected": false,
+
     "displayName": "Manila",
     "displayNameEn": "Manila",
     "countryId": "675e78747e954370b5142b16"
   },
   {
     "name": "New South Wales",
-    "selected": false,
+
     "displayName": "New South Wales",
     "displayNameEn": "New South Wales",
     "countryId": "675e78747e954370b5142b17"
   },
   {
     "name": "California",
-    "selected": false,
+
     "displayName": "California",
     "displayNameEn": "California",
     "countryId": "675e78747e954370b5142b18"
   },
   {
     "name": "Ontario",
-    "selected": false,
+
     "displayName": "Ontario",
     "displayNameEn": "Ontario",
     "countryId": "675e78747e954370b5142b19"
   },
   {
     "name": "Gyeongqi-Do",
-    "selected": false,
+
     "displayName": "Gyeongqi-Do",
     "displayNameEn": "Gyeonggi",
     "countryId": "675e78747e954370b5142b1a"
   },
   {
     "name": "Vientiane",
-    "selected": false,
+
     "displayName": "Vientiane",
     "displayNameEn": "Vientiane",
     "countryId": "675e78747e954370b5142b1b"
   },
   {
     "name": "Hà Nội",
-    "selected": false,
+
     "displayName": "Hà Nội",
     "displayNameEn": "Ha Noi City",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Victoria",
-    "selected": false,
+
     "displayName": "Victoria",
     "displayNameEn": "Victoria",
     "countryId": "675e78747e954370b5142b17"
   },
   {
     "name": "Kyoto",
-    "selected": false,
+
     "displayName": "Kyoto",
     "displayNameEn": "Kyoto",
     "countryId": "675e78747e954370b5142b14"
   },
   {
     "name": "Siem Reap",
-    "selected": false,
+
     "displayName": "Siem Reap",
     "displayNameEn": "Siem Reap",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Quezon City",
-    "selected": false,
+
     "displayName": "Quezon City",
     "displayNameEn": "Quezon",
     "countryId": "675e78747e954370b5142b16"
   },
   {
     "name": "Bali",
-    "selected": false,
+
     "displayName": "Bali",
     "displayNameEn": null,
     "countryId": "675e78747e954370b5142b10"
   },
   {
     "name": "Johor",
-    "selected": false,
+
     "displayName": "Johor",
     "displayNameEn": "Johor",
     "countryId": "675e78747e954370b5142b13"
   },
   {
     "name": "Chiayi County",
-    "selected": false,
+
     "displayName": "Chiayi County",
     "displayNameEn": "Chiayi County",
     "countryId": "675e78747e954370b5142b11"
   },
   {
     "name": "Nonthaburi",
-    "selected": false,
+
     "displayName": "Nonthaburi",
     "displayNameEn": "Nonthaburi",
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Washington",
-    "selected": false,
+
     "displayName": "Washington",
     "displayNameEn": "Washington",
     "countryId": "675e78747e954370b5142b18"
   },
   {
     "name": "Đà Nẵng",
-    "selected": false,
+
     "displayName": "Đà Nẵng",
     "displayNameEn": "Da Nang City",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Osaka",
-    "selected": false,
+
     "displayName": "Osaka",
     "displayNameEn": "Óaka",
     "countryId": "675e78747e954370b5142b14"
   },
   {
     "name": "Selangor",
-    "selected": false,
+
     "displayName": "Selangor",
     "displayNameEn": "Selangor",
     "countryId": "675e78747e954370b5142b13"
   },
   {
     "name": "Kampot",
-    "selected": false,
+
     "displayName": "Kampot",
     "displayNameEn": "Kampot",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "New York",
-    "selected": false,
+
     "displayName": "New York",
     "displayNameEn": "New York",
     "countryId": "675e78747e954370b5142b18"
   },
   {
     "name": "Queensland",
-    "selected": false,
+
     "displayName": "Queensland",
     "displayNameEn": "Queensland",
     "countryId": "675e78747e954370b5142b17"
   },
   {
     "name": "Cần Thơ",
-    "selected": false,
+
     "displayName": "Cần Thơ",
     "displayNameEn": "Can Tho City",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Khánh Hoà",
-    "selected": false,
+
     "displayName": "Khánh Hoà",
     "displayNameEn": "Khanh Hoa",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Vũng Tàu",
-    "selected": false,
+
     "displayName": "Vũng Tàu",
     "displayNameEn": "Vung Tau",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Kyushu",
-    "selected": false,
+
     "displayName": "Kyushu",
     "displayNameEn": "Kyushu",
     "countryId": "675e78747e954370b5142b14"
   },
   {
     "name": "Nakhon Ratchasima",
-    "selected": false,
+
     "displayName": "Nakhon Ratchasima",
     "displayNameEn": "Nakhon Ratchasima",
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Yogyakarta",
-    "selected": false,
+
     "displayName": "Yogyakarta",
     "displayNameEn": "Yogyakarta",
     "countryId": "675e78747e954370b5142b10"
   },
   {
     "name": "Kedah",
-    "selected": false,
+
     "displayName": "Kedah",
     "displayNameEn": "Kedah",
     "countryId": "675e78747e954370b5142b13"
   },
   {
     "name": "Hải Phòng",
-    "selected": false,
+
     "displayName": "Hải Phòng",
     "displayNameEn": "Hai Phong City",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Guangdong",
-    "selected": false,
+
     "displayName": "Guangdong",
     "displayNameEn": "Guangdong",
     "countryId": "675e78747e954370b5142b1c"
   },
   {
     "name": "South Australia",
-    "selected": false,
+
     "displayName": "South Australia",
     "displayNameEn": "South Australia",
     "countryId": "675e78747e954370b5142b17"
   },
   {
     "name": "Kaohsiung City",
-    "selected": false,
+
     "displayName": "Kaohsiung City",
     "displayNameEn": "Kaohsiung City",
     "countryId": "675e78747e954370b5142b11"
   },
   {
     "name": "Western Australia",
-    "selected": false,
+
     "displayName": "Western Australia",
     "displayNameEn": "Western Australia",
     "countryId": "675e78747e954370b5142b17"
   },
   {
     "name": "Mandalay",
-    "selected": false,
+
     "displayName": "Mandalay",
     "displayNameEn": "Mandalay",
     "countryId": "675e78747e954370b5142b15"
   },
   {
     "name": "Bandung",
-    "selected": false,
+
     "displayName": "Bandung",
     "displayNameEn": "Bandung",
     "countryId": "675e78747e954370b5142b10"
   },
   {
     "name": "Sagaing",
-    "selected": false,
+
     "displayName": "Sagaing",
     "displayNameEn": "Sagaing",
     "countryId": "675e78747e954370b5142b15"
   },
   {
     "name": "Bình Thuận",
-    "selected": false,
+
     "displayName": "Bình Thuận",
     "displayNameEn": "Binh Thuan",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Hualien County",
-    "selected": false,
+
     "displayName": "Hualien County",
     "displayNameEn": "Hualien County",
     "countryId": "675e78747e954370b5142b11"
   },
   {
     "name": "Pahang",
-    "selected": false,
+
     "displayName": "Pahang",
     "displayNameEn": "Pahang",
     "countryId": "675e78747e954370b5142b13"
   },
   {
     "name": "Kampong Cham",
-    "selected": false,
+
     "displayName": "Kampong Cham",
     "displayNameEn": "Kampong Cham",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Lâm Đồng",
-    "selected": false,
+
     "displayName": "Lâm Đồng",
     "displayNameEn": "Lam Dong",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Penang",
-    "selected": false,
+
     "displayName": "Penang",
     "displayNameEn": "Penang",
     "countryId": "675e78747e954370b5142b13"
   },
   {
     "name": "Nam Định",
-    "selected": false,
+
     "displayName": "Nam Định",
     "displayNameEn": "Nam Dinh City",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Kampong Speu",
-    "selected": false,
+
     "displayName": "Kampong Speu",
     "displayNameEn": "Kampong Speu",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Tiền Giang",
-    "selected": false,
+
     "displayName": "Tiền Giang",
     "displayNameEn": "Tien Giang",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Phú Quốc",
-    "selected": false,
+
     "displayName": "Phú Quốc",
     "displayNameEn": "Phu Quoc",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Kampong Thom",
-    "selected": false,
+
     "displayName": "Kampong Thom",
     "displayNameEn": "Kampong Thom",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Kon Tum",
-    "selected": false,
+
     "displayName": "Kon Tum",
     "displayNameEn": "Kon Tum",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Terengganu",
-    "selected": false,
+
     "displayName": "Terengganu",
     "displayNameEn": "Terengganu",
     "countryId": "675e78747e954370b5142b13"
   },
   {
     "name": "Đồng Nai",
-    "selected": false,
+
     "displayName": "Đồng Nai",
     "displayNameEn": "Dong Nai",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Pingtung County",
-    "selected": false,
+
     "displayName": "Pingtung County",
     "displayNameEn": "Pingtung County",
     "countryId": "675e78747e954370b5142b11"
   },
   {
     "name": "Quảng Ninh",
-    "selected": false,
+
     "displayName": "Quảng Ninh",
     "displayNameEn": "Quang Ninh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Taoyuan City",
-    "selected": false,
+
     "displayName": "Taoyuan City",
     "displayNameEn": "Taoyuan City",
     "countryId": "675e78747e954370b5142b11"
   },
   {
     "name": "Koh Kong",
-    "selected": false,
+
     "displayName": "Koh Kong",
     "displayNameEn": "Koh Kong",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Huế",
-    "selected": false,
+
     "displayName": "Huế",
     "displayNameEn": "Hue City",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Quảng Nam",
-    "selected": false,
+
     "displayName": "Quảng Nam",
     "displayNameEn": "Quang Nam",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Taichung City",
-    "selected": false,
+
     "displayName": "Taichung City",
     "displayNameEn": "Taichung City",
     "countryId": "675e78747e954370b5142b11"
   },
   {
     "name": "Prachuap Khiri Khan",
-    "selected": false,
+
     "displayName": "Prachuap Khiri Khan",
     "displayNameEn": "Prachuap Khiri Khan",
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Shan",
-    "selected": false,
+
     "displayName": "Shan",
     "displayNameEn": "Shan",
     "countryId": "675e78747e954370b5142b15"
   },
   {
     "name": "Lào Cai",
-    "selected": false,
+
     "displayName": "Lào Cai",
     "displayNameEn": "Lao Cai",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Nghệ An",
-    "selected": false,
+
     "displayName": "Nghệ An",
     "displayNameEn": "Nghe An",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Samut Prakan",
-    "selected": false,
+
     "displayName": "Samut Prakan",
     "displayNameEn": "Samut Prakan",
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Bình Dương",
-    "selected": false,
+
     "displayName": "Bình Dương",
     "displayNameEn": "Binh Duong",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Preah Sihanouk",
-    "selected": false,
+
     "displayName": "Preah Sihanouk",
     "displayNameEn": "Preah Sihanouk",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Long An",
-    "selected": false,
+
     "displayName": "Long An",
     "displayNameEn": "Long An",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Krabi",
-    "selected": false,
+
     "displayName": "Krabi",
     "displayNameEn": "Krabi",
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Svay Rieng",
-    "selected": false,
+
     "displayName": "Svay Rieng",
     "displayNameEn": "Svay Rieng",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Chachoengsao",
-    "selected": false,
+
     "displayName": "Chachoengsao",
     "displayNameEn": "Chachoengsao",
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Mae Hong Son",
-    "selected": false,
+
     "displayName": "Mae Hong Son",
     "displayNameEn": "Mae Hong Son",
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Prey Veng",
-    "selected": false,
+
     "displayName": "Prey Veng",
     "displayNameEn": "Krong Prey Veng",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Krong Bavet",
-    "selected": false,
+
     "displayName": "Krong Bavet",
     "displayNameEn": "Krong Bavet",
     "countryId": "675e78747e954370b5142b12"
   },
   {
     "name": "Bình Định",
-    "selected": false,
+
     "displayName": "Bình Định",
     "displayNameEn": "Binh Dinh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Phú Yên",
-    "selected": false,
+
     "displayName": "Phú Yên",
     "displayNameEn": "Phu Yen",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Đắk Lắk",
-    "selected": false,
+
     "displayName": "Đắk Lắk",
     "displayNameEn": "Dak Lak",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "An Giang",
-    "selected": false,
+
     "displayName": "An Giang",
     "displayNameEn": "An Giang",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Thanh Hoá",
-    "selected": false,
+
     "displayName": "Thanh Hoá",
     "displayNameEn": "Thanh Hoa",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Kiên Giang",
-    "selected": false,
+
     "displayName": "Kiên Giang",
     "displayNameEn": "Kien Giang",
     "countryId": "675e78747e954370b5142b0e"
@@ -610,308 +608,308 @@
   },
   {
     "name": "Tây Ninh",
-    "selected": false,
+
     "displayName": "Tây Ninh",
     "displayNameEn": "Tay Ninh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Gia Lai",
-    "selected": false,
+
     "displayName": "Gia Lai",
     "displayNameEn": "Gia Lai",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Vĩnh Long",
-    "selected": false,
+
     "displayName": "Vĩnh Long",
     "displayNameEn": "Vinh Long",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Cà Mau",
-    "selected": false,
+
     "displayName": "Cà Mau",
     "displayNameEn": "Ca Mau",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Đồng Tháp",
-    "selected": false,
+
     "displayName": "Đồng Tháp",
     "displayNameEn": "Dong Thap",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Quảng Bình",
-    "selected": false,
+
     "displayName": "Quảng Bình",
     "displayNameEn": "Quang Binh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Hải Dương",
-    "selected": false,
+
     "displayName": "Hải Dương",
     "displayNameEn": "Hai Duong",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Bến Tre",
-    "selected": false,
+
     "displayName": "Bến Tre",
     "displayNameEn": "Ben Tre",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Quảng Trị",
-    "selected": false,
+
     "displayName": "Quảng Trị",
     "displayNameEn": "Quang Tri",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Bình Phước",
-    "selected": false,
+
     "displayName": "Bình Phước",
     "displayNameEn": "Binh Phuoc",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Bắc Ninh",
-    "selected": false,
+
     "displayName": "Bắc Ninh",
     "displayNameEn": "Bac Ninh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Sóc Trăng",
-    "selected": false,
+
     "displayName": "Sóc Trăng",
     "displayNameEn": "Soc Trang",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Vĩnh Phúc",
-    "selected": false,
+
     "displayName": "Vĩnh Phúc",
     "displayNameEn": "Vinh Phuc",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Trà Vinh",
-    "selected": false,
+
     "displayName": "Trà Vinh",
     "displayNameEn": "Tra Vinh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Ninh Bình",
-    "selected": false,
+
     "displayName": "Ninh Bình",
     "displayNameEn": "Ninh Binh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Thái Nguyên",
-    "selected": false,
+
     "displayName": "Thái Nguyên",
     "displayNameEn": "Thai Nguyen",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Ninh Thuận",
-    "selected": false,
+
     "displayName": "Ninh Thuận",
     "displayNameEn": "Ninh Thuan",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Bạc Liêu",
-    "selected": false,
+
     "displayName": "Bạc Liêu",
     "displayNameEn": "Bac Lieu",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Hà Tĩnh",
-    "selected": false,
+
     "displayName": "Hà Tĩnh",
     "displayNameEn": "Ha Tinh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Bắc Giang",
-    "selected": false,
+
     "displayName": "Bắc Giang",
     "displayNameEn": "Bac Giang",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Phú Thọ",
-    "selected": false,
+
     "displayName": "Phú Thọ",
     "displayNameEn": "Phu Tho",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Hậu Giang",
-    "selected": false,
+
     "displayName": "Hậu Giang",
     "displayNameEn": "Hau Giang",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Thái Bình",
-    "selected": false,
+
     "displayName": "Thái Bình",
     "displayNameEn": "Thai Binh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Sơn La",
-    "selected": false,
+
     "displayName": "Sơn La",
     "displayNameEn": "Son La",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Singapore",
-    "selected": false,
+
     "displayName": "Singapore",
     "displayNameEn": "Singapore",
     "countryId": "675e78747e954370b5142b1d"
   },
   {
     "name": "Lạng Sơn",
-    "selected": false,
+
     "displayName": "Lạng Sơn",
     "displayNameEn": "Lang Son",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Hòa Bình",
-    "selected": false,
+
     "displayName": "Hòa Bình",
     "displayNameEn": "Hoa Binh",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Hưng Yên",
-    "selected": false,
+
     "displayName": "Hưng Yên",
     "displayNameEn": "Hung Yen",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Hà Giang",
-    "selected": false,
+
     "displayName": "Hà Giang",
     "displayNameEn": "Ha Giang",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Đắk Nông",
-    "selected": false,
+
     "displayName": "Đắk Nông",
     "displayNameEn": "Dak Nong",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Tuyên Quang",
-    "selected": false,
+
     "displayName": "Tuyên Quang",
     "displayNameEn": "Tuyen Quang",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Yên Bái",
-    "selected": false,
+
     "displayName": "Yên Bái",
     "displayNameEn": "Yen Bai",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Hà Nam",
-    "selected": false,
+
     "displayName": "Hà Nam",
     "displayNameEn": "Ha Nam",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Điện Biên",
-    "selected": false,
+
     "displayName": "Điện Biên",
     "displayNameEn": "Dien Bien",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Cao Bằng",
-    "selected": false,
+
     "displayName": "Cao Bằng",
     "displayNameEn": "Cao Bang",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Kuala Lumpur",
-    "selected": false,
+
     "displayName": "Kuala Lumpur",
     "displayNameEn": "Kuala Lumpur",
     "countryId": "675e78747e954370b5142b13"
   },
   {
     "name": "Hong Kong City",
-    "selected": false,
+
     "displayName": "Hong Kong City",
     "displayNameEn": "Hong Kong City",
     "countryId": "675e78747e954370b5142b1e"
   },
   {
     "name": "Lai Châu",
-    "selected": false,
+
     "displayName": "Lai Châu",
     "displayNameEn": "Lai Chau",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Bắc Kạn",
-    "selected": false,
+
     "displayName": "Bắc Kạn",
     "displayNameEn": "Bac Kan",
     "countryId": "675e78747e954370b5142b0e"
   },
   {
     "name": "Chon Buri",
-    "selected": false,
+
     "displayName": "Chon Buri",
     "displayNameEn": "Chon Buri",
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Seoul",
-    "selected": false,
+
     "displayName": "Seoul",
     "displayNameEn": "Seoul",
     "countryId": "675e78747e954370b5142b1a"
   },
   {
     "name": "Chiangmai",
-    "selected": false,
+
     "displayName": "Chiangmai",
     "displayNameEn": null,
     "countryId": "675e78747e954370b5142b0f"
   },
   {
     "name": "Putra Jaya",
-    "selected": false,
+
     "displayName": "Putra Jaya",
     "displayNameEn": "Putra Jaya",
     "countryId": "675e78747e954370b5142b13"
   },
   {
     "name": "Phuket",
-    "selected": false,
+
     "displayName": "Phuket",
     "displayNameEn": null,
     "countryId": "675e78747e954370b5142b0f"

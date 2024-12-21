@@ -23,8 +23,8 @@ class RestaurantService {
     return this.restaurantRepo.deleteRestaurantById();
   }
 
-  getRestaurantByCity() {
-    return this.restaurantRepo.getByCity();
+  getRestaurantByOptions() {
+    return this.restaurantRepo.getByOptions();
   }
 }
 

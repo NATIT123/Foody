@@ -6,7 +6,6 @@ const CategoryDetailSchema = new Schema(
       type: String,
       required: [true, "Please tell us your description"],
     },
-    selected: { type: Boolean, default: false },
     active: {
       type: Boolean,
       default: true,

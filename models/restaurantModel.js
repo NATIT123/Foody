@@ -19,7 +19,7 @@ const RestaurantDetailSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "subcategories",
     },
-    cusines: { type: String },
+    cuisines: { type: String },
     audiences: {
       type: String,
     },

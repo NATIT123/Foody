@@ -39,11 +39,15 @@ class RestaurantRepository {
     return deleteOne(this.restaurantModel);
   }
 
-  getByCity() {
+  getByOptions() {
     return catchAsync(async (req, res, next) => {
       const cityId = req.params.cityId;
+      const categoryId = req.params.categoryId;
       // if (cityId) filter = { cityId: cityId };
-      if (!cityId.match(/^[0-9a-fA-F]{24}$/)) {
+      if (
+        !cityId.match(/^[0-9a-fA-F]{24}$/) ||
+        !categoryId.match(/^[0-9a-fA-F]{24}$/)
+      ) {
         return next(
           new AppError(
             customResourceResponse.notValidId.message,
@@ -54,7 +58,7 @@ class RestaurantRepository {
       const features = new APIFeatures(this.restaurantModel.find(), req.query)
         .sort()
         .limitFields()
-        .paginate()
+        // .paginate()
         .populate();
       const doc = await features.query;
 
@@ -62,6 +66,14 @@ class RestaurantRepository {
         return item.districtId?.cityId.toString() === cityId;
       });
 
+      const test = doc.filter((item) => {
+        const itemReplace = item.cuisines.split(",").map((item) => {
+          return item.replace(/ /g, "");
+        });
+
+        return itemReplace.includes("MónViệt");
+      });
+      console.log(test);
       // SEND RESPONSE
       if (!doc) {
         return next(
