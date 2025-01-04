@@ -58,22 +58,25 @@ class RestaurantRepository {
       const features = new APIFeatures(this.restaurantModel.find(), req.query)
         .sort()
         .limitFields()
-        // .paginate()
+        .paginate()
         .populate();
       const doc = await features.query;
 
       const results = doc.filter((item) => {
-        return item.districtId?.cityId.toString() === cityId;
+        return (
+          item.districtId?.cityId.toString() === cityId &&
+          item.subCategoryId?.categoryId.toString() === categoryId
+        );
       });
 
-      const test = doc.filter((item) => {
-        const itemReplace = item.cuisines.split(",").map((item) => {
-          return item.replace(/ /g, "");
-        });
+      // const test = doc.filter((item) => {
+      //   const itemReplace = item.cuisines.split(",").map((item) => {
+      //     return item.replace(/ /g, "");
+      //   });
 
-        return itemReplace.includes("MónViệt");
-      });
-      console.log(test);
+      //   return itemReplace.includes("MónViệt");
+      // });
+      // console.log(test);
       // SEND RESPONSE
       if (!doc) {
         return next(

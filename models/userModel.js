@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 const saltRounds = parseInt(process.env.SALT_ROUNDS) || 12;
 import validator from "validator";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 const UserDetailSchema = new mongoose.Schema(
   {
     fullname: {

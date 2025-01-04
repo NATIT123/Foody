@@ -72,8 +72,8 @@ export const createSendToken = (Model, user, statusCode, res) => {
 
   updateUserToken(Model, refreshToken, user._id);
 
-  res.status(statusCode).json({
-    message: customResourceResponse.register.message,
+  res.status(customResourceResponse.success.statusCode).json({
+    message: customResourceResponse.success.message,
     status: "success",
     access_token: token,
     data: {

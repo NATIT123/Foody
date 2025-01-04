@@ -4,12 +4,12 @@ import {
   updateUserToken,
 } from "../controllers/handleFactory.js";
 import catchAsync from "../utils/catchAsync.js";
-import mongoose from "mongoose";
 import customResourceResponse from "../utils/constant.js";
 import AppError from "../utils/appError.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { promisify } from "util";
+import Email from "../utils/email.js";
 class AuthRepository {
   constructor(userModel) {
     this.userModel = userModel;
@@ -27,7 +27,7 @@ class AuthRepository {
 
       const url = `${req.protocol}://${req.get("host")}/me`;
       await new Email(newUser, url).sendWelcome();
-      createSendToken(newUser, 201, res);
+      createSendToken(this.userModel, newUser, 201, res);
     });
 
   login = () =>
@@ -48,7 +48,7 @@ class AuthRepository {
       }
 
       // 3) If everything ok, send token to client
-      createSendToken(user, 200, res);
+      createSendToken(this.userModel, user, 200, res);
     });
 
   protect = () =>
@@ -78,6 +78,8 @@ class AuthRepository {
         token,
         process.env.JWT_SECERT
       );
+
+      console.log(decoded);
 
       ///Check if users is exist
       const freshUser = await this.userModel.findById(decoded.id);
@@ -129,12 +131,12 @@ class AuthRepository {
       //Send it to user's email
       const resetURL = `${req.protocol}://̀${req.get(
         "host"
-      )}/api/v1/users/resetPassword/${resetToken}`;
+      )}/api/v1/user/resetPassword/${resetToken}`;
 
       try {
         const resetURL = `${req.protocol}://${req.get(
           "host"
-        )}/api/v1/users/resetPassword/${resetToken}`;
+        )}/api/v1/user/resetPassword/${resetToken}`;
 
         await new Email(user, resetURL).sendPasswordReset();
 
