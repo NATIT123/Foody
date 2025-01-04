@@ -5,7 +5,6 @@ const CommentDetailSchema = new Schema(
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
     time: { type: String, required: [true, "Please tell us your time"] },
     rate: { type: Number, required: [true, "Please tell us your rate"] },

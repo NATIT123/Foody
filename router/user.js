@@ -31,15 +31,14 @@ router.patch("/resetPassword/:token", resetPassword);
 
 // ///Protect all route
 router.use(protect);
-
-router.patch("/updatePassword", changePassword);
+router.patch("/updatePassword", getMe, changePassword);
 router.get("/me", getMe, getUserById);
 
-router.patch("/updateMe", updateMe);
+router.patch("/updateMe", getMe, updateMe);
 
-router.delete("/deleteMe", deleteMe);
+router.delete("/deleteMe", getMe, deleteMe);
 
-router.post("/logOut", logOut);
+router.post("/logOut", getMe, logOut);
 
 router.post("/refresh", refreshToken);
 

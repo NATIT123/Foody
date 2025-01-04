@@ -8,7 +8,6 @@ const DistrictDetailSchema = new Schema(
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
     cityId: { type: mongoose.Schema.Types.ObjectId, ref: "cities" },
   },

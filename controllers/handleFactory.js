@@ -2,6 +2,7 @@ import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
+import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import fs from "fs";
 
@@ -29,9 +30,9 @@ const createRefreshToken = (payload) => {
   return refreshToken;
 };
 
-export const updateUserToken = (Model, refreshToken, _id) =>
+export const updateUserToken = (Model, refreshToken) =>
   catchAsync(async (req, res) => {
-    if (!mongoose.Types.ObjectId.isValid(_id)) {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return next(
         new AppError(
           customResourceResponse.notValidId.message,
@@ -39,7 +40,7 @@ export const updateUserToken = (Model, refreshToken, _id) =>
         )
       );
     }
-    let user = await this.userModel.findById(_id);
+    let user = await Model.findById(req.params.id);
     if (!user) {
       return next(
         new AppError(
@@ -48,6 +49,7 @@ export const updateUserToken = (Model, refreshToken, _id) =>
         )
       );
     }
+    res.clearCookie("refreshToken");
     await user.updateOne({ refreshToken });
     res.status(customResourceResponse.success.statusCode).json({
       message: customResourceResponse.success.message,
@@ -96,7 +98,7 @@ export const createOne = (Model) =>
     res.status(customResourceResponse.created.statusCode).json({
       status: "success",
       message: customResourceResponse.created.message,
-      data: { data: doc._id },
+      data: { data: document._id },
     });
   });
 
@@ -134,7 +136,7 @@ export const updateOne = (Model) =>
     res.status(customResourceResponse.success.statusCode).json({
       status: "success",
       message: customResourceResponse.success.message,
-      data: { data: doc },
+      data: { data: document },
     });
   });
 

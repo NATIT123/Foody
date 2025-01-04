@@ -5,7 +5,6 @@ const SubCategoryDetailSchema = new Schema(
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "categories" },
   },

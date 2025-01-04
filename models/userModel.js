@@ -47,7 +47,6 @@ const UserDetailSchema = new mongoose.Schema(
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
     role: {
       type: String,
@@ -64,7 +63,7 @@ const UserDetailSchema = new mongoose.Schema(
 );
 
 UserDetailSchema.pre("save", async function (next) {
-  ///Only run this function if password was actually modified,using for changePassword,forgotPassword
+  ///Only run this function if password was actually not modified,using for updateMe
   if (!this.isModified("password")) return next();
 
   ///Hash the password with round of 12

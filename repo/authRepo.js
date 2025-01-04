@@ -15,11 +15,7 @@ class AuthRepository {
     this.userModel = userModel;
   }
 
-  logOut = () =>
-    catchAsync(async (req, res) => {
-      res.clearCookie("refreshToken");
-      updateUserToken(this.userModel, "", req.user._id);
-    });
+  logOut = () => updateUserToken(this.userModel, "");
 
   signUp = () =>
     catchAsync(async (req, res, next) => {
@@ -40,6 +36,10 @@ class AuthRepository {
       }
       // 2) Check if user exists && password is correct
       const user = await this.userModel.findOne({ email }).select("+password");
+
+      if (!user) {
+        return next(new AppError("User Not Found", 404));
+      }
 
       console.log(await user.correctPassword(password, user.password));
 
@@ -78,8 +78,6 @@ class AuthRepository {
         token,
         process.env.JWT_SECERT
       );
-
-      console.log(decoded);
 
       ///Check if users is exist
       const freshUser = await this.userModel.findById(decoded.id);
@@ -129,9 +127,6 @@ class AuthRepository {
       await user.save({ validateBeforeSave: false });
 
       //Send it to user's email
-      const resetURL = `${req.protocol}://̀${req.get(
-        "host"
-      )}/api/v1/user/resetPassword/${resetToken}`;
 
       try {
         const resetURL = `${req.protocol}://${req.get(
@@ -187,7 +182,7 @@ class AuthRepository {
 
       ///Log the user in, send JWT
       user.password = undefined;
-      createSendToken(user, 201, res);
+      createSendToken(this.userModel, user, 201, res);
     });
 
   changePassword = () =>
@@ -196,6 +191,14 @@ class AuthRepository {
       const user = await this.userModel
         .findById(req.params.id)
         .select("+password");
+      if (!user) {
+        return next(
+          new AppError(
+            customResourceResponse.recordNotFound.message,
+            customResourceResponse.recordNotFound.statusCode
+          )
+        );
+      }
 
       ///Check if POSTED current password is correct
       const correct = await user.correctPassword(
@@ -212,7 +215,7 @@ class AuthRepository {
       await user.save();
 
       ////Log user in,send JWT
-      createSendToken(user, 201, res);
+      createSendToken(this.userModel, user, 201, res);
     });
 
   updateMe = () =>
@@ -229,9 +232,9 @@ class AuthRepository {
 
       ///Update user document
       ///Filter out unwanted fields names that are not allowed to be updated
-      const filterBody = filterObj(req.body, "name", "email");
+      const filterBody = filterObj(req.body, "fullName", "address");
       const updateUser = await this.userModel.findByIdAndUpdate(
-        req.user.id,
+        req.params.id,
         filterBody,
         {
           new: true,
@@ -239,9 +242,10 @@ class AuthRepository {
         }
       );
 
-      res.status(200).json({
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
         status: "success",
-        user: updateUser._id,
+        data: updateUser._id,
       });
     });
 
@@ -277,9 +281,10 @@ class AuthRepository {
 
   deleteMe = () =>
     catchAsync(async (req, res, next) => {
-      await User.findByIdAndUpdate(req.user.id, { active: false });
+      await this.userModel.findByIdAndUpdate(req.params.id, { active: false });
 
-      res.status(204).json({
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
         status: "success",
         data: null,
       });
