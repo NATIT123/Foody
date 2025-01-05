@@ -46,6 +46,10 @@ class AuthService {
   updateMe() {
     return this.authRepo.updateMe();
   }
+
+  processNewToken() {
+    return this.authRepo.processNewToken();
+  }
 }
 
 export default AuthService;

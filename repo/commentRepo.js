@@ -15,7 +15,7 @@ class CommentRepository {
   }
 
   getAllComments() {
-    return getAll(this.commentModel);
+    return getAll(this.commentModel, "userId,restaurantId");
   }
 
   getCommentById() {

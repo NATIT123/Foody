@@ -2,7 +2,9 @@ import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
+import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
+import fs from "fs";
 
 export const filterObj = (obj, ...allowedFileds) => {
   const newObj = {};
@@ -28,7 +30,34 @@ const createRefreshToken = (payload) => {
   return refreshToken;
 };
 
-export const createSendToken = (user, statusCode, res) => {
+export const updateUserToken = (Model, refreshToken) =>
+  catchAsync(async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(
+        new AppError(
+          customResourceResponse.notValidId.message,
+          customResourceResponse.notValidId.statusCode
+        )
+      );
+    }
+    let user = await Model.findById(req.params.id);
+    if (!user) {
+      return next(
+        new AppError(
+          customResourceResponse.recordNotFound.message,
+          customResourceResponse.recordNotFound.statusCode
+        )
+      );
+    }
+    res.clearCookie("refreshToken");
+    await user.updateOne({ refreshToken });
+    res.status(customResourceResponse.success.statusCode).json({
+      message: customResourceResponse.success.message,
+      status: "success",
+    });
+  });
+
+export const createSendToken = (Model, user, statusCode, res) => {
   const token = signInToken(user._id, user.role);
   const refreshToken = createRefreshToken(user._id, user.role);
   const cookieOptions = {
@@ -43,9 +72,10 @@ export const createSendToken = (user, statusCode, res) => {
   res.clearCookie("refreshToken");
   res.cookie("refreshToken", refreshToken, cookieOptions);
 
-  user.password = undefined;
-  res.status(statusCode).json({
-    message: customResourceResponse.register.message,
+  updateUserToken(Model, refreshToken, user._id);
+
+  res.status(customResourceResponse.success.statusCode).json({
+    message: customResourceResponse.success.message,
     status: "success",
     access_token: token,
     data: {
@@ -68,7 +98,7 @@ export const createOne = (Model) =>
     res.status(customResourceResponse.created.statusCode).json({
       status: "success",
       message: customResourceResponse.created.message,
-      data: { data: doc._id },
+      data: { data: document._id },
     });
   });
 
@@ -106,7 +136,7 @@ export const updateOne = (Model) =>
     res.status(customResourceResponse.success.statusCode).json({
       status: "success",
       message: customResourceResponse.success.message,
-      data: { data: doc },
+      data: { data: document },
     });
   });
 
@@ -125,7 +155,7 @@ export const getOne = (Model, popOptions) =>
     }
 
     ///Return join collection child references and auto parse value according to _id
-    const document = Model.findById(id);
+    let document = Model.findById(id);
 
     if (popOptions) document = document.populate(popOptions);
 
@@ -150,17 +180,16 @@ export const getOne = (Model, popOptions) =>
     });
   });
 
-export const getAll = (Model) =>
+export const getAll = (Model, options) =>
   catchAsync(async (req, res, next) => {
     // To allow for nested GET reviews on tour (hack)
     let filter = {};
-    if (req.params.tourId) filter = { tour: req.params.tourId };
-
     const features = new APIFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
       .limitFields()
-      .paginate();
+      .paginate()
+      .populate(options);
     // const doc = await features.query.explain();
     const doc = await features.query;
 
@@ -176,6 +205,7 @@ export const getAll = (Model) =>
     res.status(customResourceResponse.success.statusCode).json({
       message: customResourceResponse.success.message,
       status: "success",
+      page: req.query.page * 1 || 1,
       results: doc.length,
       data: {
         data: doc,
@@ -214,17 +244,36 @@ export const deleteOne = (Model) =>
     });
   });
 
-export const importData = (Model, dataAdd, mongoose) => {
-  Model.find()
-    .then((data) => {
-      if (data.length === 0) {
-        Model.insertMany(dataAdd)
-          .then(() => {
-            console.log("Data imported successfully");
-            mongoose.disconnect();
-          })
-          .catch((err) => console.error("Error importing data:", err));
-      }
-    })
-    .catch((err) => console.error("Error fetching data:", err));
+export const importData = (Model, nameData) => {
+  try {
+    if (!nameData || typeof nameData !== "string") {
+      throw new Error("Invalid nameData value. It must be a non-empty string.");
+    }
+
+    // Sử dụng đường dẫn tuyệt đối
+    const dataPath = `./data/${nameData}.json`;
+    console.log(`Reading file from path: ${dataPath}`);
+
+    // Đọc dữ liệu từ file JSON
+    const dataAdd = JSON.parse(fs.readFileSync(dataPath, "utf8")).map(
+      (dataAdd) => ({
+        ...dataAdd,
+      })
+    );
+
+    // Tìm kiếm dữ liệu trong cơ sở dữ liệu
+    Model.find()
+      .then((data) => {
+        if (data.length === 0) {
+          Model.insertMany(dataAdd)
+            .then(() => console.log("Data imported successfully"))
+            .catch((err) => console.error("Error importing data:", err));
+        } else {
+          console.log(`Data ${nameData} already exists in the database.`);
+        }
+      })
+      .catch((err) => console.error("Error fetching data:", err));
+  } catch (err) {
+    console.error("Error reading or importing data:", err.message);
+  }
 };

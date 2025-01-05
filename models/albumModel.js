@@ -4,22 +4,17 @@ const AlbumDetailSchema = new Schema(
   {
     image: { type: String, required: [true, "Please tell us your image"] },
     type: { type: String, required: [true, "Please tell us your type"] },
-    timeVideo: {
-      type: String,
-      required: [true, "Please tell us your timeVideo"],
-    },
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
-    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: "restaurant" },
+    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: "restaurants" },
   },
   {
     timestamps: true,
   }
 );
 
-const AlbumModel = model("album", AlbumDetailSchema);
+const AlbumModel = model("albums", AlbumDetailSchema);
 
 export default AlbumModel;

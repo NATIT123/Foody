@@ -1,6 +1,4 @@
 import mongoose, { Schema, model } from "mongoose";
-import fs from "fs";
-import { importData } from "../controllers/handleFactory.js";
 const CountryDetailSchema = new Schema(
   {
     name: {
@@ -22,7 +20,6 @@ const CountryDetailSchema = new Schema(
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
   },
   {
@@ -30,15 +27,6 @@ const CountryDetailSchema = new Schema(
   }
 );
 
-const CountryModel = model("country", CountryDetailSchema);
-
-// Load JSON and add timestamps
-const countries = JSON.parse(
-  fs.readFileSync("./data/country.json", "utf8")
-).map((country) => ({
-  ...country,
-}));
-
-importData(CountryModel, countries, mongoose);
+const CountryModel = model("countries", CountryDetailSchema);
 
 export default CountryModel;

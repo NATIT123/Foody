@@ -27,3 +27,5 @@ export const updateMe = authService.updateMe();
 export const getMe = authService.getMe();
 
 export const deleteMe = authService.deleteMe();
+
+export const refreshToken = authService.processNewToken();

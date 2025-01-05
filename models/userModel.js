@@ -2,9 +2,10 @@ import mongoose from "mongoose";
 const saltRounds = parseInt(process.env.SALT_ROUNDS) || 12;
 import validator from "validator";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 const UserDetailSchema = new mongoose.Schema(
   {
-    fullName: {
+    fullname: {
       type: String,
       required: [true, "Please tell us your fullname"],
     },
@@ -39,11 +40,13 @@ const UserDetailSchema = new mongoose.Schema(
       type: String,
       default: "default.jpg",
     },
-    address: String,
+    address: {
+      type: String,
+      required: [true, "Please tell us your address"],
+    },
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
     role: {
       type: String,
@@ -60,7 +63,7 @@ const UserDetailSchema = new mongoose.Schema(
 );
 
 UserDetailSchema.pre("save", async function (next) {
-  ///Only run this function if password was actually modified
+  ///Only run this function if password was actually not modified,using for updateMe
   if (!this.isModified("password")) return next();
 
   ///Hash the password with round of 12
@@ -119,6 +122,6 @@ UserDetailSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-const UserModel = mongoose.model("user", UserDetailSchema);
+const UserModel = mongoose.model("users", UserDetailSchema);
 
 export default UserModel;

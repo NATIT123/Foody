@@ -1,47 +1,21 @@
-import { filterObj, createSendToken } from "../controllers/handleFactory.js";
+import {
+  filterObj,
+  createSendToken,
+  updateUserToken,
+} from "../controllers/handleFactory.js";
 import catchAsync from "../utils/catchAsync.js";
-import mongoose from "mongoose";
 import customResourceResponse from "../utils/constant.js";
 import AppError from "../utils/appError.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { promisify } from "util";
+import Email from "../utils/email.js";
 class AuthRepository {
   constructor(userModel) {
     this.userModel = userModel;
   }
 
-  logOut = () =>
-    catchAsync(async (req, res) => {
-      res.clearCookie("refreshToken");
-      this.updateUserToken("", req.user._id);
-    });
-
-  updateUserToken = (refreshToken, _id) =>
-    catchAsync(async (req, res) => {
-      if (!mongoose.Types.ObjectId.isValid(_id)) {
-        return next(
-          new AppError(
-            customResourceResponse.notValidId.message,
-            customResourceResponse.notValidId.statusCode
-          )
-        );
-      }
-      let user = await this.userModel.findById(_id);
-      if (!user) {
-        return next(
-          new AppError(
-            customResourceResponse.recordNotFound.message,
-            customResourceResponse.recordNotFound.statusCode
-          )
-        );
-      }
-      await user.updateOne({ refreshToken });
-      res.status(customResourceResponse.success.statusCode).json({
-        message: customResourceResponse.success.message,
-        status: "success",
-      });
-    });
+  logOut = () => updateUserToken(this.userModel, "");
 
   signUp = () =>
     catchAsync(async (req, res, next) => {
@@ -49,7 +23,7 @@ class AuthRepository {
 
       const url = `${req.protocol}://${req.get("host")}/me`;
       await new Email(newUser, url).sendWelcome();
-      createSendToken(newUser, 201, res);
+      createSendToken(this.userModel, newUser, 201, res);
     });
 
   login = () =>
@@ -63,6 +37,10 @@ class AuthRepository {
       // 2) Check if user exists && password is correct
       const user = await this.userModel.findOne({ email }).select("+password");
 
+      if (!user) {
+        return next(new AppError("User Not Found", 404));
+      }
+
       console.log(await user.correctPassword(password, user.password));
 
       if (!user || !(await user.correctPassword(password, user.password))) {
@@ -70,7 +48,7 @@ class AuthRepository {
       }
 
       // 3) If everything ok, send token to client
-      createSendToken(user, 200, res);
+      createSendToken(this.userModel, user, 200, res);
     });
 
   protect = () =>
@@ -149,14 +127,11 @@ class AuthRepository {
       await user.save({ validateBeforeSave: false });
 
       //Send it to user's email
-      const resetURL = `${req.protocol}://̀${req.get(
-        "host"
-      )}/api/v1/users/resetPassword/${resetToken}`;
 
       try {
         const resetURL = `${req.protocol}://${req.get(
           "host"
-        )}/api/v1/users/resetPassword/${resetToken}`;
+        )}/api/v1/user/resetPassword/${resetToken}`;
 
         await new Email(user, resetURL).sendPasswordReset();
 
@@ -206,7 +181,8 @@ class AuthRepository {
       //update changePasswordAt property for the user
 
       ///Log the user in, send JWT
-      createSendToken(user, 201, res);
+      user.password = undefined;
+      createSendToken(this.userModel, user, 201, res);
     });
 
   changePassword = () =>
@@ -215,6 +191,14 @@ class AuthRepository {
       const user = await this.userModel
         .findById(req.params.id)
         .select("+password");
+      if (!user) {
+        return next(
+          new AppError(
+            customResourceResponse.recordNotFound.message,
+            customResourceResponse.recordNotFound.statusCode
+          )
+        );
+      }
 
       ///Check if POSTED current password is correct
       const correct = await user.correctPassword(
@@ -231,7 +215,7 @@ class AuthRepository {
       await user.save();
 
       ////Log user in,send JWT
-      createSendToken(user, 201, res);
+      createSendToken(this.userModel, user, 201, res);
     });
 
   updateMe = () =>
@@ -248,9 +232,9 @@ class AuthRepository {
 
       ///Update user document
       ///Filter out unwanted fields names that are not allowed to be updated
-      const filterBody = filterObj(req.body, "name", "email");
+      const filterBody = filterObj(req.body, "fullName", "address");
       const updateUser = await this.userModel.findByIdAndUpdate(
-        req.user.id,
+        req.params.id,
         filterBody,
         {
           new: true,
@@ -258,20 +242,22 @@ class AuthRepository {
         }
       );
 
-      res.status(200).json({
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
         status: "success",
-        user: updateUser._id,
+        data: updateUser._id,
       });
     });
 
-  processNewToken = (refreshToken) =>
+  processNewToken = () =>
     catchAsync(async (req, res) => {
       try {
+        const refreshToken = req.cookies.refreshToken;
         jwt.verify(refreshToken, {
-          secret: this.configService.get < string > "JWT_REFRESH_TOKEN_SECRET",
+          secret: process.env.JWT_REFRESH_TOKEN_SECRET,
         });
 
-        let user = await this.userModel.findUserByToken(refreshToken);
+        let user = await this.findUserByToken(refreshToken);
         if (user) {
           createSendToken(user, 201, res);
         } else {
@@ -283,10 +269,9 @@ class AuthRepository {
           );
         }
       } catch (err) {
-        // throw new BadRequestException(
-        //   "Refresh token is not valid.Please sign in again"
-        // );
-        next(err);
+        return next(
+          AppError("Refresh token is not valid.Please sign in again", 500)
+        );
       }
     });
 
@@ -296,9 +281,10 @@ class AuthRepository {
 
   deleteMe = () =>
     catchAsync(async (req, res, next) => {
-      await User.findByIdAndUpdate(req.user.id, { active: false });
+      await this.userModel.findByIdAndUpdate(req.params.id, { active: false });
 
-      res.status(204).json({
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
         status: "success",
         data: null,
       });

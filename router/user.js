@@ -20,6 +20,7 @@ import {
   getMe,
   updateMe,
   deleteMe,
+  refreshToken,
 } from "../controllers/authController.js";
 
 router.post("/signUp", signUp);
@@ -30,17 +31,18 @@ router.patch("/resetPassword/:token", resetPassword);
 
 // ///Protect all route
 router.use(protect);
-
-router.patch("/updatePassword", changePassword);
+router.patch("/updatePassword", getMe, changePassword);
 router.get("/me", getMe, getUserById);
 
-router.patch("/updateMe", updateMe);
+router.patch("/updateMe", getMe, updateMe);
 
-router.delete("/deleteMe", deleteMe);
+router.delete("/deleteMe", getMe, deleteMe);
 
-router.post("/logOut", logOut);
+router.post("/logOut", getMe, logOut);
 
-router.use(restrictTo("admin"));
+router.post("/refresh", refreshToken);
+
+// router.use(restrictTo("admin"));
 
 router.get("/getAllUsers", getAllUsers);
 router.post("/addUser", addUser);

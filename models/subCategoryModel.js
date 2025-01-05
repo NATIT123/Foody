@@ -1,21 +1,18 @@
 import mongoose, { Schema, model } from "mongoose";
-
 const SubCategoryDetailSchema = new Schema(
   {
     name: { type: String, required: [true, "Please tell us your image"] },
-    type: { type: String, required: [true, "Please tell us your type"] },
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
-    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "category" },
+    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "categories" },
   },
   {
     timestamps: true,
   }
 );
 
-const SubCategoryModel = model("subCategory", SubCategoryDetailSchema);
+const SubCategoryModel = model("subcategories", SubCategoryDetailSchema);
 
 export default SubCategoryModel;

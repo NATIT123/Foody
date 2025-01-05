@@ -15,7 +15,7 @@ class FoodRepository {
   }
 
   getAllFoods() {
-    return getAll(this.foodModel);
+    return getAll(this.foodModel, "restaurantId");
   }
 
   getFoodById() {

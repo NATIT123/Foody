@@ -3,16 +3,20 @@ import mongoose, { Schema, model } from "mongoose";
 const CityDetailSchema = new Schema(
   {
     name: { type: String },
-    selected: { type: Boolean, default: false },
+
     displayName: String,
     displayNameEn: String,
-    countryId: { type: mongoose.Schema.Types.ObjectId, ref: "country" },
+    countryId: { type: mongoose.Schema.Types.ObjectId, ref: "countries" },
+    active: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const CityModel = model("city", CityDetailSchema);
+const CityModel = model("cities", CityDetailSchema);
 
 export default CityModel;

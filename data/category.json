@@ -1,0 +1,34 @@
+[
+  {
+    "name": "Ăn uống",
+    "description": "Tất cả về ẩm thực, nhà hàng, quán ăn và công thức nấu ăn phong phú."
+  },
+  {
+    "name": "Du lịch",
+    "description": "Khám phá những địa điểm du lịch đẹp, kinh nghiệm đi lại và lưu trú."
+  },
+  {
+    "name": "Cưới hỏi",
+    "description": "Lên kế hoạch và chuẩn bị cho ngày cưới, từ trang phục, lễ cưới đến dịch vụ chụp ảnh."
+  },
+  {
+    "name": "Đẹp khỏe",
+    "description": "Chăm sóc sức khỏe, làm đẹp và các mẹo giữ dáng hiệu quả."
+  },
+  {
+    "name": "Giải trí",
+    "description": "Cập nhật phim ảnh, âm nhạc, sự kiện và các hoạt động giải trí khác."
+  },
+  {
+    "name": "Mua sắm",
+    "description": "Những gợi ý mua sắm, đánh giá sản phẩm và khuyến mãi hấp dẫn."
+  },
+  {
+    "name": "Giáo dục",
+    "description": "Thông tin về học tập, khóa học và cơ hội phát triển kỹ năng cá nhân."
+  },
+  {
+    "name": "Dịch vụ",
+    "description": "Danh sách các dịch vụ tiện ích, từ sửa chữa, vận chuyển đến dịch vụ công cộng."
+  }
+]

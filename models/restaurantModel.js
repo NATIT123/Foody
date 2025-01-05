@@ -2,31 +2,25 @@ import mongoose, { Schema, model } from "mongoose";
 
 const RestaurantDetailSchema = new Schema(
   {
-    name: { type: String, required: [true, "Please tell us your name"] },
-    image: String,
-    address: { type: String, required: [true, "Please tell us your address"] },
-    location: {
+    name: {
       type: String,
-      required: [true, "Please tell us your location"],
+      required: [true, "Please tell us your name"],
+      unique: true,
     },
+    image: { type: String, required: [true, "Please tell us your image"] },
+    address: { type: String, required: [true, "Please tell us your address"] },
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
-    district: {
-      type: String,
-      required: [true, "Please tell us your district"],
+    districtId: { type: mongoose.Schema.Types.ObjectId, ref: "districts" },
+    subCategoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "subcategories",
     },
-    area: { type: String, required: [true, "Please tell us your area"] },
-    category: {
-      type: String,
-      required: [true, "Please tell us your category"],
-    },
-    cusines: { type: String, required: [true, "Please tell us your cusines"] },
+    cuisines: { type: String },
     audiences: {
       type: String,
-      required: [true, "Please tell us your audiences"],
     },
     qualityRate: {
       type: Number,
@@ -36,9 +30,9 @@ const RestaurantDetailSchema = new Schema(
       type: Number,
       required: [true, "Please tell us your serviceRate"],
     },
-    positionRate: {
+    locationRate: {
       type: Number,
-      required: [true, "Please tell us your positionRate"],
+      required: [true, "Please tell us your locationRate"],
     },
     priceRate: {
       type: Number,
@@ -49,7 +43,7 @@ const RestaurantDetailSchema = new Schema(
       required: [true, "Please tell us your spaceRate"],
     },
     timeOpen: {
-      type: Number,
+      type: String,
       required: [true, "Please tell us your timeOpen"],
     },
     priceRange: {
@@ -62,6 +56,6 @@ const RestaurantDetailSchema = new Schema(
   }
 );
 
-const RestaurantModel = model("restaurant", RestaurantDetailSchema);
+const RestaurantModel = model("restaurants", RestaurantDetailSchema);
 
 export default RestaurantModel;

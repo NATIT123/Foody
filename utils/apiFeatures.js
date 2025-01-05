@@ -44,20 +44,22 @@ class APIFeatures {
     this.queryString = queryString;
   }
 
+  // /api/products?price[gte]=100&rating[lt]=4&page=2
   filter() {
     const queryObj = { ...this.queryString };
     const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((el) => delete queryObj[el]);
 
+    console.log(queryObj);
+
     // 1B) Advanced filtering
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
     this.query = this.query.find(JSON.parse(queryStr));
 
     return this;
   }
-
+  // /api/products?sort=fullname (ascending order) -fullname(descending order)
   sort() {
     if (this.queryString.sort) {
       const sortBy = this.queryString.sort.split(",").join(" ");
@@ -69,6 +71,7 @@ class APIFeatures {
     return this;
   }
 
+  //Filter fields with route with selected fields
   limitFields() {
     if (this.queryString.fields) {
       const fields = this.queryString.fields.split(",").join(" ");
@@ -90,6 +93,19 @@ class APIFeatures {
 
     this.query = this.query.skip(skip).limit(limit);
 
+    return this;
+  }
+  populate() {
+    if (this.queryString.populate) {
+      const options = this.queryString.populate;
+      console.log(options);
+      if (options.includes(",")) {
+        const option = options.split(",");
+        this.query = this.query.populate(option[0]).populate(option[1]);
+      } else {
+        this.query = this.query.populate(options);
+      }
+    }
     return this;
   }
 }

@@ -20,9 +20,24 @@ import foodRoute from "./router/food.js";
 import commentRoute from "./router/comment.js";
 import albumRoute from "./router/album.js";
 import countryRoute from "./router/country.js";
+import cityRoute from "./router/city.js";
+import districtRoute from "./router/district.js";
+import categoryRoute from "./router/category.js";
+import subCategoryRoute from "./router/subCategory.js";
+import { importData } from "./controllers/handleFactory.js";
+import UserModel from "./models/userModel.js";
+import CountryModel from "./models/CountryModel.js";
+import CityModel from "./models/cityModel.js";
+import CategoryModel from "./models/categoryModel.js";
+import SubCategoryModel from "./models/subCategoryModel.js";
+import DistrictModel from "./models/districtModel.js";
+import RestaurantModel from "./models/restaurantModel.js";
+import FoodModel from "./models/foodModel.js";
+import CommentModel from "./models/commentModel.js";
+import AlbumModel from "./models/AlbumModel.js";
 
 ///Connect DB
-await connectDb();
+connectDb();
 
 ///Set up views Pug
 app.set("view engine", "pug");
@@ -94,21 +109,43 @@ app.use((req, res, next) => {
 
 //User
 app.use("/api/v1/user", userRoute);
+///Add Data
+importData(UserModel, "user");
 
 //Restaurant
 app.use("/api/v1/restaurant", restaurantRoute);
+importData(RestaurantModel, "restaurants");
 
 //Food
 app.use("/api/v1/food", foodRoute);
+importData(FoodModel, "foods");
 
 //Comment
-app.use("/api/v1/commnet", commentRoute);
+app.use("/api/v1/comment", commentRoute);
+importData(CommentModel, "comments");
 
 ///Album
 app.use("/api/v1/album", albumRoute);
-
+importData(AlbumModel, "albums");
 //Country
 app.use("/api/v1/country", countryRoute);
+importData(CountryModel, "country");
+
+//City
+app.use("/api/v1/city", cityRoute);
+importData(CityModel, "city");
+
+//District
+app.use("/api/v1/district", districtRoute);
+importData(DistrictModel, "district");
+
+//Category
+app.use("/api/v1/category", categoryRoute);
+importData(CategoryModel, "category");
+
+//SubCategory
+app.use("/api/v1/subCategory", subCategoryRoute);
+importData(SubCategoryModel, "subCategory");
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

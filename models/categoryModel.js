@@ -1,13 +1,14 @@
 import mongoose, { Schema, model } from "mongoose";
-
 const CategoryDetailSchema = new Schema(
   {
     name: { type: String, required: [true, "Please tell us your name"] },
-    description: { type: String, required: [true, "Please tell us your type"] },
+    description: {
+      type: String,
+      required: [true, "Please tell us your description"],
+    },
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
   },
   {
@@ -15,6 +16,6 @@ const CategoryDetailSchema = new Schema(
   }
 );
 
-const CategoryModel = model("category", CategoryDetailSchema);
+const CategoryModel = model("categories", CategoryDetailSchema);
 
 export default CategoryModel;

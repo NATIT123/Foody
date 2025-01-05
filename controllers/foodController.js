@@ -1,7 +1,7 @@
 import FoodRepo from "../repo/foodRepo.js";
 import FoodService from "../services/foodService.js";
 
-import FoodModel from "../models/FoodModel.js";
+import FoodModel from "../models/foodModel.js";
 
 const foodRepo = new FoodRepo(FoodModel);
 const foodService = new FoodService(foodRepo);

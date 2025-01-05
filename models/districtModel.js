@@ -1,5 +1,4 @@
 import mongoose, { Schema, model } from "mongoose";
-
 const DistrictDetailSchema = new Schema(
   {
     name: {
@@ -9,15 +8,14 @@ const DistrictDetailSchema = new Schema(
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
-    cityId: { type: mongoose.Schema.Types.ObjectId, ref: "city" },
+    cityId: { type: mongoose.Schema.Types.ObjectId, ref: "cities" },
   },
   {
     timestamps: true,
   }
 );
 
-const DistrictModel = model("district", DistrictDetailSchema);
+const DistrictModel = model("districts", DistrictDetailSchema);
 
 export default DistrictModel;
