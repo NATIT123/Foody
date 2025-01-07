@@ -71,6 +71,11 @@ class APIFeatures {
     return this;
   }
 
+  aggregate(pipeline = []) {
+    this.query = this.query.aggregate(pipeline);
+    return this;
+  }
+
   //Filter fields with route with selected fields
   limitFields() {
     if (this.queryString.fields) {
@@ -105,6 +110,14 @@ class APIFeatures {
       } else {
         this.query = this.query.populate(options);
       }
+    }
+    return this;
+  }
+
+  where() {
+    if (this.queryString.where) {
+      const conditions = JSON.parse(this.queryString.where); // Parse where condition
+      this.query = this.query.find(conditions);
     }
     return this;
   }

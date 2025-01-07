@@ -7,6 +7,8 @@ import {
   updateRestaurantById,
   getRestaurantById,
   getRestaurantByOptions,
+  getRestaurantByCity,
+  getRestaurantTopDeals,
 } from "../controllers/restaurantController.js";
 
 router.get("/getAllRestaurants", getAllRestaurants);
@@ -19,5 +21,9 @@ router.get(
   "/getRestaurantByOptions/city/:cityId/category/:categoryId",
   getRestaurantByOptions
 );
+
+router.get("/getRestaurantByCity/city/:cityId", getRestaurantByCity);
+
+router.get("/getRestaurantTopDeals/city/:cityId", getRestaurantTopDeals);
 
 export default router;

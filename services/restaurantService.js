@@ -26,6 +26,14 @@ class RestaurantService {
   getRestaurantByOptions() {
     return this.restaurantRepo.getByOptions();
   }
+
+  getRestaunrantByCity() {
+    return this.restaurantRepo.getByCity();
+  }
+
+  getRestaurantTopDeals() {
+    return this.restaurantRepo.getTopDeals();
+  }
 }
 
 export default RestaurantService;

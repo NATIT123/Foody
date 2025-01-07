@@ -15,5 +15,9 @@ export const updateRestaurantById = restaurantService.updateRestaurantById();
 
 export const deleteRestaurantById = restaurantService.deleteRestaurantById();
 
+export const getRestaurantByCity = restaurantService.getRestaunrantByCity();
+
+export const getRestaurantTopDeals = restaurantService.getRestaurantTopDeals();
+
 export const getRestaurantByOptions =
   restaurantService.getRestaurantByOptions();

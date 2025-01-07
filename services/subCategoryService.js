@@ -22,6 +22,10 @@ class SubCategoryService {
   deleteSubCategoryById() {
     return this.subCategoryRepo.deletesubCategoryById();
   }
+
+  getSubCategoryByCategory() {
+    return this.subCategoryRepo.getSubCategoryByCategory();
+  }
 }
 
 export default SubCategoryService;
