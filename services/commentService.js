@@ -24,6 +24,10 @@ class CommentService {
   deleteCommentById() {
     return this.commentRepo.deleteCommentById();
   }
+
+  getCommentsByRestaurant() {
+    return this.commentRepo.getCommentsByRestaurant();
+  }
 }
 
 export default CommentService;

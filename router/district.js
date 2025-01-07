@@ -6,6 +6,7 @@ import {
   updateDistrictById,
   getDistrictById,
   deleteDistrictById,
+  getDistrictsByCity,
 } from "../controllers/districtController.js";
 
 router.get("/getAllDistrict", getAllDistricts);
@@ -13,5 +14,6 @@ router.post("/addDistrict", addDistrict);
 router.delete("/deleteDistrict/:id", deleteDistrictById);
 router.patch("/updateDistrict/:id", updateDistrictById);
 router.get("/getDistrict/:id", getDistrictById);
+router.get("/getDistrictsByCity/:cityId", getDistrictsByCity);
 
 export default router;

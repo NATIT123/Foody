@@ -22,6 +22,10 @@ class DistrictService {
   deleteDistrictById() {
     return this.districtRepo.deleteDistrictById();
   }
+
+  getDistrictsByCity() {
+    return this.districtRepo.getDistrictsByCity();
+  }
 }
 
 export default DistrictService;

@@ -5,7 +5,10 @@ import {
   deleteOne,
   createOne,
 } from "../controllers/handleFactory.js";
-
+import APIFeatures from "../utils/apiFeatures.js";
+import catchAsync from "../utils/catchAsync.js";
+import customResourceResponse from "../utils/constant.js";
+import AppError from "../utils/appError.js";
 class DistrictRepository {
   constructor(districtModel) {
     this.districtModel = districtModel;
@@ -29,6 +32,48 @@ class DistrictRepository {
 
   deleteDistrictById() {
     return deleteOne(this.districtModel);
+  }
+
+  getDistrictsByCity() {
+    return catchAsync(async (req, res, next) => {
+      const cityId = req.params.cityId;
+      console.log(cityId);
+      if (!cityId.match(/^[0-9a-fA-F]{24}$/)) {
+        return next(
+          new AppError(
+            customResourceResponse.notValidId.message,
+            customResourceResponse.notValidId.statusCode
+          )
+        );
+      }
+      const features = new APIFeatures(this.districtModel.find(), req.query)
+        .sort()
+        .limitFields()
+        .populate();
+      const doc = await features.query;
+
+      let results = doc.filter((item) => {
+        return item.cityId?._id.toString() === cityId;
+      });
+
+      // SEND RESPONSE
+      if (!doc) {
+        return next(
+          new AppError(
+            customResourceResponse.recordNotFound.message,
+            customResourceResponse.recordNotFound.statusCode
+          )
+        );
+      }
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
+        status: "success",
+        results: results.length,
+        data: {
+          data: results,
+        },
+      });
+    });
   }
 }
 export default DistrictRepository;

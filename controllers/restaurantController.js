@@ -21,3 +21,5 @@ export const getRestaurantTopDeals = restaurantService.getRestaurantTopDeals();
 
 export const getRestaurantByOptions =
   restaurantService.getRestaurantByOptions();
+
+export const getRestaurantByFields = restaurantService.getRestaurantByFileds();

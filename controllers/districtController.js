@@ -15,3 +15,5 @@ export const getDistrictById = districtService.getDistrictById();
 export const updateDistrictById = districtService.updateDistrictById();
 
 export const deleteDistrictById = districtService.deleteDistrictById();
+
+export const getDistrictsByCity = districtService.getDistrictsByCity();

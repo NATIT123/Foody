@@ -34,6 +34,10 @@ class RestaurantService {
   getRestaurantTopDeals() {
     return this.restaurantRepo.getTopDeals();
   }
+
+  getRestaurantByFileds() {
+    return this.restaurantRepo.getRestaurantByFields();
+  }
 }
 
 export default RestaurantService;

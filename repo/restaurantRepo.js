@@ -193,13 +193,111 @@ class RestaurantRepository {
             },
           },
           {
-            $sort: { averageSales: -1, createdAt: 1 }, // Sắp xếp theo averageSales và createdAt
+            $sort: { averageSales: -1, createdAt: -1 }, // Sắp xếp theo averageSales và createdAt
           },
           {
             $match: { "district.cityId": new mongoose.Types.ObjectId(cityId) },
           },
           {
             $limit: parseInt(req.query.limit) || 5, // Lấy 5 bản ghi đầu tiên
+          },
+        ]),
+        req.query
+      ).limitFields();
+
+      // Thực hiện truy vấn
+      const doc = await features.query;
+
+      if (!doc || doc.length === 0) {
+        return next(
+          new AppError(
+            customResourceResponse.recordNotFound.message,
+            customResourceResponse.recordNotFound.statusCode
+          )
+        );
+      }
+
+      // Gửi phản hồi
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
+        status: "success",
+        results: doc.length,
+        data: {
+          data: doc,
+        },
+      });
+    });
+  }
+
+  getRestaurantByFields() {
+    return catchAsync(async (req, res, next) => {
+      const cityId = req.params.cityId;
+      const search = req.query.search || "";
+      console.log(search);
+      // Kiểm tra tính hợp lệ của cityId
+      if (!cityId.match(/^[0-9a-fA-F]{24}$/)) {
+        return next(
+          new AppError(
+            customResourceResponse.notValidId.message,
+            customResourceResponse.notValidId.statusCode
+          )
+        );
+      }
+
+      // Tạo query với aggregation
+      const features = new APIFeatures(
+        this.restaurantModel.aggregate([
+          {
+            $addFields: {
+              averageSales: {
+                $avg: [
+                  "$qualityRate",
+                  "$serviceRate",
+                  "$locationRate",
+                  "$priceRate",
+                  "$serviceRate",
+                ],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "districts", // Tên collection district
+              localField: "districtId", // Trường trong collection restaurant
+              foreignField: "_id", // Trường trong collection district
+              as: "district", // Kết quả join sẽ có trường "district"
+            },
+          },
+          {
+            $lookup: {
+              from: "subcategories", // Tên collection subcategory
+              localField: "subCategoryId", // Trường trong collection restaurant
+              foreignField: "_id", // Trường trong collection subcategory
+              as: "subcategory", // Kết quả join sẽ có trường "subcategory"
+            },
+          },
+          {
+            $sort: { averageSales: -1, createdAt: -1 }, // Sắp xếp theo averageSales và createdAt
+          },
+          {
+            $match: { "district.cityId": new mongoose.Types.ObjectId(cityId) },
+          },
+
+          {
+            $limit: 10, // Lấy 10 bản ghi đầu tiên
+          },
+          {
+            $match: {
+              $or: [
+                { name: { $regex: search, $options: "i" } },
+                {
+                  address: { $regex: search, $options: "i" },
+                },
+                {
+                  cuisines: { $regex: search, $options: "i" },
+                },
+              ],
+            },
           },
         ]),
         req.query
