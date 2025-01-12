@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "prod": "pm2 start server.js",
+    "build": "node server.js"
   },
   "author": "",
   "license": "ISC",
