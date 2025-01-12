@@ -1,7 +1,4 @@
 {
-  "engines": {
-    "node": "16.20.2"
-  },
   "name": "foody",
   "version": "1.0.0",
   "description": "",
