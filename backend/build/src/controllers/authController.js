@@ -1,0 +1,17 @@
+import AuthRepository from "../repo/authRepo.js";
+import AuthService from "../services/authService.js";
+import UserModel from "../models/userModel.js";
+var userRepo = new AuthRepository(UserModel);
+var authService = new AuthService(userRepo);
+export var logOut = authService.logOut();
+export var signUp = authService.signUp();
+export var logIn = authService.login();
+export var protect = authService.protect();
+export var restrictTo = authService.restrictTo;
+export var forgotPassword = authService.forgotPassword();
+export var resetPassword = authService.resetPassword();
+export var changePassword = authService.changePassword();
+export var updateMe = authService.updateMe();
+export var getMe = authService.getMe();
+export var deleteMe = authService.deleteMe();
+export var refreshToken = authService.processNewToken();

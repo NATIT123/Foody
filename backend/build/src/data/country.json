@@ -1,0 +1,121 @@
+[
+    {
+        "name": "Vietnam",
+        "code": "VN",
+        "continent": "Asia",
+        "timeZone": "UTC+7",
+        "active": false
+    },
+    {
+        "name": "Thailand",
+        "code": "TH",
+        "continent": "Asia",
+        "timeZone": "UTC+7",
+        "active": false
+    },
+    {
+        "name": "Indonesia",
+        "code": "ID",
+        "continent": "Asia",
+        "timeZone": "UTC+7",
+        "active": false
+    },
+    {
+        "name": "Taiwan",
+        "code": "TW",
+        "continent": "Asia",
+        "timeZone": "UTC+8",
+        "active": false
+    },
+    {
+        "name": "Cambodia",
+        "code": "KH",
+        "continent": "Asia",
+        "timeZone": "UTC+7",
+        "active": false
+    },
+    {
+        "name": "Malaysia",
+        "code": "MY",
+        "continent": "Asia",
+        "timeZone": "UTC+8",
+        "active": false
+    },
+    {
+        "name": "Japan",
+        "code": "JP",
+        "continent": "Asia",
+        "timeZone": "UTC+9",
+        "active": false
+    },
+    {
+        "name": "Myanmar",
+        "code": "MM",
+        "continent": "Asia",
+        "timeZone": "UTC+6:30",
+        "active": false
+    },
+    {
+        "name": "Philippines",
+        "code": "PH",
+        "continent": "Asia",
+        "timeZone": "UTC+8",
+        "active": false
+    },
+    {
+        "name": "Australia",
+        "code": "AU",
+        "continent": "Oceania",
+        "timeZone": "UTC+10",
+        "active": false
+    },
+    {
+        "name": "United States",
+        "code": "US",
+        "continent": "North America",
+        "timeZone": "UTC-5",
+        "active": false
+    },
+    {
+        "name": "Canada",
+        "code": "CA",
+        "continent": "North America",
+        "timeZone": "UTC-5",
+        "active": false
+    },
+    {
+        "name": "South Korea",
+        "code": "KR",
+        "continent": "Asia",
+        "timeZone": "UTC+9",
+        "active": false
+    },
+    {
+        "name": "Laos",
+        "code": "LA",
+        "continent": "Asia",
+        "timeZone": "UTC+7",
+        "active": false
+    },
+    {
+        "name": "China",
+        "code": "CN",
+        "continent": "Asia",
+        "timeZone": "UTC+8",
+        "active": false
+    },
+    {
+        "name": "Singapore",
+        "code": "SG",
+        "continent": "Asia",
+        "timeZone": "UTC+8",
+        "active": false
+    },
+    {
+        "name": "Hong Kong",
+        "code": "HK",
+        "continent": "Asia",
+        "timeZone": "UTC+8",
+        "active": false
+    }
+]

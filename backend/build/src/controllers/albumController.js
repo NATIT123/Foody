@@ -1,0 +1,10 @@
+import AlbumRepo from "../repo/albumRepo.js";
+import AlbumService from "../services/albumService.js";
+import AlbumModel from "../models/AlbumModel.js";
+var albumRepo = new AlbumRepo(AlbumModel);
+var albumService = new AlbumService(albumRepo);
+export var addAlbum = albumService.addAlbum();
+export var getAllAlbums = albumService.getAllAlbums();
+export var getAlbumById = albumService.getAlbumById();
+export var updateAlbumById = albumService.updateAlbumById();
+export var deleteAlbumById = albumService.deleteAlbumById();

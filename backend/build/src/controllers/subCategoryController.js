@@ -1,0 +1,12 @@
+import SubCategoryRepo from "../repo/subCategoryRepo.js";
+import SubCategoryService from "../services/subCategoryService.js";
+import SubCategoryModel from "../models/subCategoryModel.js";
+import CategoryModel from "../models/categoryModel.js";
+var subCategoryRepo = new SubCategoryRepo(SubCategoryModel, CategoryModel);
+var subCategoryService = new SubCategoryService(subCategoryRepo);
+export var addSubCategory = subCategoryService.addSubCategory();
+export var getAllSubCategorys = subCategoryService.getAllSubCategorys();
+export var getSubCategoryById = subCategoryService.getSubCategoryById();
+export var updateSubCategoryById = subCategoryService.updateSubCategoryById();
+export var deleteSubCategoryById = subCategoryService.deleteSubCategoryById();
+export var getSubCategoryByCategory = subCategoryService.getSubCategoryByCategory();

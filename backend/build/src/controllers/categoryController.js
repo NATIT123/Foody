@@ -1,0 +1,10 @@
+import CategoryRepo from "../repo/categoryRepo.js";
+import CategoryService from "../services/categoryService.js";
+import CategoryModel from "../models/categoryModel.js";
+var categoryRepo = new CategoryRepo(CategoryModel);
+var categoryService = new CategoryService(categoryRepo);
+export var addCategory = categoryService.addCategory();
+export var getAllCategorys = categoryService.getAll();
+export var getCategoryById = categoryService.getCategoryById();
+export var updateCategoryById = categoryService.updateCategoryById();
+export var deleteCategoryById = categoryService.deleteCategoryById();

@@ -1,0 +1,14 @@
+import RestaurantRepo from "../repo/restaurantRepo.js";
+import RestaurantService from "../services/restaurantService.js";
+import RestauranModel from "../models/restaurantModel.js";
+var restaurantRepo = new RestaurantRepo(RestauranModel);
+var restaurantService = new RestaurantService(restaurantRepo);
+export var addRestaurant = restaurantService.addRestaurant();
+export var getAllRestaurants = restaurantService.getAllRestaurants();
+export var getRestaurantById = restaurantService.getRestaurantById();
+export var updateRestaurantById = restaurantService.updateRestaurantById();
+export var deleteRestaurantById = restaurantService.deleteRestaurantById();
+export var getRestaurantByCity = restaurantService.getRestaunrantByCity();
+export var getRestaurantTopDeals = restaurantService.getRestaurantTopDeals();
+export var getRestaurantByOptions = restaurantService.getRestaurantByOptions();
+export var getRestaurantByFields = restaurantService.getRestaurantByFileds();

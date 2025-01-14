@@ -1,0 +1,11 @@
+import DistrictRepo from "../repo/districtRepo.js";
+import DistrictService from "../services/districtService.js";
+import DistrictModel from "../models/districtModel.js";
+var districtRepo = new DistrictRepo(DistrictModel);
+var districtService = new DistrictService(districtRepo);
+export var addDistrict = districtService.addDistrict();
+export var getAllDistricts = districtService.getAll();
+export var getDistrictById = districtService.getDistrictById();
+export var updateDistrictById = districtService.updateDistrictById();
+export var deleteDistrictById = districtService.deleteDistrictById();
+export var getDistrictsByCity = districtService.getDistrictsByCity();
