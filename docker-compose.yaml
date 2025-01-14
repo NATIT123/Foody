@@ -17,6 +17,7 @@ services:
 
   # mongodb:
   #   image: mongo:6
+  #   restart: always
   #   environment:
   #     MONGO_INITDB_ROOT_USERNAME: root
   #     MONGO_INITDB_ROOT_PASSWORD: secret
@@ -36,10 +37,12 @@ services:
     volumes:
       - ./backend:/app
       - /app:/node_modules
+    # environment:
+    #   - DB_HOST=host.docker.internal
     env_file:
-      - ./backend/config.env
-    # depends_on:
-    #   - mongodb
+      - ./backend/src/config.env
+    depends_on:
+      - mongodb
 
   # frontend:
   #   build: ./frontend/foody
@@ -51,6 +54,5 @@ services:
   #   tty: true
   #   depends_on:
   #     - backend
-
-volumes:
-  mongodb_data:
+# volumes:
+#   mongodb_data:

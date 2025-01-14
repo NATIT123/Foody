@@ -12,7 +12,6 @@ console.log(path.resolve(__dirname, "./config.env"));
 dotenv.config({
   path: path.resolve(__dirname, "../config.env")
 });
-console.log(process.env.URL);
 var mongoUrl = process.env.URL.replace("<PASSWORD>", process.env.PASSWORD_MONGODB) || process.env.LOCAL_URL;
 var connectDb = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
