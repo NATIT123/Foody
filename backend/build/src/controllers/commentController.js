@@ -1,0 +1,11 @@
+import CommentRepo from "../repo/commentRepo.js";
+import CommentService from "../services/commentService.js";
+import CommentModel from "../models/commentModel.js";
+var commentRepo = new CommentRepo(CommentModel);
+var commentService = new CommentService(commentRepo);
+export var addComment = commentService.addComment();
+export var getAllComments = commentService.getAllComments();
+export var getCommentById = commentService.getCommentById();
+export var updateCommentById = commentService.updateCommentById();
+export var deleteCommentById = commentService.deleteCommentById();
+export var getCommentsByRestaurant = commentService.getCommentsByRestaurant();

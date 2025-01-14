@@ -1,0 +1,10 @@
+import CityRepo from "../repo/cityRepo.js";
+import CityService from "../services/cityService.js";
+import CityModel from "../models/cityModel.js";
+var cityRepo = new CityRepo(CityModel);
+var cityService = new CityService(cityRepo);
+export var addCity = cityService.addCity();
+export var getAllCitys = cityService.getAll();
+export var getCityById = cityService.getCityById();
+export var updateCityById = cityService.updateCityById();
+export var deleteCityById = cityService.deleteCityById();

@@ -1,0 +1,10 @@
+import FoodRepo from "../repo/foodRepo.js";
+import FoodService from "../services/foodService.js";
+import FoodModel from "../models/foodModel.js";
+var foodRepo = new FoodRepo(FoodModel);
+var foodService = new FoodService(foodRepo);
+export var addFood = foodService.addFood();
+export var getAllFoods = foodService.getAllFoods();
+export var getFoodById = foodService.getFoodById();
+export var updateFoodById = foodService.updateFoodById();
+export var deleteFoodById = foodService.deleteFoodById();

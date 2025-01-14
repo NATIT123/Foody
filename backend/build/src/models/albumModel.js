@@ -1,0 +1,23 @@
+import mongoose, { Schema, model } from "mongoose";
+var AlbumDetailSchema = new Schema({
+  image: {
+    type: String,
+    required: [true, "Please tell us your image"]
+  },
+  type: {
+    type: String,
+    required: [true, "Please tell us your type"]
+  },
+  active: {
+    type: Boolean,
+    "default": true
+  },
+  restaurantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "restaurants"
+  }
+}, {
+  timestamps: true
+});
+var AlbumModel = model("albums", AlbumDetailSchema);
+export default AlbumModel;

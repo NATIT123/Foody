@@ -1,0 +1,10 @@
+import UserRepository from "../repo/userrepo.js";
+import UserService from "../services/userService.js";
+import UserModel from "../models/userModel.js";
+var userRepo = new UserRepository(UserModel);
+var userService = new UserService(userRepo);
+export var addUser = userService.addUser();
+export var getAllUsers = userService.getAllUsers();
+export var getUserById = userService.getUserById();
+export var updateUserById = userService.updateUserById();
+export var deleteUserById = userService.deleteUserById();
