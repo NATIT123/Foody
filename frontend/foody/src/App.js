@@ -1,25 +1,33 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-function App() {
+import Index from "./user";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LoginPage from "./user/Login";
+import RegisterPage from "./user/RegisterPage";
+// import ForgotPasswordPage from "./user/ForgotPasswordPage";
+// import DetailPage from "./user/DetailPage";
+// import OrderHistory from "./user/OrderHistory";
+// import ProfilePage from "./user/ProfilePage";
+// import Member from "./user/Member";
+// import Dashboard from "./admin/Dashboard";
+
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        {/* <Route path="/details" element={<DetailPage />} />
+        <Route path="/order-history" element={<OrderHistory />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/member" element={<Member />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/forgot" element={<ForgotPasswordPage />} /> */}
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
