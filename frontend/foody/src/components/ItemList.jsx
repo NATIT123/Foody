@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 const ItemList = ({ currentItems, handleShowModal }) => (
   <div className="row">
     {currentItems.map((item) => (
-      <div key={item.id} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+      <div key={item._id} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
         <div className="card h-100">
           <img
-            src={item.imgSrc}
+            src={item.image}
             className="card-img-top"
-            alt={item.title}
+            alt={item.name}
             style={{ objectFit: "cover", height: "180px" }}
           />
           <div className="card-body">
@@ -21,12 +21,12 @@ const ItemList = ({ currentItems, handleShowModal }) => (
                   margin: "0",
                 }}
               >
-                {item.title}
+                {item.name}
               </h4>
             </Link>
 
             <h6 className="card-subtitle mb-2 text-muted text-truncate">
-              {item.subtitle}
+              {item.address}
             </h6>
             <p className="mb-0 d-flex justify-content-between align-items-center">
               <span

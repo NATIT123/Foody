@@ -12,11 +12,27 @@ const LoginPage = () => {
 
     // Basic validation (you can replace this with an actual API call)
     if (email && password) {
-      // Save email to session storage
-      sessionStorage.setItem("userEmail", email);
-
       // Redirect to home page
-      navigate("/");
+      fetch(`${process.env.REACT_APP_BASE_URL}/user/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            if (data.status === "fail") {
+              alert(data.message);
+            } else {
+              navigate("/");
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching districts:", error);
+        });
     } else {
       alert("Vui lòng nhập đầy đủ thông tin đăng nhập.");
     }

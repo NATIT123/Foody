@@ -183,7 +183,9 @@ export const getOne = (Model, popOptions) =>
 export const getAll = (Model, options) =>
   catchAsync(async (req, res, next) => {
     // To allow for nested GET reviews on tour (hack)
-    let filter = { isPublic: true };
+    let filter = { active: true };
+    const totalCount = await Model.countDocuments(filter);
+    const totalPage = Math.ceil(totalCount / 100);
     const features = new APIFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
@@ -205,6 +207,7 @@ export const getAll = (Model, options) =>
     res.status(customResourceResponse.success.statusCode).json({
       message: customResourceResponse.success.message,
       status: "success",
+      totalPage: totalPage,
       page: req.query.page * 1 || 1,
       results: doc.length,
       data: {

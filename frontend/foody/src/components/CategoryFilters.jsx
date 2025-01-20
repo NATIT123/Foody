@@ -9,9 +9,7 @@ const CategoryFilters = ({
   setFiltersState,
 }) => {
   return (
-    <div
-      className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between flex-wrap mb-3 bg-white p-3 border"
-    >
+    <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between flex-wrap mb-3 bg-white p-3 border">
       {/* Categories Section */}
       <div className="d-flex flex-wrap mb-2 mb-md-0">
         {categories.map((category, index) => (
