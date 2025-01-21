@@ -9,9 +9,11 @@ function Header({ onSearch }) {
   const [provinces, setProvinces] = useState([]); // Lưu danh sách tỉnh
   const [categories, setCategories] = useState([]); // Lưu danh sách tỉnh
   const [selectedProvince, setSelectedProvince] = useState({}); // Tỉnh được chọn với id và name
-  // const [selectedCategory, setSelectedCategory] = useState({}); // Category được chọn với id và name
+  const [selectedCategory, setSelectedCategory] = useState({}); // Category được chọn với id và name
   const [districts, setDistricts] = useState([]); // Danh sách quận/huyện
   const [selectedDistricts, setSelectedDistricts] = useState([]); // Quận/huyện được chọn
+  const [subcategories, setSubCategories] = useState([]); // Danh sách quận/huyện
+  const [selectedSubCategories, setSelectedSubCategories] = useState({}); // Quận/huyện được chọn
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
@@ -36,8 +38,12 @@ function Header({ onSearch }) {
       .then((response) => response.json())
       .then((data) => {
         if (data.data.data) {
+          const province = data.data.data.find((el) => {
+            return el.name === "Hà Nội"; // Return the element to satisfy the find method
+          });
+
           setProvinces(data.data.data); // Lưu danh sách tỉnh vào state
-          setSelectedProvince(data.data.data[0]);
+          setSelectedProvince(province); // Chọn tỉnh Hà Nội mặc định
         }
       })
       .catch((error) => {
@@ -52,12 +58,31 @@ function Header({ onSearch }) {
       .then((data) => {
         if (data.data.data) {
           setCategories(data.data.data); // Lưu danh sách category vào category
+          setSelectedCategory(data.data.data[0]);
         }
       })
       .catch((error) => {
         console.error("Error fetching categories:", error);
       });
   }, []);
+
+  // Fetch API lấy danh sách subcategory khi category được chọn
+  useEffect(() => {
+    if (selectedCategory._id) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/subCategory/getSubCategoryByCategory/${selectedCategory._id}`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.data.data) {
+            setSubCategories(data.data.data); // Lưu danh sách quận/huyện vào state
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching subCategories:", error);
+        });
+    }
+  }, [selectedCategory]);
 
   // Fetch API lấy danh sách quận/huyện khi tỉnh thành được chọn
   useEffect(() => {
@@ -207,27 +232,28 @@ function Header({ onSearch }) {
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  Ăn uống
+                  {selectedCategory.name}{" "}
+                  {/* Hiển thị tên category được chọn */}
                 </button>
                 <ul
                   className="dropdown-menu"
                   aria-labelledby="dropdownCategory"
                 >
-                  <li>
-                    <a className="dropdown-item" href="/">
-                      Ăn uống
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="/">
-                      Giải trí
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="/">
-                      Mua sắm
-                    </a>
-                  </li>
+                  {categories.map((category) => (
+                    <li key={category._id}>
+                      <button
+                        className="dropdown-item"
+                        onClick={() =>
+                          setSelectedCategory({
+                            _id: category._id,
+                            name: category.name,
+                          })
+                        }
+                      >
+                        {category.name}
+                      </button>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -413,7 +439,7 @@ function Header({ onSearch }) {
                       )}
                       {activeTab === "Phân loại" && (
                         <div className="row">
-                          {categories.map((category, index) => (
+                          {subcategories.map((subCategory, index) => (
                             <div
                               key={index}
                               className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
@@ -422,7 +448,7 @@ function Header({ onSearch }) {
                                 <input
                                   type="checkbox"
                                   className="form-check-input"
-                                  id={`category-${category._id}`}
+                                  id={`category-${subCategory._id}`}
                                   style={{ accentColor: "#ffc107" }}
                                 />
                                 <label
@@ -434,7 +460,7 @@ function Header({ onSearch }) {
                                     cursor: "pointer",
                                   }}
                                 >
-                                  {category.name}
+                                  {subCategory.name}
                                 </label>
                               </div>
                             </div>

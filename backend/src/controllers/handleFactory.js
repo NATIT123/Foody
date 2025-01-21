@@ -185,7 +185,7 @@ export const getAll = (Model, options) =>
     // To allow for nested GET reviews on tour (hack)
     let filter = { active: true };
     const totalCount = await Model.countDocuments(filter);
-    const totalPage = Math.ceil(totalCount / 100);
+    const totalPages = Math.ceil(totalCount / 100);
     const features = new APIFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
@@ -207,7 +207,7 @@ export const getAll = (Model, options) =>
     res.status(customResourceResponse.success.statusCode).json({
       message: customResourceResponse.success.message,
       status: "success",
-      totalPage: totalPage,
+      totalPages: totalPages,
       page: req.query.page * 1 || 1,
       results: doc.length,
       data: {

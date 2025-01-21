@@ -37,7 +37,6 @@ class DistrictRepository {
   getDistrictsByCity() {
     return catchAsync(async (req, res, next) => {
       const cityId = req.params.cityId;
-      console.log(cityId);
       if (!cityId.match(/^[0-9a-fA-F]{24}$/)) {
         return next(
           new AppError(

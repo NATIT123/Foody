@@ -132,6 +132,7 @@ const Grid = ({ searchQuery }) => {
   const [activeTab, setActiveTab] = useState("Khám phá");
   const [selectedItem, setSelectedItem] = useState(null); // Lưu trữ mục được chọn
   const [showModal, setShowModal] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
 
   const [currentItems, setCurrentItems] = useState([]); // Dữ liệu sau khi lọc
 
@@ -142,8 +143,9 @@ const Grid = ({ searchQuery }) => {
     )
       .then((response) => response.json())
       .then((data) => {
-        if (data.data.data) {
-          setCurrentItems(data.data.data); // Lưu danh sách tỉnh vào state
+        if (data) {
+          setTotalPages(data.totalPages); // Lưu tổng số trang
+          setCurrentItems(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
       .catch((error) => {
@@ -180,7 +182,7 @@ const Grid = ({ searchQuery }) => {
 
   const renderPagination = () => {
     const pages = [];
-    for (let i = 1; i <= currentItems.totalPages; i++) {
+    for (let i = 1; i <= totalPages; i++) {
       pages.push(
         <li
           key={i}
@@ -207,7 +209,7 @@ const Grid = ({ searchQuery }) => {
           {pages}
           <li
             className={`page-item ${
-              currentPage === currentItems.totalPages ? "disabled" : ""
+              currentPage === totalPages ? "disabled" : ""
             }`}
           >
             <button
