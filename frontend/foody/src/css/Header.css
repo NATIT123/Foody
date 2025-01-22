@@ -1,0 +1,134 @@
+/* Tổng quan */
+.search-container {
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Tạo bóng nhẹ */
+  }
+  /* Mặc định cho nav-link */
+.nav-link {
+    padding: 8px 12px; /* Khoảng cách nội dung */
+  
+    transition: all 0.3s ease; /* Hiệu ứng hover */
+  }
+  
+  /* Trạng thái active */
+  .nav-link.active-custom {
+    background-color: #dcdcdc; /* Nền xám */
+    color: #000000; /* Chữ đen */
+    font-weight: bold; /* Chữ đậm */
+  }
+  /* Nút bo tròn nhỏ nhất */
+.custom-btn {
+    background-color: #dcdcdc; /* Màu xám nhạt */
+    color: #000; /* Màu chữ đen */
+    border: none; /* Bỏ viền */
+    border-radius: 50%; /* Bo tròn nút */
+    width: 25px; /* Chiều rộng nhỏ nhất */
+    height: 25px; /* Chiều cao nhỏ nhất */
+    display: flex; /* Sử dụng flexbox để căn giữa dấu + */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    font-size: 16px; /* Kích thước nhỏ nhất cho dấu + */
+    font-weight: bold; /* Làm dấu + đậm */
+    cursor: pointer; /* Con trỏ chuột */
+    transition: all 0.3s ease; /* Hiệu ứng khi hover */
+  }
+  
+  /* Hiệu ứng hover */
+  .custom-btn:hover {
+    background-color: #bbbbbb; /* Màu xám đậm hơn khi hover */
+    color: #000; /* Giữ màu chữ đen */
+  }
+  
+  /* Hiệu ứng hover */
+  .nav-link:hover {
+    background-color: #555555; /* Nền xám đậm khi hover */
+    color: #ffffff; /* Chữ trắng */
+  }
+  
+  /* Input */
+  .search-input {
+    font-size: 14px;
+    border: none;
+    outline: none;
+    box-shadow: none; /* Bỏ shadow của Bootstrap */
+  }
+
+  /* Tùy chỉnh màu outline cho nút */
+.search-button {
+    border-color: #cccccc; /* Màu xám nhạt */
+    color: #333333; /* Màu chữ/icon */
+  }
+  
+  .search-button:hover {
+    border-color: #999999; /* Màu xám đậm hơn khi hover */
+    background-color: #f8f9fa; /* Nhẹ hiệu ứng nền */
+  }
+  
+  .search-button:focus {
+    outline: 2px solid #cccccc; /* Màu outline khi focus */
+  }
+  
+  
+  .search-input:focus {
+    border-color: #ff6b6b; /* Màu viền khi focus */
+    box-shadow: 0 0 4px #ff6b6b;
+  }
+  
+  /* Nút */
+  .search-button {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .search-button .icon-filter {
+    color: #007bff; /* Màu icon bộ lọc */
+    font-size: 16px;
+  }
+  
+  .search-button .icon-search {
+    color: #ffffff; /* Màu icon tìm kiếm */
+    font-size: 16px;
+  }
+  
+  .search-button:hover {
+    background-color: #e65b5b; /* Hiệu ứng hover cho nút */
+    color: #ffffff;
+  }
+  @media (max-width: 768px) {
+    /* Ẩn logo và hiển thị menu icon trên màn hình nhỏ */
+    header .header .d-flex {
+      flex-direction: column; /* Sắp xếp theo cột */
+      align-items: center; /* Căn giữa */
+    }
+  
+    .input-group {
+      width: 100%; /* Chiếm toàn bộ chiều rộng */
+      margin-bottom: 10px; /* Khoảng cách giữa các phần */
+    }
+  
+    .dropdown {
+      margin-bottom: 10px; /* Khoảng cách dưới */
+    }
+    
+    .nav-link {
+      padding: 8px 10px;
+      font-size: 14px; /* Giảm kích thước font */
+    }
+  }
+  
+  @media (max-width: 576px) {
+    /* Tối ưu cho điện thoại */
+    .search-container {
+      flex-direction: column; /* Cột dọc */
+      gap: 8px; /* Khoảng cách giữa các phần */
+    }
+  
+    .custom-btn {
+      width: 30px;
+      height: 30px;
+      font-size: 14px; /* Giảm kích thước font */
+    }
+  }
+  

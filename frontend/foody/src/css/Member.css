@@ -1,0 +1,131 @@
+/* Sidebar Styles */
+.sidebar-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-section {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+  }
+  
+  .profile-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #333;
+  }
+  
+  .list-group {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .list-group-item {
+    padding: 10px 15px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+  }
+  
+  .list-group-item:last-child {
+    border-bottom: none;
+  }
+  
+  .list-group-item.active {
+    background-color: #f8f9fa;
+    color: #dc3545;
+    font-weight: bold;
+  }
+  
+  .sidebar-link {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    align-items: center;
+  }
+  
+  .sidebar-link .icon {
+    margin-right: 8px;
+  }
+  
+  .sidebar-link:hover {
+    color: #007bff;
+  }
+  
+  /* Image Grid Styles */
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px; /* Space between images */
+    padding: 10px; /* Adds spacing around the grid */
+  }
+  
+  .thumbnail {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px; /* Rounded corners for images */
+    border: 1px solid #ddd; /* Optional: thin border around images */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .thumbnail:hover {
+    transform: scale(1.05); /* Slight zoom on hover */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  .header {
+    padding: 10px;
+    background-color: #f8f9fa; /* Light background for distinction */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  h5 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .custom-dropdown {
+    width: 120px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 14px;
+    color: #333;
+    appearance: none; /* Remove native dropdown styling */
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMSBsNSA1IDUtNXYxLTFMMTEgMnYtMWwtNSA1eiIgZmlsbD0iIzMzMyIvPjwvc3ZnPg==');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px 10px;
+    cursor: pointer;
+  }
+  
+  .custom-dropdown:hover {
+    border-color: #007bff; /* Blue border on hover */
+  }
+  
+  .custom-dropdown:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+  }
+  

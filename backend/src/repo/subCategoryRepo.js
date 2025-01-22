@@ -13,7 +13,6 @@ import mongoose from "mongoose";
 import AppError from "../utils/appError.js";
 class SubCategoryRepository {
   constructor(subCategoryModel, categoryModel) {
-    this.categoryModel = categoryModel;
     this.subCategoryModel = subCategoryModel;
   }
 
@@ -39,34 +38,29 @@ class SubCategoryRepository {
 
   getSubCategoryByCategory() {
     return catchAsync(async (req, res, next) => {
-      // Tìm category "Ăn uống"
-      const category = await this.categoryModel.findOne({ name: "Ăn uống" });
-      if (!category) {
+      const { categoryId } = req.params;
+      if (!categoryId.match(/^[0-9a-fA-F]{24}$/)) {
         return next(
           new AppError(
-            customResourceResponse.recordNotFound.message,
-            customResourceResponse.recordNotFound.statusCode
+            customResourceResponse.notValidId.message,
+            customResourceResponse.notValidId.statusCode
           )
         );
       }
-
-      // Tạo query với aggregation
-      const features = new APIFeatures(
-        this.subCategoryModel.aggregate([
-          {
-            $match: { categoryId: new mongoose.Types.ObjectId(category._id) }, // Lọc theo categoryId
-          },
-          {
-            $sort: { createdAt: 1 }, // Sắp xếp theo createdAt tăng dần
-          },
-        ]),
-        req.query
-      ).limitFields();
-
-      // Thực hiện truy vấn
+      const features = new APIFeatures(this.subCategoryModel.find(), req.query)
+        .sort()
+        .limitFields()
+        .populate();
       const doc = await features.query;
 
-      if (!doc || doc.length === 0) {
+      console.log(doc);
+
+      let results = doc.filter((item) => {
+        return item.categoryId?._id.toString() === categoryId;
+      });
+
+      // SEND RESPONSE
+      if (!doc) {
         return next(
           new AppError(
             customResourceResponse.recordNotFound.message,
@@ -74,14 +68,12 @@ class SubCategoryRepository {
           )
         );
       }
-
-      // Gửi phản hồi
       res.status(customResourceResponse.success.statusCode).json({
         message: customResourceResponse.success.message,
         status: "success",
-        results: doc.length,
+        results: results.length,
         data: {
-          data: doc,
+          data: results,
         },
       });
     });

@@ -14,6 +14,6 @@ router.post("/addSubCategory", addSubCategory);
 router.delete("/deleteSubCategory/:id", deleteSubCategoryById);
 router.patch("/updateSubCategory/:id", updateSubCategoryById);
 router.get("/getSubCategory/:id", getSubCategoryById);
-router.get("/getSubCategoryByCategory", getSubCategoryByCategory);
+router.get("/getSubCategoryByCategory/:categoryId", getSubCategoryByCategory);
 
 export default router;

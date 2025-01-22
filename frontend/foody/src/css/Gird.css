@@ -1,0 +1,5 @@
+.active-item {
+    background-color: #e0f7fa !important; /* Màu nền cho mục active */
+    font-weight: bold; /* Chữ đậm cho mục active */
+  }
+  

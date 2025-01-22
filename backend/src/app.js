@@ -9,6 +9,7 @@ import rateLimit from "express-rate-limit";
 import xss from "xss-clean";
 import hpp from "hpp";
 import helmet from "helmet";
+import cors from "cors";
 import mongoSanitize from "express-mongo-sanitize";
 import morgan from "morgan";
 import handleErrorGlobal from "./controllers/errorController.js";
@@ -46,9 +47,12 @@ app.set("views", path.join(__dirname, "views"));
 ///Static Files
 app.use(express.static(path.join(__dirname, "public")));
 
+//Cors
+app.use(cors());
+
 ///Limit requests from same API
 const limiter = rateLimit({
-  max: 100,
+  max: 10000,
   windowMs: 60 * 60 * 1000,
   message: "Too many requests from this IP, please try again in an hour",
 });
