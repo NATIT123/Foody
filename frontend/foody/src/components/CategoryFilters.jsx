@@ -4,9 +4,11 @@ const CategoryFilters = ({
   categories,
   activeCategory,
   setActiveCategory,
+  subcategories,
   filters,
   filtersState,
   setFiltersState,
+  districts,
 }) => {
   return (
     <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between flex-wrap mb-3 bg-white p-3 border">
@@ -46,8 +48,29 @@ const CategoryFilters = ({
             }
           >
             <option>{filter}</option>
-            <option value="Option 1">Option 1</option>
-            <option value="Option 2">Option 2</option>
+            {filter === "- Danh mục -" &&
+              subcategories &&
+              subcategories.map((option, index) => (
+                <option key={index} value={option.name}>
+                  {option.name}
+                </option>
+              ))}
+            ?
+            {filter === "- Danh mục -" &&
+              subcategories &&
+              subcategories.map((option, index) => (
+                <option key={index} value={option.name}>
+                  {option.name}
+                </option>
+              ))}
+            :
+            {filter === "- Quận/Huyện -" &&
+              districts &&
+              districts.map((option, index) => (
+                <option key={index} value={option.name}>
+                  {option.name}
+                </option>
+              ))}
           </select>
         ))}
       </div>

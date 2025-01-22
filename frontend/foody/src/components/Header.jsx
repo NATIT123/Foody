@@ -4,16 +4,20 @@ import { FaBell, FaSearch } from "react-icons/fa";
 import "../css/Header.css"; // Import file CSS tùy chỉnh
 import React, { useState, useEffect, useRef } from "react";
 
-function Header({ onSearch }) {
+function Header({
+  onSearch,
+  provinces,
+  selectedCategory,
+  selectedProvince,
+  categories,
+  subcategories,
+  districts,
+  selectedDistricts,
+  setSelectedCategory,
+  setSelectedDistricts,
+  setSelectedProvince,
+}) {
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
-  const [provinces, setProvinces] = useState([]); // Lưu danh sách tỉnh
-  const [categories, setCategories] = useState([]); // Lưu danh sách tỉnh
-  const [selectedProvince, setSelectedProvince] = useState({}); // Tỉnh được chọn với id và name
-  const [selectedCategory, setSelectedCategory] = useState({}); // Category được chọn với id và name
-  const [districts, setDistricts] = useState([]); // Danh sách quận/huyện
-  const [selectedDistricts, setSelectedDistricts] = useState([]); // Quận/huyện được chọn
-  const [subcategories, setSubCategories] = useState([]); // Danh sách quận/huyện
-  const [selectedSubCategories, setSelectedSubCategories] = useState({}); // Quận/huyện được chọn
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
@@ -32,75 +36,6 @@ function Header({ onSearch }) {
   //   sessionStorage.removeItem("userEmail");
   //   setUserEmail(null);
   // };
-  // Fetch API lấy danh sách tỉnh
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/city/getAllCity`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data.data) {
-          const province = data.data.data.find((el) => {
-            return el.name === "Hà Nội"; // Return the element to satisfy the find method
-          });
-
-          setProvinces(data.data.data); // Lưu danh sách tỉnh vào state
-          setSelectedProvince(province); // Chọn tỉnh Hà Nội mặc định
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching provinces:", error);
-      });
-  }, []);
-
-  // Fetch API lấy danh sách category
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/category/getAllCategory`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data.data) {
-          setCategories(data.data.data); // Lưu danh sách category vào category
-          setSelectedCategory(data.data.data[0]);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-      });
-  }, []);
-
-  // Fetch API lấy danh sách subcategory khi category được chọn
-  useEffect(() => {
-    if (selectedCategory._id) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/subCategory/getSubCategoryByCategory/${selectedCategory._id}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.data.data) {
-            setSubCategories(data.data.data); // Lưu danh sách quận/huyện vào state
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching subCategories:", error);
-        });
-    }
-  }, [selectedCategory]);
-
-  // Fetch API lấy danh sách quận/huyện khi tỉnh thành được chọn
-  useEffect(() => {
-    if (selectedProvince._id) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/district/getDistrictsByCity/${selectedProvince._id}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.data.data) {
-            setDistricts(data.data.data); // Lưu danh sách quận/huyện vào state
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching districts:", error);
-        });
-    }
-  }, [selectedProvince]);
 
   // Xử lý toggle chọn/bỏ chọn quận/huyện
 
@@ -180,6 +115,7 @@ function Header({ onSearch }) {
           {/* Left Section */}
           <div className="col-12 col-md-4 d-flex align-items-center mb-2 mb-md-0">
             <img
+              href="/"
               src="https://www.foody.vn/style/images/logo/foody-vn.png"
               alt="Logo"
               className="me-3"
@@ -205,21 +141,22 @@ function Header({ onSearch }) {
                     overflowY: "auto", // Thanh cuộn dọc nếu nội dung vượt quá chiều cao
                   }}
                 >
-                  {provinces.map((province) => (
-                    <li key={province._id}>
-                      <button
-                        className="dropdown-item"
-                        onClick={() =>
-                          setSelectedProvince({
-                            _id: province._id,
-                            name: province.name,
-                          })
-                        }
-                      >
-                        {province.name}
-                      </button>
-                    </li>
-                  ))}
+                  {provinces &&
+                    provinces.map((province) => (
+                      <li key={province._id}>
+                        <button
+                          className="dropdown-item"
+                          onClick={() =>
+                            setSelectedProvince({
+                              _id: province._id,
+                              name: province.name,
+                            })
+                          }
+                        >
+                          {province.name}
+                        </button>
+                      </li>
+                    ))}
                 </ul>
               </div>
 
@@ -239,21 +176,22 @@ function Header({ onSearch }) {
                   className="dropdown-menu"
                   aria-labelledby="dropdownCategory"
                 >
-                  {categories.map((category) => (
-                    <li key={category._id}>
-                      <button
-                        className="dropdown-item"
-                        onClick={() =>
-                          setSelectedCategory({
-                            _id: category._id,
-                            name: category.name,
-                          })
-                        }
-                      >
-                        {category.name}
-                      </button>
-                    </li>
-                  ))}
+                  {categories &&
+                    categories.map((category) => (
+                      <li key={category._id}>
+                        <button
+                          className="dropdown-item"
+                          onClick={() =>
+                            setSelectedCategory({
+                              _id: category._id,
+                              name: category.name,
+                            })
+                          }
+                        >
+                          {category.name}
+                        </button>
+                      </li>
+                    ))}
                 </ul>
               </div>
             </div>
@@ -375,36 +313,40 @@ function Header({ onSearch }) {
                     <div className="col-12 col-md-8">
                       {activeTab === "Khu vực" && (
                         <div className="row mb-3">
-                          {districts.map((district) => (
-                            <div
-                              key={district.id}
-                              className="col-6 col-sm-6 col-md-6 mb-2"
-                            >
-                              <div className="form-check">
-                                <input
-                                  type="checkbox"
-                                  className="form-check-input"
-                                  id={`district-${district.id}`}
-                                  checked={selectedDistricts.includes(
-                                    district.id
-                                  )}
-                                  onChange={() => toggleDistrict(district.id)}
-                                  style={{ accentColor: "#007bff" }}
-                                />
-                                <label
-                                  className="form-check-label"
-                                  htmlFor={`district-${district.id}`}
-                                  style={{
-                                    fontSize: "14px",
-                                    color: "#555",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  {district.name}
-                                </label>
+                          {districts &&
+                            districts.map((district) => (
+                              <div
+                                key={district._id}
+                                className="col-6 col-sm-6 col-md-6 mb-2"
+                              >
+                                <div className="form-check">
+                                  <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    id={`district-${district._id}`}
+                                    checked={
+                                      selectedDistricts &&
+                                      selectedDistricts.includes(district._id)
+                                    }
+                                    onChange={() =>
+                                      toggleDistrict(district._id)
+                                    }
+                                    style={{ accentColor: "#007bff" }}
+                                  />
+                                  <label
+                                    className="form-check-label"
+                                    htmlFor={`district-${district.id}`}
+                                    style={{
+                                      fontSize: "14px",
+                                      color: "#555",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    {district.name}
+                                  </label>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
                         </div>
                       )}
                       {activeTab === "Ẩm thực" && (
@@ -439,32 +381,33 @@ function Header({ onSearch }) {
                       )}
                       {activeTab === "Phân loại" && (
                         <div className="row">
-                          {subcategories.map((subCategory, index) => (
-                            <div
-                              key={index}
-                              className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
-                            >
-                              <div className="form-check">
-                                <input
-                                  type="checkbox"
-                                  className="form-check-input"
-                                  id={`category-${subCategory._id}`}
-                                  style={{ accentColor: "#ffc107" }}
-                                />
-                                <label
-                                  className="form-check-label"
-                                  htmlFor={`category-${index}`}
-                                  style={{
-                                    fontSize: "14px",
-                                    color: "#555",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  {subCategory.name}
-                                </label>
+                          {subcategories &&
+                            subcategories.map((subCategory, index) => (
+                              <div
+                                key={index}
+                                className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
+                              >
+                                <div className="form-check">
+                                  <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    id={`category-${subCategory._id}`}
+                                    style={{ accentColor: "#ffc107" }}
+                                  />
+                                  <label
+                                    className="form-check-label"
+                                    htmlFor={`category-${index}`}
+                                    style={{
+                                      fontSize: "14px",
+                                      color: "#555",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    {subCategory.name}
+                                  </label>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
                         </div>
                       )}
                     </div>
@@ -495,7 +438,11 @@ function Header({ onSearch }) {
                         transition: "all 0.3s ease",
                       }}
                       onClick={() =>
-                        alert(`Lọc theo quận: ${selectedDistricts.join(", ")}`)
+                        alert(
+                          `Lọc theo quận: ${
+                            selectedDistricts && selectedDistricts.join(", ")
+                          }`
+                        )
                       }
                       onMouseOver={(e) =>
                         (e.target.style.backgroundColor = "#0056b3")

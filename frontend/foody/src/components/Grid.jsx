@@ -124,7 +124,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   );
 };
 
-const Grid = ({ searchQuery }) => {
+const Grid = ({ searchQuery, subcategories, districts }) => {
   const [activeCategoryEat, setActiveCategoryEat] = useState(categories[0]);
   const [activeCategory, setActiveCategory] = useState(categories[0]);
   const [filtersState, setFiltersState] = useState(filters);
@@ -135,6 +135,10 @@ const Grid = ({ searchQuery }) => {
   const [totalPages, setTotalPages] = useState(0);
 
   const [currentItems, setCurrentItems] = useState([]); // Dữ liệu sau khi lọc
+
+  useEffect(() => {
+    console.log("filtersState changed:", filtersState);
+  }, [filtersState]);
 
   // Fetch API lấy danh sách restaurant
   useEffect(() => {
@@ -239,6 +243,8 @@ const Grid = ({ searchQuery }) => {
         {activeTab === "Khám phá" && (
           <>
             <CategoryFilters
+              subcategories={subcategories}
+              districts={districts}
               categories={categories}
               activeCategory={activeCategory}
               setActiveCategory={setActiveCategory}
@@ -246,6 +252,7 @@ const Grid = ({ searchQuery }) => {
               filtersState={filtersState}
               setFiltersState={setFiltersState}
             />
+
             <ItemList
               currentItems={currentItems}
               handleShowModal={handleShowModal}
