@@ -5,6 +5,10 @@ import Footer from "../components/Footer";
 import ProductSuggestion from "../components/ProductSuggestion";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { FaLocationArrow, FaClock } from "react-icons/fa";
+import { MdError } from "react-icons/md";
+import { IoIosPricetag } from "react-icons/io";
+import { IoMapSharp } from "react-icons/io5";
 
 const DetailPage = () => {
   const { id } = useParams();
@@ -17,6 +21,8 @@ const DetailPage = () => {
   const [selectedDistricts, setSelectedDistricts] = useState([]); // Quận/huyện được chọn
   const [subcategories, setSubCategories] = useState([]); // Danh sách quận/huyện
   const [currentRestaurant, setCurrentRestaurant] = useState([]); // Dữ liệu sau khi lọc
+  const [currentFoods, setCurrentFoods] = useState([]); // Dữ liệu sau khi lọc
+  const [currentComments, setCurrentComments] = useState([]); // Dữ liệu sau khi lọc
   // Fetch API lấy detail restaurant
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurant/${id}`)
@@ -29,7 +35,37 @@ const DetailPage = () => {
       .catch((error) => {
         console.error("Error fetching provinces:", error);
       });
-  });
+  }, [id]);
+
+  // Fetch API lấy detail restaurant
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_BASE_URL}/food/getFoodsByRestaurant/${id}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setCurrentFoods(data.data.data); // Lưu danh sách restaurant vào state
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching provinces:", error);
+      });
+  }, [id]);
+
+  // Fetch API lấy detail restaurant
+  useEffect(() => {
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/comment/getCommentsByRestaurant/${id}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setCurrentComments(data.data.data); // Lưu danh sách restaurant vào state
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching provinces:", error);
+      });
+  }, [id]);
 
   const handleSearch = (query) => {
     setSearchQuery(query); // Cập nhật state từ khóa tìm kiếm
@@ -149,6 +185,26 @@ const DetailPage = () => {
                 {/* Ratings */}
                 <div className="d-flex justify-content-between mb-3">
                   <div className="text-center">
+                    <div
+                      style={{
+                        fontWeight: "bold",
+                        fontSize: "16px",
+                        color: "white",
+                        cursor: "pointer",
+                        padding: "3px",
+                        borderRadius: "50%",
+                        backgroundColor: "green",
+                        width: "50px",
+                        height: "50px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {currentRestaurant.locationRate}
+                    </div>
+                  </div>
+                  <div className="text-center">
                     <span className="fw-bold text-success">
                       {currentRestaurant.locationRate}
                     </span>
@@ -190,15 +246,39 @@ const DetailPage = () => {
                 <ul className="list-unstyled">
                   <li className="mb-2">
                     <i className="fas fa-map-marker-alt text-success me-2"></i>
-                    <span>{currentRestaurant.address}</span>
+                    <span>
+                      <FaLocationArrow />{" "}
+                      {currentRestaurant.address &&
+                        currentRestaurant.address
+                          .split(",")
+                          .slice(
+                            0,
+                            currentRestaurant.address.split(",").length - 2
+                          )
+                          .join(",")}
+                      {","}
+                      <IoMapSharp />
+                      {currentRestaurant.address &&
+                        currentRestaurant.address
+                          .split(",")
+                          .slice(
+                            currentRestaurant.address.split(",").length - 2
+                          )
+                          .join(",")}
+                    </span>
                   </li>
                   <li className="mb-2">
                     <i className="fas fa-clock text-success me-2"></i>
-                    <span>Đang mở cửa {currentRestaurant.timeOpen} </span>
+                    <span>
+                      <FaClock /> Đang mở cửa {currentRestaurant.timeOpen}{" "}
+                      <MdError />
+                    </span>
                   </li>
                   <li className="mb-2">
                     <i className="fas fa-money-bill-wave text-success me-2"></i>
-                    <span>{currentRestaurant.priceRange}</span>
+                    <span>
+                      <IoIosPricetag /> {currentRestaurant.priceRange}
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -206,7 +286,7 @@ const DetailPage = () => {
           </div>
         </div>
       </div>
-      <Slide />
+      <Slide currentFoods={currentFoods} currentComments={currentComments} />
       <ProductSuggestion />
       <Footer />
     </div>

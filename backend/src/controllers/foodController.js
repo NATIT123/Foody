@@ -15,3 +15,5 @@ export const getFoodById = foodService.getFoodById();
 export const updateFoodById = foodService.updateFoodById();
 
 export const deleteFoodById = foodService.deleteFoodById();
+
+export const getFoodsByRestaurant = foodService.getFoodsByRestaurant();

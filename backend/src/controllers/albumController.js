@@ -15,3 +15,5 @@ export const getAlbumById = albumService.getAlbumById();
 export const updateAlbumById = albumService.updateAlbumById();
 
 export const deleteAlbumById = albumService.deleteAlbumById();
+
+export const getAlbumsByRestaurant = albumService.getAlbumsByRestaurant();
