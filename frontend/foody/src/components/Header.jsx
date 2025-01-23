@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-import { FaBell, FaSearch } from "react-icons/fa";
+import { FaBell, FaSearch, FaFilter } from "react-icons/fa";
 import "../css/Header.css"; // Import file CSS tùy chỉnh
 import React, { useState, useEffect, useRef } from "react";
 
@@ -231,7 +231,7 @@ function Header({
                 }}
               >
                 <i className="bi bi-filter" style={{ marginRight: "4px" }}></i>
-                Bộ lọc
+                <FaFilter /> Bộ lọc
               </button>
 
               {/* Dropdown Bộ lọc */}

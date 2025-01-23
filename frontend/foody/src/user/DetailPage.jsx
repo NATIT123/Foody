@@ -23,12 +23,13 @@ const DetailPage = () => {
   const [currentRestaurant, setCurrentRestaurant] = useState([]); // Dữ liệu sau khi lọc
   const [currentFoods, setCurrentFoods] = useState([]); // Dữ liệu sau khi lọc
   const [currentComments, setCurrentComments] = useState([]); // Dữ liệu sau khi lọc
+  const [currentAlbums, setCurrentAlbums] = useState([]); // Dữ liệu sau khi lọc
   // Fetch API lấy detail restaurant
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurant/${id}`)
       .then((response) => response.json())
       .then((data) => {
-        if (data) {
+        if (data.data.data) {
           setCurrentRestaurant(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
@@ -42,7 +43,7 @@ const DetailPage = () => {
     fetch(`${process.env.REACT_APP_BASE_URL}/food/getFoodsByRestaurant/${id}`)
       .then((response) => response.json())
       .then((data) => {
-        if (data) {
+        if (data.data.data) {
           setCurrentFoods(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
@@ -58,8 +59,22 @@ const DetailPage = () => {
     )
       .then((response) => response.json())
       .then((data) => {
-        if (data) {
+        if (data.data.data) {
           setCurrentComments(data.data.data); // Lưu danh sách restaurant vào state
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching provinces:", error);
+      });
+  }, [id]);
+
+  // Fetch API lấy detail restaurant
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_BASE_URL}/album/getAlbumsByRestaurant/${id}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.data.data) {
+          setCurrentAlbums(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
       .catch((error) => {
@@ -286,7 +301,12 @@ const DetailPage = () => {
           </div>
         </div>
       </div>
-      <Slide currentFoods={currentFoods} currentComments={currentComments} />
+      <Slide
+        currentRestaurants={currentRestaurant}
+        currentFoods={currentFoods}
+        currentComments={currentComments}
+        currentAlbums={currentAlbums}
+      />
       <ProductSuggestion />
       <Footer />
     </div>

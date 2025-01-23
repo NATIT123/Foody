@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // For navigation
-import "bootstrap/dist/css/bootstrap.min.css";
-
+import "bootstrap/dist/css/bootstrap.min.css";import Alert from 'react-bootstrap/Alert';
 const LoginPage = () => {
   const [email, setEmail] = useState(""); // To store email input
   const [password, setPassword] = useState(""); // To store password input
@@ -43,6 +42,7 @@ const LoginPage = () => {
       className="d-flex flex-column align-items-center justify-content-center"
       style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}
     >
+      
       <div className="text-center mb-4">
         <img
           src="https://id.foody.vn/Content/images/foody-corp.png"

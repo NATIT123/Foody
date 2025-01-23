@@ -3,6 +3,7 @@ import "../css/Slide.css";
 import ImageGallery from "./images";
 import Comments from "./Comments";
 import CommentsSection from "./CommentsSection";
+import { FaPlus } from "react-icons/fa";
 
 const MapModal = ({ isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
@@ -48,7 +49,12 @@ const MapModal = ({ isVisible, onClose }) => {
     </div>
   );
 };
-const Slide = ({ currentFoods, currentComments }) => {
+const Slide = ({
+  currentFoods,
+  currentComments,
+  currentAlbums,
+  currentRestaurants,
+}) => {
   const [activeSection, setActiveSection] = useState("Trang chủ");
   const [isMapVisible, setIsMapVisible] = useState(false);
 
@@ -65,79 +71,14 @@ const Slide = ({ currentFoods, currentComments }) => {
   const menuItems = [
     { name: "Trang chủ", active: true },
 
-    { name: "Ảnh & Video", active: false, count: 5 },
-    { name: "Bình luận", active: false, count: 175 },
+    { name: "Ảnh & Video", active: false, count: currentAlbums.length || 0 },
+    { name: "Bình luận", active: false, count: currentComments.length || 0 },
     { name: "Bản đồ", active: false },
   ];
   const handleMenuClick = (name) => {
     setActiveSection(name); // Update active section based on the clicked menu item
   };
-  const reviews = [
-    {
-      name: "Quynh Chi",
-      date: "22/08/2020",
-      device: "via Android",
-      rating: "8.4",
-      title: "Gà Rán KFC",
-      reviewText:
-        "Là một fan cứng của KFC, mình đã gắn bó với cửa hàng này gần 5 năm trời :) Từ đồ ăn cho tới dịch vụ và nhân viên mình đều khá ưng.",
-    },
-    {
-      name: "Minh Tran",
-      date: "15/09/2020",
-      device: "via iOS",
-      rating: "9.0",
-      title: "Burger ngon",
-      reviewText:
-        "Burger tại cửa hàng rất ngon, bánh mềm và thịt đầy đặn. Mình rất hài lòng với chất lượng phục vụ.",
-    },
-  ];
-  const communityImages = [
-    "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw9adekbbgexb6@resize_ss180x180", // Replace with actual image URLs
-    "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw9adekbbgexb6@resize_ss180x180",
-    "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw9adekbbgexb6@resize_ss180x180",
-    "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw9adekbbgexb6@resize_ss180x180",
-    "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw9adekbbgexb6@resize_ss180x180",
-  ];
 
-  const items = [
-    {
-      name: "Bún sườn mọc măng",
-      description: "Đã được đặt lần",
-      price: "69.000đ",
-      img: "https://down-bs-vn.img.susercontent.com/vn-11134517-7ras8-m2rfxgvohz96cd",
-    },
-    {
-      name: "Bún sườn đặc biệt",
-      description: "Đã được đặt lần",
-      price: "89.000đ",
-      img: "https://down-bs-vn.img.susercontent.com/vn-11134517-7ras8-m2rfxgvohz96cd",
-    },
-    {
-      name: "Phở gà đùi",
-      description: "Đã được đặt lần",
-      price: "69.000đ",
-      img: "https://down-bs-vn.img.susercontent.com/vn-11134517-7ras8-m2rfxgvohz96cd",
-    },
-    {
-      name: "Bún sườn thập cẩm",
-      description: "Đã được đặt lần",
-      price: "89.000đ",
-      img: "https://down-bs-vn.img.susercontent.com/vn-11134517-7ras8-m2rfxgvohz96cd",
-    },
-    {
-      name: "Bún sườn măng",
-      description: "Đã được đặt lần",
-      price: "65.000đ",
-      img: "https://down-bs-vn.img.susercontent.com/vn-11134517-7ras8-m2rfxgvohz96cd",
-    },
-    {
-      name: "Phở gà cánh",
-      description: "Đã được đặt lần",
-      price: "69.000đ",
-      img: "https://down-bs-vn.img.susercontent.com/vn-11134517-7ras8-m2rfxgvohz96cd",
-    },
-  ];
   return (
     <div className="container my-4">
       <div className="row">
@@ -206,17 +147,35 @@ const Slide = ({ currentFoods, currentComments }) => {
                         <h6 className="mb-1">{item.name}</h6>
                         <p className="text-muted small mb-0">Đã được đặt lần</p>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <span className="fw-bold text-primary me-3">
-                          {item.priceOriginal}
-                        </span>
-                        <span className="fw-bold text-primary me-3">
-                          {item.priceDiscount === "empty"
-                            ? ""
-                            : item.priceDiscount}
-                        </span>
-                        <button className="btn btn-outline-primary btn-sm">
-                          <i className="fas fa-plus"></i>
+                      <div className="d-flex align-items-center">
+                        {" "}
+                        <div className="flex-grow-1">
+                          {" "}
+                          <span
+                            className={
+                              item.priceDiscount !== "empty"
+                                ? "fw-bold text-primary text-decoration-line-through"
+                                : "fw-bold text-primary me-2"
+                            }
+                          >
+                            {" "}
+                            {item.priceDiscount !== "empty" && (
+                              <span className="fw-bold text-primary me-2">
+                                {" "}
+                                {item.priceDiscount}
+                              </span>
+                            )}
+                          </span>
+                          {item.priceOriginal !== "empty" && (
+                            <span className="fw-bold text-primary me-2">
+                              {" "}
+                              {item.priceOriginal}
+                            </span>
+                          )}
+                        </div>
+                        <button className="btn btn-outline-danger btn-sm ms-auto">
+                          {" "}
+                          <FaPlus />{" "}
                         </button>
                       </div>
                     </div>
@@ -250,21 +209,22 @@ const Slide = ({ currentFoods, currentComments }) => {
             >
               <h4>Hình món ăn từ cộng đồng</h4>
               <div className="row">
-                {communityImages.map((image, index) => (
-                  <div key={index} className="col-6 col-md-3 mb-3">
-                    <img
-                      src={image}
-                      alt={`Community Food ${index + 1}`}
-                      className="img-fluid"
-                      style={{
-                        width: "100%",
-                        height: "150px",
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                      }}
-                    />
-                  </div>
-                ))}
+                {currentAlbums &&
+                  currentAlbums.map((image, index) => (
+                    <div key={index} className="col-6 col-md-3 mb-3">
+                      <img
+                        src={currentAlbums.image}
+                        alt={`Community Food ${index + 1}`}
+                        className="img-fluid"
+                        style={{
+                          width: "100%",
+                          height: "150px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    </div>
+                  ))}
                 <div className="col-6 col-md-3 mb-3">
                   <div
                     className="d-flex align-items-center justify-content-center"
@@ -399,8 +359,11 @@ const Slide = ({ currentFoods, currentComments }) => {
                         <div
                           className="progress-bar"
                           role="progressbar"
-                          style={{ width: "77%", backgroundColor: "#6200ea" }}
-                          aria-valuenow="7.7"
+                          style={{
+                            width: `${currentRestaurants.locationRate * 10}%`,
+                            backgroundColor: "#6200ea",
+                          }}
+                          aria-valuenow={currentRestaurants.locationRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -421,8 +384,11 @@ const Slide = ({ currentFoods, currentComments }) => {
                         <div
                           className="progress-bar"
                           role="progressbar"
-                          style={{ width: "72%", backgroundColor: "#388e3c" }}
-                          aria-valuenow="7.2"
+                          style={{
+                            width: `${currentRestaurants.priceRate * 10}%`,
+                            backgroundColor: "#388e3c",
+                          }}
+                          aria-valuenow={currentRestaurants.priceRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -443,8 +409,11 @@ const Slide = ({ currentFoods, currentComments }) => {
                         <div
                           className="progress-bar"
                           role="progressbar"
-                          style={{ width: "72%", backgroundColor: "#fbc02d" }}
-                          aria-valuenow="7.2"
+                          style={{
+                            width: `${currentRestaurants.qualityRate * 10}%`,
+                            backgroundColor: "#fbc02d",
+                          }}
+                          aria-valuenow={currentRestaurants.qualityRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -465,8 +434,11 @@ const Slide = ({ currentFoods, currentComments }) => {
                         <div
                           className="progress-bar"
                           role="progressbar"
-                          style={{ width: "76%", backgroundColor: "#d32f2f" }}
-                          aria-valuenow="7.6"
+                          style={{
+                            width: `${currentRestaurants.serviceRate * 10}%`,
+                            backgroundColor: "#d32f2f",
+                          }}
+                          aria-valuenow={currentRestaurants.serviceRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -487,8 +459,11 @@ const Slide = ({ currentFoods, currentComments }) => {
                         <div
                           className="progress-bar"
                           role="progressbar"
-                          style={{ width: "70%", backgroundColor: "#03a9f4" }}
-                          aria-valuenow="7.7"
+                          style={{
+                            width: `${currentRestaurants.spaceRate * 10}%`,
+                            backgroundColor: "#03a9f4",
+                          }}
+                          aria-valuenow={currentRestaurants.spaceRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -693,8 +668,12 @@ const Slide = ({ currentFoods, currentComments }) => {
             </div>
           </div>
         )}
-        {activeSection === "Ảnh & Video" && <ImageGallery />}
-        {activeSection === "Bình luận" && <CommentsSection />}
+        {activeSection === "Ảnh & Video" && (
+          <ImageGallery currentAlbums={currentAlbums} />
+        )}
+        {activeSection === "Bình luận" && (
+          <CommentsSection currentComments={currentComments} />
+        )}
 
         {activeSection === "Bản đồ" && (
           <MapModal isVisible={isMapVisible} onClose={handleCloseModal} />
