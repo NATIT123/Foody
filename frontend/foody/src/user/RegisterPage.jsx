@@ -1,20 +1,63 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import Alert from "react-bootstrap/Alert";
 const RegisterPage = () => {
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [showModal, setShowModal] = useState(false);
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
+  const navigate = useNavigate(); // For navigation to the home page
+
+  const handleEmailChange = (e) => setEmail(e.target.value);
+  const handleFullNameChange = (e) => setFullName(e.target.value);
+  const handlePhoneChange = (e) => setPhone(e.target.value);
+  const handleAddressChange = (e) => setAddress(e.target.value);
   const handlePasswordChange = (e) => setPassword(e.target.value);
   const handleConfirmPasswordChange = (e) => setConfirmPassword(e.target.value);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("Mật khẩu và mật khẩu nhập lại không khớp!");
+    if (!email || !phone || !address || !password || !confirmPassword) {
+      setStatus("fail");
+      setMessage("Vui lòng nhập đầy đủ thông tin đăng ký.");
+      setShowModal(true);
     } else {
-      // Handle the registration logic
-      alert("Đăng ký thành công!");
+      fetch(`${process.env.REACT_APP_BASE_URL}/user/signUp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullname: fullName,
+          email,
+          password,
+          phone,
+          address,
+          confirmPassword,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            setMessage(data.message);
+            setShowModal(true);
+            setStatus(data.status);
+            if (data.status !== "fail" && data.status !== "error") {
+              navigate("/login");
+              setShowModal(false);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching users:", error);
+        });
     }
   };
 
@@ -34,13 +77,58 @@ const RegisterPage = () => {
         className="p-4 rounded shadow-sm bg-white"
         style={{ width: "400px", maxWidth: "90%" }}
       >
+        <>
+          {showModal ? (
+            <Alert
+              className="d-flex flex-column align-items-center text-center"
+              variant={`${
+                status === "fail" || status === "error" ? "danger" : "success"
+              }`}
+              onClick={() => setShowModal(false)}
+              dismissible
+            >
+              <Alert.Heading>Error</Alert.Heading>
+              <p>{message}</p>
+            </Alert>
+          ) : (
+            <div></div>
+          )}
+        </>
         <h4 className="text-center mb-4">Đăng ký tài khoản Foody.vn</h4>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <input
+              onChange={handleEmailChange}
               type="email"
               className="form-control"
               placeholder="Email của bạn"
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <input
+              onChange={handleFullNameChange}
+              type="text"
+              className="form-control"
+              placeholder="FullName của bạn"
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <input
+              onChange={handlePhoneChange}
+              type="number"
+              className="form-control"
+              placeholder="Phone của bạn"
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <input
+              onChange={handleAddressChange}
+              type="text"
+              className="form-control"
+              placeholder="Address của bạn"
               required
             />
           </div>

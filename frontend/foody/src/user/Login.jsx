@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // For navigation
-import "bootstrap/dist/css/bootstrap.min.css";import Alert from 'react-bootstrap/Alert';
+import "bootstrap/dist/css/bootstrap.min.css";
+import Alert from "react-bootstrap/Alert";
 const LoginPage = () => {
   const [email, setEmail] = useState(""); // To store email input
   const [password, setPassword] = useState(""); // To store password input
   const navigate = useNavigate(); // For navigation to the home page
-
+  const [showModal, setShowModal] = useState(false);
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
   const handleLogin = (e) => {
     e.preventDefault(); // Prevent page reload
 
@@ -22,18 +25,22 @@ const LoginPage = () => {
         .then((response) => response.json())
         .then((data) => {
           if (data) {
-            if (data.status === "fail") {
-              alert(data.message);
-            } else {
+            setMessage(data.message);
+            setShowModal(true);
+            setStatus(data.status);
+            if (data.status !== "fail" && data.status !== "error") {
+              localStorage.setItem("access_token", data.access_token);
               navigate("/");
+              setShowModal(false);
             }
           }
         })
         .catch((error) => {
-          console.error("Error fetching districts:", error);
+          console.error("Error fetching users:", error);
         });
     } else {
-      alert("Vui lòng nhập đầy đủ thông tin đăng nhập.");
+      setMessage("Vui lòng nhập đầy đủ thông tin đăng nhập.");
+      setShowModal(true);
     }
   };
 
@@ -42,7 +49,6 @@ const LoginPage = () => {
       className="d-flex flex-column align-items-center justify-content-center"
       style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}
     >
-      
       <div className="text-center mb-4">
         <img
           src="https://id.foody.vn/Content/images/foody-corp.png"
@@ -50,10 +56,28 @@ const LoginPage = () => {
           style={{ width: "120px" }}
         />
       </div>
+
       <div
         className="p-4 rounded shadow-sm bg-white"
         style={{ width: "400px", maxWidth: "90%" }}
       >
+        <>
+          {showModal ? (
+            <Alert
+              className="d-flex flex-column align-items-center text-center"
+              variant={`${
+                status === "fail" || status === "error" ? "danger" : "success"
+              }`}
+              onClick={() => setShowModal(false)}
+              dismissible
+            >
+              <Alert.Heading>Error</Alert.Heading>
+              <p>{message}</p>
+            </Alert>
+          ) : (
+            <div></div>
+          )}
+        </>
         <h4 className="text-center mb-4">Đăng nhập FDID</h4>
         <button className="btn btn-success w-100 mb-2">
           <i className="bi bi-phone-fill me-2"></i>
