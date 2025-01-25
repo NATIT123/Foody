@@ -24,6 +24,7 @@ const DetailPage = () => {
   const [currentFoods, setCurrentFoods] = useState([]); // Dữ liệu sau khi lọc
   const [currentComments, setCurrentComments] = useState([]); // Dữ liệu sau khi lọc
   const [currentAlbums, setCurrentAlbums] = useState([]); // Dữ liệu sau khi lọc
+  const [suggestRestaurants, setSuggestRestaurants] = useState([]); // Dữ liệu sau khi lọc
   // Fetch API lấy detail restaurant
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurant/${id}`)
@@ -79,6 +80,22 @@ const DetailPage = () => {
       })
       .catch((error) => {
         console.error("Error fetching provinces:", error);
+      });
+  }, [id]);
+
+  // Fetch API lấy detail restaurant
+  useEffect(() => {
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByRecommendation/${id}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.data.data) {
+          setSuggestRestaurants(data.data.data); // Lưu danh sách restaurant vào state
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching restaurants:", error);
       });
   }, [id]);
 
@@ -307,7 +324,7 @@ const DetailPage = () => {
         currentComments={currentComments}
         currentAlbums={currentAlbums}
       />
-      <ProductSuggestion />
+      <ProductSuggestion suggestRestaurants={suggestRestaurants} />
       <Footer />
     </div>
   );

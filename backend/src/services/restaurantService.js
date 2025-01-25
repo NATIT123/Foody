@@ -38,6 +38,10 @@ class RestaurantService {
   getRestaurantByFileds() {
     return this.restaurantRepo.getRestaurantByFields();
   }
+
+  getRestaurantByRecommendation() {
+    return this.restaurantRepo.getRestaurantByRecommendation();
+  }
 }
 
 export default RestaurantService;

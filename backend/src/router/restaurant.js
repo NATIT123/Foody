@@ -10,6 +10,7 @@ import {
   getRestaurantByCity,
   getRestaurantTopDeals,
   getRestaurantByFields,
+  getRestaurantByRecommendation,
 } from "../controllers/restaurantController.js";
 
 router.get("/getAllRestaurants", getAllRestaurants);
@@ -28,5 +29,10 @@ router.get("/getRestaurantByCity/city/:cityId", getRestaurantByCity);
 router.get("/getRestaurantTopDeals/city/:cityId", getRestaurantTopDeals);
 
 router.get("/getRestaurantByFileds/city/:cityId", getRestaurantByFields);
+
+router.get(
+  "/getRestaurantByRecommendation/:restaurantId",
+  getRestaurantByRecommendation
+);
 
 export default router;
