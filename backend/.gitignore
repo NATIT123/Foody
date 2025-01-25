@@ -1,3 +1,5 @@
-config.env
+build/src/config.env
+src/config.env
 node_modules
-.env
+backend/src/libs/*
+backend/build/src/libs/*

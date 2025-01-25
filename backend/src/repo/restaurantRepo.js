@@ -6,7 +6,10 @@ import {
   createOne,
 } from "../controllers/handleFactory.js";
 import mongoose from "mongoose";
-
+import fetch from "node-fetch";
+// Import the required modules and clients
+import { GetRecommendationsCommand } from "@aws-sdk/client-personalize-runtime";
+import { personalizeRuntimeClient } from "../libs/personalizeClients.js"; // Ensure this is correctly implemented
 import catchAsync from "../utils/catchAsync.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
@@ -326,5 +329,66 @@ class RestaurantRepository {
       });
     });
   }
+  getRestaurantByRecommendation() {
+    return catchAsync(async (req, res, next) => {
+      const restaurantId = req.params.restaurantId;
+      if (!restaurantId.match(/^[0-9a-fA-F]{24}$/)) {
+        return next(
+          new AppError(
+            customResourceResponse.notValidId.message,
+            customResourceResponse.notValidId.statusCode
+          )
+        );
+      }
+      const params = {
+        campaignArn:
+          "arn:aws:personalize:ap-southeast-1:390403892573:campaign/SIMS-campaign",
+        itemId: restaurantId, // Dynamic restaurantId
+        numResults: 5, // Optional parameter
+      };
+
+      try {
+        const response = await personalizeRuntimeClient.send(
+          new GetRecommendationsCommand(params)
+        );
+        if (!response?.itemList || response?.itemList === 0) {
+          return next(
+            new AppError(
+              customResourceResponse.recordNotFound.message,
+              customResourceResponse.recordNotFound.statusCode
+            )
+          );
+        }
+        const results = await Promise.all(
+          response.itemList.map(({ itemId }) => getOneFetch(itemId))
+        );
+
+        // Gửi phản hồi
+        res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: results.length,
+          data: {
+            data: results,
+          },
+        });
+        return response;
+      } catch (err) {
+        return next(
+          new AppError(
+            err.message,
+            customResourceResponse.serverError.statusCode
+          )
+        );
+      }
+    });
+  }
+}
+async function getOneFetch(itemId) {
+  const response = await fetch(
+    `http://localhost:3000/api/v1/restaurant/getRestaurant/${itemId}`
+  );
+  const data = await response.json();
+  return data.data.data;
 }
 export default RestaurantRepository;

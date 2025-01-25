@@ -1,5 +1,3 @@
-import customResourceResponse from "../utils/constant.js";
-
 class FoodService {
   constructor(foodRepo) {
     this.foodRepo = foodRepo;
@@ -22,6 +20,10 @@ class FoodService {
 
   deleteFoodById() {
     return this.foodRepo.deleteFoodById();
+  }
+
+  getFoodsByRestaurant() {
+    return this.foodRepo.getFoodSByRestaurant();
   }
 }
 

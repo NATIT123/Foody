@@ -23,3 +23,6 @@ export const getRestaurantByOptions =
   restaurantService.getRestaurantByOptions();
 
 export const getRestaurantByFields = restaurantService.getRestaurantByFileds();
+
+export const getRestaurantByRecommendation =
+  restaurantService.getRestaurantByRecommendation();

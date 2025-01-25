@@ -24,6 +24,10 @@ class AlbumService {
   deleteAlbumById() {
     return this.albumRepo.deleteAlbumById();
   }
+
+  getAlbumsByRestaurant() {
+    return this.albumRepo.getAlbumsByRestaurant();
+  }
 }
 
 export default AlbumService;

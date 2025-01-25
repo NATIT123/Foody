@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-import { FaBell, FaSearch } from "react-icons/fa";
+import { FaBell, FaSearch, FaFilter } from "react-icons/fa";
 import "../css/Header.css"; // Import file CSS tùy chỉnh
 import React, { useState, useEffect, useRef } from "react";
 
@@ -114,13 +114,16 @@ function Header({
         <div className="row align-items-center py-2">
           {/* Left Section */}
           <div className="col-12 col-md-4 d-flex align-items-center mb-2 mb-md-0">
-            <img
-              href="/"
-              src="https://www.foody.vn/style/images/logo/foody-vn.png"
-              alt="Logo"
-              className="me-3"
-              style={{ height: "30px" }}
-            />
+            <a href="/" className="text-decoration-none">
+              {" "}
+              <img
+                src="https://www.foody.vn/style/images/logo/foody-vn.png"
+                alt="Logo"
+                className="me-3"
+                style={{ height: "30px", cursor: "pointer" }}
+              />
+            </a>
+
             <div className="d-flex align-items-center">
               {/* Dropdown Thành phố */}
               <div className="dropdown me-2">
@@ -228,7 +231,7 @@ function Header({
                 }}
               >
                 <i className="bi bi-filter" style={{ marginRight: "4px" }}></i>
-                Bộ lọc
+                <FaFilter /> Bộ lọc
               </button>
 
               {/* Dropdown Bộ lọc */}

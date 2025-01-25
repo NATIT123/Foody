@@ -38,7 +38,7 @@ class CommentRepository {
   getCommentsByRestaurant() {
     return catchAsync(async (req, res, next) => {
       const restaurantId = req.params.restaurantId;
-      // Kiểm tra tính hợp lệ của cityId
+      // Kiểm tra tính hợp lệ của restaurantId
       if (!restaurantId.match(/^[0-9a-fA-F]{24}$/)) {
         return next(
           new AppError(

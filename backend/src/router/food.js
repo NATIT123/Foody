@@ -6,6 +6,7 @@ import {
   deleteFoodById,
   updateFoodById,
   getFoodById,
+  getFoodsByRestaurant,
 } from "../controllers/foodController.js";
 
 router.get("/getAllFoods", getAllFoods);
@@ -13,5 +14,6 @@ router.post("/addFood", addFood);
 router.delete("/deleteFood/:id", deleteFoodById);
 router.patch("/updateFood/:id", updateFoodById);
 router.get("/getFood/:id", getFoodById);
+router.get("/getFoodsByRestaurant/:restaurantId", getFoodsByRestaurant);
 
 export default router;
