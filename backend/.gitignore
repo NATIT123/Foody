@@ -1,5 +1,5 @@
 config.env
 node_modules
 .env
-./src/libs/personalizeClient.js
-./build/src/libs/personalizeClient.js
+src/libs/personalizeClient.js
+build/src/libs/personalizeClient.js
