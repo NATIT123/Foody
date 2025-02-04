@@ -1,6 +1,10 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import { FaBell, FaSearch, FaFilter } from "react-icons/fa";
+<<<<<<< HEAD
+=======
+import { useNavigate } from "react-router-dom"; // For navigation
+>>>>>>> c9aa10a (Update)
 import "../css/Header.css"; // Import file CSS tùy chỉnh
 import React, { useState, useEffect, useRef } from "react";
 
@@ -17,10 +21,15 @@ function Header({
   setSelectedDistricts,
   setSelectedProvince,
 }) {
+<<<<<<< HEAD
+=======
+  const navigate = useNavigate(); // For navigation to the home page
+>>>>>>> c9aa10a (Update)
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
+<<<<<<< HEAD
   const [userEmail, setUserEmail] = useState(null);
   const foods = ["Cơm", "Phở", "Bún", "Pizza", "Burger"];
   const dropdownRef = useRef(null);
@@ -36,6 +45,33 @@ function Header({
   //   sessionStorage.removeItem("userEmail");
   //   setUserEmail(null);
   // };
+=======
+  const [accessToken, setAcessToken] = useState(null);
+  const [user, setUser] = useState(null);
+  const foods = ["Cơm", "Phở", "Bún", "Pizza", "Burger"];
+  const dropdownRef = useRef(null);
+  useEffect(() => {
+    const accessToken = localStorage.getItem("access_token");
+    if (accessToken) {
+      setAcessToken(accessToken);
+      fetch(`${process.env.REACT_APP_BASE_URL}/user/me`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status !== "fail" && data.status !== "error") {
+            setUser(data.data.data); // Lưu danh sách quận/huyện vào state
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user:", error);
+        });
+    }
+  }, [accessToken, navigate]);
+>>>>>>> c9aa10a (Update)
 
   // Xử lý toggle chọn/bỏ chọn quận/huyện
 
@@ -504,7 +540,11 @@ function Header({
             className="col-12 col-md-4 d-flex justify-content-md-end justify-content-center align-items-center"
             style={{ gap: "10px" }}
           >
+<<<<<<< HEAD
             {userEmail ? (
+=======
+            {user ? (
+>>>>>>> c9aa10a (Update)
               <div className="dropdown">
                 {/* Display user email */}
                 <button
@@ -515,9 +555,15 @@ function Header({
                   aria-expanded="false"
                 >
                   <strong>
+<<<<<<< HEAD
                     {userEmail.length > 12
                       ? `${userEmail.substring(0, 12)}...`
                       : userEmail}
+=======
+                    {user.email.length > 12
+                      ? `${user.email.substring(0, 12)}...`
+                      : user.email}
+>>>>>>> c9aa10a (Update)
                   </strong>
                 </button>
 
@@ -551,8 +597,28 @@ function Header({
                     <button
                       className="btn btn-link text-decoration-none text-dark p-0"
                       onClick={() => {
+<<<<<<< HEAD
                         sessionStorage.removeItem("userEmail");
                         window.location.reload(); // Optional: Redirect to login page
+=======
+                        fetch(`${process.env.REACT_APP_BASE_URL}/user/logOut`, {
+                          method: "POST",
+                        })
+                          .then((response) => response.json())
+                          .then((data) => {
+                            if (
+                              data.status !== "fail" &&
+                              data.status !== "error"
+                            ) {
+                              localStorage.removeItem("access_token");
+                              setUser(null);
+                              window.location.reload(); // Optional: Redirect to login page
+                            }
+                          })
+                          .catch((error) => {
+                            console.error("Error logout :", error);
+                          });
+>>>>>>> c9aa10a (Update)
                       }}
                     >
                       Đăng xuất
