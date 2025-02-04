@@ -29,14 +29,10 @@ const LoginPage = () => {
             setShowModal(true);
             setStatus(data.status);
             if (data.status !== "fail" && data.status !== "error") {
-<<<<<<< HEAD
-              localStorage.setItem("access_token", data.access_token);
-=======
               localStorage.setItem(
                 "access_token",
                 data.access_token || "empty"
               );
->>>>>>> c9aa10a (Update)
               navigate("/");
               setShowModal(false);
             }
