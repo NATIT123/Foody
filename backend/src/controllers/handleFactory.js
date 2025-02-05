@@ -2,6 +2,10 @@ import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import fs from "fs";
@@ -254,7 +258,7 @@ export const importData = (Model, nameData) => {
     }
 
     // Sử dụng đường dẫn tuyệt đối
-    const dataPath = `./data/${nameData}.json`;
+    const dataPath = `${__dirname}/../data/${nameData}.json`;
     console.log(`Reading file from path: ${dataPath}`);
 
     // Đọc dữ liệu từ file JSON

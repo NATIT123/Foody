@@ -1,14 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // For navigation
 import "bootstrap/dist/css/bootstrap.min.css";
 import Alert from "react-bootstrap/Alert";
+import { MdAttachEmail } from "react-icons/md";
+import { RiLockPasswordLine } from "react-icons/ri";
 const LoginPage = () => {
   const [email, setEmail] = useState(""); // To store email input
   const [password, setPassword] = useState(""); // To store password input
   const navigate = useNavigate(); // For navigation to the home page
+  const [isSaved, setIsSaved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
+
   const [status, setStatus] = useState("");
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("email");
+    if (savedEmail) setEmail(savedEmail);
+  }, []);
+
+  const handleChecked = (event) => {
+    setIsSaved(event.target.checked);
+  };
   const handleLogin = (e) => {
     e.preventDefault(); // Prevent page reload
 
@@ -25,6 +37,9 @@ const LoginPage = () => {
         .then((response) => response.json())
         .then((data) => {
           if (data) {
+            if (isSaved) {
+              localStorage.setItem("email", email);
+            }
             setMessage(data.message);
             setShowModal(true);
             setStatus(data.status);
@@ -42,6 +57,7 @@ const LoginPage = () => {
           console.error("Error fetching users:", error);
         });
     } else {
+      setStatus("fail");
       setMessage("Vui lòng nhập đầy đủ thông tin đăng nhập.");
       setShowModal(true);
     }
@@ -93,28 +109,72 @@ const LoginPage = () => {
         <div className="text-center text-muted mb-3">hoặc bằng email</div>
         <form onSubmit={handleLogin}>
           <div className="mb-3">
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Tên đăng nhập hoặc email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)} // Update email state
-              required
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+                padding: "5px",
+              }}
+            >
+              <MdAttachEmail
+                style={{ marginRight: "8px", color: "#888", fontSize: "20px" }}
+              />
+              <input
+                type="email"
+                className="form-control"
+                placeholder="Tên đăng nhập hoặc email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)} // Update email state
+                required
+                style={{
+                  border: "none",
+                  outline: "none",
+                  boxShadow: "none",
+                  flex: "1",
+                }}
+              />
+            </div>
           </div>
           <div className="mb-3">
-            <input
-              type="password"
-              className="form-control"
-              placeholder="Mật khẩu"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)} // Update password state
-              required
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+                padding: "5px",
+              }}
+            >
+              <RiLockPasswordLine
+                style={{ marginRight: "8px", color: "#888", fontSize: "20px" }}
+              />
+
+              <input
+                type="password"
+                className="form-control"
+                placeholder="Mật khẩu"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} // Update password state
+                required
+                style={{
+                  border: "none",
+                  outline: "none",
+                  boxShadow: "none",
+                  flex: "1",
+                }}
+              />
+            </div>
           </div>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <input type="checkbox" id="rememberMe" />
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={isSaved}
+                onChange={handleChecked}
+              />
               <label htmlFor="rememberMe" className="ms-2">
                 Lưu đăng nhập
               </label>

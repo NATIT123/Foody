@@ -30,6 +30,7 @@ function Header({
   useEffect(() => {
     const accessToken = localStorage.getItem("access_token");
     if (accessToken) {
+      console.log("Access token:", accessToken);
       setAcessToken(accessToken);
       fetch(`${process.env.REACT_APP_BASE_URL}/user/me`, {
         method: "GET",
@@ -565,6 +566,9 @@ function Header({
                       onClick={() => {
                         fetch(`${process.env.REACT_APP_BASE_URL}/user/logOut`, {
                           method: "POST",
+                          headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                          },
                         })
                           .then((response) => response.json())
                           .then((data) => {
@@ -572,6 +576,7 @@ function Header({
                               data.status !== "fail" &&
                               data.status !== "error"
                             ) {
+                              setAcessToken(null);
                               localStorage.removeItem("access_token");
                               setUser(null);
                               window.location.reload(); // Optional: Redirect to login page

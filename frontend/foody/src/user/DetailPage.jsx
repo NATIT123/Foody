@@ -84,22 +84,6 @@ const DetailPage = () => {
   }, [id]);
 
   // Fetch API lấy detail restaurant
-<<<<<<< HEAD
-  useEffect(() => {
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByRecommendation/${id}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data.data) {
-          setSuggestRestaurants(data.data.data); // Lưu danh sách restaurant vào state
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching restaurants:", error);
-      });
-  }, [id]);
-=======
   // useEffect(() => {
   //   fetch(
   //     `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByRecommendation/${id}`
@@ -114,7 +98,6 @@ const DetailPage = () => {
   //       console.error("Error fetching restaurants:", error);
   //     });
   // }, [id]);
->>>>>>> c9aa10a (Update)
 
   const handleSearch = (query) => {
     setSearchQuery(query); // Cập nhật state từ khóa tìm kiếm

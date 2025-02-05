@@ -1,17 +1,43 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import Alert from "react-bootstrap/Alert";
+import { TbLockPassword } from "react-icons/tb";
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
 
   const handleEmailChange = (e) => setEmail(e.target.value);
+  const [showModal, setShowModal] = useState(false);
+  const [message, setMessage] = useState("");
 
+  const [status, setStatus] = useState("");
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email) {
-      alert("Chúng tôi đã gửi email hướng dẫn đặt lại mật khẩu!");
+      fetch(`${process.env.REACT_APP_BASE_URL}/user/forgotPassword`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            setMessage(data.message);
+            setShowModal(true);
+            setStatus(data.status);
+            if (data.status !== "fail" && data.status !== "error") {
+              setEmail(null);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching users:", error);
+        });
     } else {
-      alert("Vui lòng nhập email của bạn!");
+      setStatus("fail");
+      setShowModal(true);
+      setMessage("Vui lòng nhập email của bạn!");
     }
   };
 
@@ -20,6 +46,24 @@ const ForgotPasswordPage = () => {
       className="d-flex flex-column align-items-center justify-content-center"
       style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}
     >
+      {showModal ? (
+        <Alert
+          className="d-flex flex-column align-items-center text-center"
+          variant={`${
+            status === "fail" || status === "error" ? "danger" : "success"
+          }`}
+          onClick={() => setShowModal(false)}
+          dismissible
+        >
+          <Alert.Heading>
+            {" "}
+            {`${status === "fail" || status === "error" ? "Error" : "Success"}`}
+          </Alert.Heading>
+          <p>{message}</p>
+        </Alert>
+      ) : (
+        <div></div>
+      )}
       <div className="text-center mb-4">
         <img
           src="https://id.foody.vn/Content/images/foody-corp.png"
@@ -34,14 +78,33 @@ const ForgotPasswordPage = () => {
         <h4 className="text-center mb-4">Quên mật khẩu</h4>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Nhập email của bạn"
-              value={email}
-              onChange={handleEmailChange}
-              required
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+                padding: "5px",
+              }}
+            >
+              <TbLockPassword
+                style={{ marginRight: "8px", color: "#888", fontSize: "20px" }}
+              />
+              <input
+                type="email"
+                className="form-control"
+                placeholder="Nhập email của bạn"
+                value={email}
+                onChange={handleEmailChange}
+                required
+                style={{
+                  border: "none",
+                  outline: "none",
+                  boxShadow: "none",
+                  flex: "1",
+                }}
+              />
+            </div>
           </div>
           <button className="btn btn-primary w-100" type="submit">
             Gửi hướng dẫn đặt lại mật khẩu
@@ -53,12 +116,19 @@ const ForgotPasswordPage = () => {
           </a>
         </div>
       </div>
-      <div className="text-center mt-4 px-3 text-muted" style={{ maxWidth: "500px" }}>
-        Chúng tôi không sử dụng thông tin của bạn với bất kỳ mục đích nào. Bằng cách yêu cầu đặt lại mật khẩu,
-        bạn đồng ý với{" "}
-        <a href="#" className="text-decoration-none">
+      <div
+        className="text-center mt-4 px-3 text-muted"
+        style={{ maxWidth: "500px" }}
+      >
+        Chúng tôi không sử dụng thông tin của bạn với bất kỳ mục đích nào. Bằng
+        cách yêu cầu đặt lại mật khẩu, bạn đồng ý với{" "}
+        <button
+          className="text-decoration-none btn btn-link"
+          onClick={() => alert("Chính sách quy định của Foody")}
+        >
           Chính sách quy định của Foody
-        </a>.
+        </button>
+        .
       </div>
     </div>
   );
