@@ -67,11 +67,16 @@ const RegisterPage = () => {
           .then((response) => response.json())
           .then((data) => {
             if (data) {
+              console.log(data);
               setMessage(data.message);
               setShowModal(true);
               setStatus(data.status);
               if (data.status !== "fail" && data.status !== "error") {
-                navigate("/login");
+                localStorage.setItem(
+                  "access_token",
+                  data.access_token || "empty"
+                );
+                navigate("/");
                 setShowModal(false);
               }
             }
@@ -241,7 +246,9 @@ const RegisterPage = () => {
                 padding: "5px",
               }}
             >
-              <RiLockPasswordLine />
+              <RiLockPasswordLine
+                style={{ marginRight: "8px", color: "#888", fontSize: "20px" }}
+              />
               <input
                 type="password"
                 className="form-control"
@@ -268,7 +275,9 @@ const RegisterPage = () => {
                 padding: "5px",
               }}
             >
-              <RiLockPasswordFill />
+              <RiLockPasswordFill
+                style={{ marginRight: "8px", color: "#888", fontSize: "20px" }}
+              />
               <input
                 type="password"
                 className="form-control"

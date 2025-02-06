@@ -61,7 +61,7 @@ export default class Email {
   }
 
   async sendWelcome() {
-    await this.send("welcome", "Welcome to the Foody Service!");
+    await this.send("welcome", "Welcome to the Foody!");
   }
 
   async sendPasswordReset() {

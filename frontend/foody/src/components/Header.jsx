@@ -4,6 +4,7 @@ import { FaBell, FaSearch, FaFilter } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; // For navigation
 import "../css/Header.css"; // Import file CSS tùy chỉnh
 import React, { useState, useEffect, useRef } from "react";
+import { useData } from "../context/DataContext";
 
 function Header({
   onSearch,
@@ -18,35 +19,19 @@ function Header({
   setSelectedDistricts,
   setSelectedProvince,
 }) {
+  const { state, logout } = useData();
   const navigate = useNavigate(); // For navigation to the home page
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
   const [accessToken, setAcessToken] = useState(null);
-  const [user, setUser] = useState(null);
   const foods = ["Cơm", "Phở", "Bún", "Pizza", "Burger"];
   const dropdownRef = useRef(null);
   useEffect(() => {
     const accessToken = localStorage.getItem("access_token");
     if (accessToken) {
-      console.log("Access token:", accessToken);
       setAcessToken(accessToken);
-      fetch(`${process.env.REACT_APP_BASE_URL}/user/me`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status !== "fail" && data.status !== "error") {
-            setUser(data.data.data); // Lưu danh sách quận/huyện vào state
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching user:", error);
-        });
     }
   }, [accessToken, navigate]);
 
@@ -86,6 +71,10 @@ function Header({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  if (state.loading) {
+    return <div>Loading...</div>; // Hiển thị khi đang tải
+  }
+
   return (
     <>
       {/* Navigation Bar */}
@@ -517,7 +506,7 @@ function Header({
             className="col-12 col-md-4 d-flex justify-content-md-end justify-content-center align-items-center"
             style={{ gap: "10px" }}
           >
-            {user ? (
+            {state.user ? (
               <div className="dropdown">
                 {/* Display user email */}
                 <button
@@ -528,9 +517,9 @@ function Header({
                   aria-expanded="false"
                 >
                   <strong>
-                    {user.email.length > 12
-                      ? `${user.email.substring(0, 12)}...`
-                      : user.email}
+                    {state.user.email.length > 12
+                      ? `${state.user.email.substring(0, 12)}...`
+                      : state.user.email}
                   </strong>
                 </button>
 
@@ -563,29 +552,9 @@ function Header({
                     ></i>
                     <button
                       className="btn btn-link text-decoration-none text-dark p-0"
-                      onClick={() => {
-                        fetch(`${process.env.REACT_APP_BASE_URL}/user/logOut`, {
-                          method: "POST",
-                          headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                          },
-                        })
-                          .then((response) => response.json())
-                          .then((data) => {
-                            if (
-                              data.status !== "fail" &&
-                              data.status !== "error"
-                            ) {
-                              setAcessToken(null);
-                              localStorage.removeItem("access_token");
-                              setUser(null);
-                              window.location.reload(); // Optional: Redirect to login page
-                            }
-                          })
-                          .catch((error) => {
-                            console.error("Error logout :", error);
-                          });
-                      }}
+                      onClick={() =>
+                        logout(localStorage.getItem("access_token"))
+                      }
                     >
                       Đăng xuất
                     </button>

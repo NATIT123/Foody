@@ -105,6 +105,31 @@ const Index = () => {
   const [selectedDistricts, setSelectedDistricts] = useState([]); // Quận/huyện được chọn
   const [subcategories, setSubCategories] = useState([]); // Danh sách quận/huyện
 
+  const [user, setUser] = useState(null);
+  const [accessToken, setAcessToken] = useState(null);
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("access_token");
+    if (accessToken) {
+      fetch(`${process.env.REACT_APP_BASE_URL}/user/me`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status !== "fail" && data.status !== "error") {
+            setAcessToken(accessToken);
+            setUser(data.data.data); // Lưu danh sách quận/huyện vào state
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user:", error);
+        });
+    }
+  }, [accessToken]);
+
   // Fetch API lấy danh sách tỉnh
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/city/getAllCity`)
@@ -198,6 +223,7 @@ const Index = () => {
   return (
     <div>
       <Header
+        user={user}
         selectedDistricts={selectedDistricts}
         onSearch={handleSearch}
         provinces={provinces}

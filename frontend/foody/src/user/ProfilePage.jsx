@@ -1,10 +1,14 @@
 import React, { useState } from "react";
+import { useData } from "../context/DataContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 const ProfilePage = () => {
-  const [name, setName] = useState("Thuận Cát");
+  const { state, logout } = useData();
+
+  console.log("State from context:", state); // Kiểm tra giá trị state
+  const [name, setName] = useState(null);
   const [gender, setGender] = useState("");
   const [email, setEmail] = useState("huynhduythuan668@gmail.com");
   const [phone, setPhone] = useState("0339171545");
@@ -21,11 +25,11 @@ const ProfilePage = () => {
 
   const handleSaveChanges = () => {
     if (newPassword !== confirmPassword) {
-        alert("Mật khẩu không khớp!");
-        return;
-      }
-      alert("Mật khẩu đã được thay đổi!");
-      setShowPasswordFields(false); // Hide password fields
+      alert("Mật khẩu không khớp!");
+      return;
+    }
+    alert("Mật khẩu đã được thay đổi!");
+    setShowPasswordFields(false); // Hide password fields
   };
 
   const handleChangePhone = () => {
@@ -42,17 +46,22 @@ const ProfilePage = () => {
     alert("Số điện thoại đã được cập nhật!");
   };
 
-  const handleSavePassword = () => {
-    
-  };
+  const handleSavePassword = () => {};
 
   const handleDeleteAccount = () => {
     alert("Xóa tài khoản!");
   };
 
+  if (state.loading) {
+    return <div>Loading...</div>; // Hiển thị khi đang tải
+  }
+  if (!state.user) {
+    return <div>Chưa có thông tin người dùng</div>; // Thông báo nếu không có user
+  }
+
   return (
     <div>
-      <Header />
+      {/* <Header /> */}
       <div className="container mt-5">
         <div className="row">
           {/* Sidebar */}
@@ -85,7 +94,9 @@ const ProfilePage = () => {
                 <div className="mb-4">
                   <label className="form-label fw-bold">Tải Ảnh đại diện</label>
                   <div className="d-flex align-items-center">
-                    <div
+                    <img
+                      src="/images/default.jpg"
+                      alt="Profile"
                       style={{
                         width: "60px",
                         height: "60px",
@@ -98,9 +109,7 @@ const ProfilePage = () => {
                         fontSize: "24px",
                         marginRight: "15px",
                       }}
-                    >
-                      {name.charAt(0).toUpperCase()}
-                    </div>
+                    ></img>
                     <div>
                       <input
                         type="file"
@@ -108,8 +117,7 @@ const ProfilePage = () => {
                         onChange={handleFileChange}
                       />
                       <small className="text-muted">
-                        Chấp nhận GIF, JPEG, PNG, BMP với kích thước tối đa
-                        5MB.
+                        Chấp nhận GIF, JPEG, PNG, BMP với kích thước tối đa 5MB.
                       </small>
                     </div>
                   </div>
@@ -124,28 +132,17 @@ const ProfilePage = () => {
                   <input
                     type="text"
                     className="form-control"
-                    value={name}
+                    value={state.user && state.user.fullname}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
-                <div className="mb-3">
-                  <label className="form-label fw-bold">Giới tính</label>
-                  <select
-                    className="form-select"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                  >
-                    <option value="">Không chọn</option>
-                    <option value="Nam">Nam</option>
-                    <option value="Nữ">Nữ</option>
-                  </select>
-                </div>
+
                 <div className="mb-3">
                   <label className="form-label fw-bold">Email</label>
                   <input
                     type="email"
                     className="form-control"
-                    value={email}
+                    value={state.user && state.user.email}
                     disabled
                   />
                 </div>
@@ -176,7 +173,9 @@ const ProfilePage = () => {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                       />
-                      <label className="form-label">Nhập lại mật khẩu mới</label>
+                      <label className="form-label">
+                        Nhập lại mật khẩu mới
+                      </label>
                       <input
                         type="password"
                         className="form-control mb-3"
@@ -184,15 +183,11 @@ const ProfilePage = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                       />
-                      
                     </div>
                   )}
                 </div>
 
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSaveChanges}
-                >
+                <button className="btn btn-primary" onClick={handleSaveChanges}>
                   Lưu thay đổi
                 </button>
 
@@ -201,7 +196,7 @@ const ProfilePage = () => {
                 {/* Phone Number Management */}
                 <div className="mb-3">
                   <h6 className="fw-bold">Quản lý số điện thoại</h6>
-                  <p>{phone}</p>
+                  <p>{state.user && state.user.phone}</p>
                   <button
                     className="btn btn-primary"
                     onClick={handleChangePhone}

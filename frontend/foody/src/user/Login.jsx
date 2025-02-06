@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Alert from "react-bootstrap/Alert";
 import { MdAttachEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
+import { useData } from "../context/DataContext";
 const LoginPage = () => {
   const [email, setEmail] = useState(""); // To store email input
   const [password, setPassword] = useState(""); // To store password input
@@ -11,6 +12,15 @@ const LoginPage = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
+  const { setAccessToken } = useData();
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("access_token");
+    if (accessToken) {
+      navigate("/");
+      setAccessToken(accessToken);
+    }
+  }, [navigate, setAccessToken]);
 
   const [status, setStatus] = useState("");
   useEffect(() => {
@@ -44,10 +54,7 @@ const LoginPage = () => {
             setShowModal(true);
             setStatus(data.status);
             if (data.status !== "fail" && data.status !== "error") {
-              localStorage.setItem(
-                "access_token",
-                data.access_token || "empty"
-              );
+              setAccessToken(data.access_token);
               navigate("/");
               setShowModal(false);
             }

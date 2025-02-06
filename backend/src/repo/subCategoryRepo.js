@@ -53,8 +53,6 @@ class SubCategoryRepository {
         .populate();
       const doc = await features.query;
 
-      console.log(doc);
-
       let results = doc.filter((item) => {
         return item.categoryId?._id.toString() === categoryId;
       });
