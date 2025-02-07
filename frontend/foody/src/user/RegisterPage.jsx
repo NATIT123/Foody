@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { MdAttachEmail } from "react-icons/md";
@@ -7,8 +7,10 @@ import { FaUser } from "react-icons/fa";
 import { FaRegAddressBook } from "react-icons/fa";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { RiLockPasswordFill } from "react-icons/ri";
+import { useData } from "../context/DataContext";
 import Alert from "react-bootstrap/Alert";
 const RegisterPage = () => {
+  const { state } = useData();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -30,6 +32,12 @@ const RegisterPage = () => {
   const handleChecked = (event) => {
     setIsChecked(event.target.checked);
   };
+
+  useEffect(() => {
+    if (state.user && !state.loading) {
+      navigate("/");
+    }
+  }, [navigate, state.user, state.loading]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

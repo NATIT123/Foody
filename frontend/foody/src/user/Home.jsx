@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../App.css"; // Đảm bảo bạn đã liên kết file CSS
 import Header from "../components/Header";
@@ -96,108 +96,10 @@ const Index = () => {
   const itemsPerRow = 4; // Số lượng mục mỗi dòng
   const itemsPerPage = itemsPerRow * 2; // Hiển thị 2 dòng (8 mục)
   const [searchQuery, setSearchQuery] = useState(""); // State lưu từ khóa tìm kiếm
-
-  const [provinces, setProvinces] = useState([]); // Lưu danh sách tỉnh
-  const [categories, setCategories] = useState([]); // Lưu danh sách tỉnh
   const [selectedProvince, setSelectedProvince] = useState([]); // Tỉnh được chọn với id và name
   const [selectedCategory, setSelectedCategory] = useState({}); // Category được chọn với id và name
-  const [districts, setDistricts] = useState([]); // Danh sách quận/huyện
+
   const [selectedDistricts, setSelectedDistricts] = useState([]); // Quận/huyện được chọn
-  const [subcategories, setSubCategories] = useState([]); // Danh sách quận/huyện
-
-  const [user, setUser] = useState(null);
-  const [accessToken, setAcessToken] = useState(null);
-
-  useEffect(() => {
-    const accessToken = localStorage.getItem("access_token");
-    if (accessToken) {
-      fetch(`${process.env.REACT_APP_BASE_URL}/user/me`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status !== "fail" && data.status !== "error") {
-            setAcessToken(accessToken);
-            setUser(data.data.data); // Lưu danh sách quận/huyện vào state
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching user:", error);
-        });
-    }
-  }, [accessToken]);
-
-  // Fetch API lấy danh sách tỉnh
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/city/getAllCity`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data.data) {
-          const province = data.data.data.find((el) => {
-            return el.name === "Hà Nội"; // Return the element to satisfy the find method
-          });
-          setProvinces(data.data.data); // Lưu danh sách tỉnh vào state
-          setSelectedProvince(province); // Chọn tỉnh Hà Nội mặc định
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching provinces:", error);
-      });
-  }, []);
-
-  // Fetch API lấy danh sách category
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/category/getAllCategory`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data.data) {
-          setCategories(data.data.data); // Lưu danh sách category vào category
-          setSelectedCategory(data.data.data[0]);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-      });
-  }, []);
-
-  // Fetch API lấy danh sách subcategory khi category được chọn
-  useEffect(() => {
-    if (selectedCategory._id) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/subCategory/getSubCategoryByCategory/${selectedCategory._id}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.data.data) {
-            setSubCategories(data.data.data); // Lưu danh sách quận/huyện vào state
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching subCategories:", error);
-        });
-    }
-  }, [selectedCategory]);
-
-  // Fetch API lấy danh sách quận/huyện khi tỉnh thành được chọn
-  useEffect(() => {
-    if (selectedProvince._id) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/district/getDistrictsByCity/${selectedProvince._id}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.data.data) {
-            setDistricts(data.data.data); // Lưu danh sách quận/huyện vào state
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching districts:", error);
-        });
-    }
-  }, [selectedProvince]);
 
   const handleSearch = (query) => {
     setSearchQuery(query); // Cập nhật state từ khóa tìm kiếm
@@ -223,15 +125,10 @@ const Index = () => {
   return (
     <div>
       <Header
-        user={user}
         selectedDistricts={selectedDistricts}
         onSearch={handleSearch}
-        provinces={provinces}
-        categories={categories}
         selectedProvince={selectedProvince}
         selectedCategory={selectedCategory}
-        districts={districts}
-        subcategories={subcategories}
         setSelectedCategory={setSelectedCategory}
         setSelectedProvince={setSelectedProvince}
         setSelectedDistricts={setSelectedDistricts}
@@ -385,11 +282,7 @@ const Index = () => {
         </div>
       </div>
 
-      <Grid
-        searchQuery={searchQuery}
-        subcategories={subcategories}
-        districts={districts}
-      />
+      <Grid searchQuery={searchQuery} />
       <ChatBox />
       <Footer />
     </div>

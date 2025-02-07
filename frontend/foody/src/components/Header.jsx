@@ -1,40 +1,18 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import { FaBell, FaSearch, FaFilter } from "react-icons/fa";
-import { useNavigate } from "react-router-dom"; // For navigation
 import "../css/Header.css"; // Import file CSS tùy chỉnh
 import React, { useState, useEffect, useRef } from "react";
 import { useData } from "../context/DataContext";
 
-function Header({
-  onSearch,
-  provinces,
-  selectedCategory,
-  selectedProvince,
-  categories,
-  subcategories,
-  districts,
-  selectedDistricts,
-  setSelectedCategory,
-  setSelectedDistricts,
-  setSelectedProvince,
-}) {
-  const { state, logout } = useData();
-  const navigate = useNavigate(); // For navigation to the home page
+function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
+  const { state, logout, setSelectedCity, setSelectedCategory } = useData();
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
-  const [accessToken, setAcessToken] = useState(null);
   const foods = ["Cơm", "Phở", "Bún", "Pizza", "Burger"];
   const dropdownRef = useRef(null);
-  useEffect(() => {
-    const accessToken = localStorage.getItem("access_token");
-    if (accessToken) {
-      setAcessToken(accessToken);
-    }
-  }, [accessToken, navigate]);
-
   // Xử lý toggle chọn/bỏ chọn quận/huyện
 
   // Call this function when the user submits the search
@@ -71,10 +49,6 @@ function Header({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  if (state.loading) {
-    return <div>Loading...</div>; // Hiển thị khi đang tải
-  }
-
   return (
     <>
       {/* Navigation Bar */}
@@ -136,7 +110,8 @@ function Header({
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  {selectedProvince.name} {/* Hiển thị tên tỉnh được chọn */}
+                  {state.selectedCity && state.selectedCity.name}{" "}
+                  {/* Hiển thị tên tỉnh được chọn */}
                 </button>
                 <ul
                   className="dropdown-menu"
@@ -146,19 +121,19 @@ function Header({
                     overflowY: "auto", // Thanh cuộn dọc nếu nội dung vượt quá chiều cao
                   }}
                 >
-                  {provinces &&
-                    provinces.map((province) => (
-                      <li key={province._id}>
+                  {state.cities &&
+                    state.cities.map((city) => (
+                      <li key={city._id}>
                         <button
                           className="dropdown-item"
                           onClick={() =>
-                            setSelectedProvince({
-                              _id: province._id,
-                              name: province.name,
+                            setSelectedCity({
+                              _id: city._id,
+                              name: city.name,
                             })
                           }
                         >
-                          {province.name}
+                          {city.name}
                         </button>
                       </li>
                     ))}
@@ -174,15 +149,15 @@ function Header({
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  {selectedCategory.name}{" "}
+                  {state.selectedCategory && state.selectedCategory.name}{" "}
                   {/* Hiển thị tên category được chọn */}
                 </button>
                 <ul
                   className="dropdown-menu"
                   aria-labelledby="dropdownCategory"
                 >
-                  {categories &&
-                    categories.map((category) => (
+                  {state.categories &&
+                    state.categories.map((category) => (
                       <li key={category._id}>
                         <button
                           className="dropdown-item"
@@ -318,8 +293,8 @@ function Header({
                     <div className="col-12 col-md-8">
                       {activeTab === "Khu vực" && (
                         <div className="row mb-3">
-                          {districts &&
-                            districts.map((district) => (
+                          {state.districts &&
+                            state.districts.map((district) => (
                               <div
                                 key={district._id}
                                 className="col-6 col-sm-6 col-md-6 mb-2"
@@ -386,8 +361,8 @@ function Header({
                       )}
                       {activeTab === "Phân loại" && (
                         <div className="row">
-                          {subcategories &&
-                            subcategories.map((subCategory, index) => (
+                          {state.subCategories &&
+                            state.subCategories.map((subCategory, index) => (
                               <div
                                 key={index}
                                 className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
@@ -552,9 +527,9 @@ function Header({
                     ></i>
                     <button
                       className="btn btn-link text-decoration-none text-dark p-0"
-                      onClick={() =>
-                        logout(localStorage.getItem("access_token"))
-                      }
+                      onClick={() => {
+                        state.accessToken && logout(state.accessToken);
+                      }}
                     >
                       Đăng xuất
                     </button>

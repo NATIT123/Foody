@@ -1,23 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useData } from "../context/DataContext";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 const ProfilePage = () => {
-  const { state, logout } = useData();
-
-  console.log("State from context:", state); // Kiểm tra giá trị state
+  const { state } = useData();
+  const navigate = useNavigate();
   const [name, setName] = useState(null);
-  const [gender, setGender] = useState("");
-  const [email, setEmail] = useState("huynhduythuan668@gmail.com");
-  const [phone, setPhone] = useState("0339171545");
+  const [email, setEmail] = useState(null);
+  const [phone, setPhone] = useState(null);
   const [profilePic, setProfilePic] = useState(null);
   const [showModal, setShowModal] = useState(false); // For phone number modal
   const [newPhone, setNewPhone] = useState(""); // New phone number input
   const [showPasswordFields, setShowPasswordFields] = useState(false); // For password fields
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!state.user && !state.loading) {
+        navigate("/");
+      } else if (state.user) {
+        const currentUser = state.user;
+        setName(currentUser.fullname);
+        setEmail(currentUser.email);
+        setPhone(currentUser.phone);
+        setProfilePic(currentUser.photo);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer); // Cleanup tránh memory leak
+  }, [navigate, state.user, state.loading]);
 
   const handleFileChange = (event) => {
     setProfilePic(event.target.files[0]);
@@ -52,16 +67,9 @@ const ProfilePage = () => {
     alert("Xóa tài khoản!");
   };
 
-  if (state.loading) {
-    return <div>Loading...</div>; // Hiển thị khi đang tải
-  }
-  if (!state.user) {
-    return <div>Chưa có thông tin người dùng</div>; // Thông báo nếu không có user
-  }
-
   return (
     <div>
-      {/* <Header /> */}
+      <Header />
       <div className="container mt-5">
         <div className="row">
           {/* Sidebar */}
@@ -95,7 +103,11 @@ const ProfilePage = () => {
                   <label className="form-label fw-bold">Tải Ảnh đại diện</label>
                   <div className="d-flex align-items-center">
                     <img
-                      src="/images/default.jpg"
+                      src={
+                        profilePic === "default.jpg"
+                          ? "/images/default.jpg"
+                          : profilePic
+                      }
                       alt="Profile"
                       style={{
                         width: "60px",
@@ -132,7 +144,7 @@ const ProfilePage = () => {
                   <input
                     type="text"
                     className="form-control"
-                    value={state.user && state.user.fullname}
+                    value={name && name}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
@@ -142,7 +154,7 @@ const ProfilePage = () => {
                   <input
                     type="email"
                     className="form-control"
-                    value={state.user && state.user.email}
+                    value={email && email}
                     disabled
                   />
                 </div>
@@ -196,7 +208,7 @@ const ProfilePage = () => {
                 {/* Phone Number Management */}
                 <div className="mb-3">
                   <h6 className="fw-bold">Quản lý số điện thoại</h6>
-                  <p>{state.user && state.user.phone}</p>
+                  <p>{phone && phone}</p>
                   <button
                     className="btn btn-primary"
                     onClick={handleChangePhone}

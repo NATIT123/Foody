@@ -12,15 +12,13 @@ const LoginPage = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
-  const { setAccessToken } = useData();
+  const { state, setAccessToken } = useData();
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("access_token");
-    if (accessToken) {
+    if (state.user && !state.loading) {
       navigate("/");
-      setAccessToken(accessToken);
     }
-  }, [navigate, setAccessToken]);
+  }, [navigate, state.user, state.loading]);
 
   const [status, setStatus] = useState("");
   useEffect(() => {

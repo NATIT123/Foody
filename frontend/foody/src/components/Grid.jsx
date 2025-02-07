@@ -7,7 +7,6 @@ import CategoryFiltersEat from "./CategoryFiltersEat";
 import ItemsEat from "./ItemsEat";
 import Comments from "./Comments.jsx";
 import Blogs from "./Blogs.jsx";
-
 import Modal from "./Modal.jsx";
 const categoriesEat = ["Mới nhất", "Lượt xem", "Phổ biến", "Đã lưu"];
 
@@ -124,7 +123,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   );
 };
 
-const Grid = ({ searchQuery, subcategories, districts }) => {
+const Grid = ({ searchQuery }) => {
   const [activeCategoryEat, setActiveCategoryEat] = useState(categories[0]);
   const [activeCategory, setActiveCategory] = useState(categories[0]);
   const [filtersState, setFiltersState] = useState(filters);
@@ -243,8 +242,6 @@ const Grid = ({ searchQuery, subcategories, districts }) => {
         {activeTab === "Khám phá" && (
           <>
             <CategoryFilters
-              subcategories={subcategories}
-              districts={districts}
               categories={categories}
               activeCategory={activeCategory}
               setActiveCategory={setActiveCategory}
