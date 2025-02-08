@@ -70,7 +70,7 @@ app.use(
 
 //Body parser, reading data  from body into req.body
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: "5mb" }));
 
 ///Cookie-Parser
 app.use(cookieParser());

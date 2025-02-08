@@ -11,7 +11,6 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
-  const foods = ["Cơm", "Phở", "Bún", "Pizza", "Burger"];
   const dropdownRef = useRef(null);
   // Xử lý toggle chọn/bỏ chọn quận/huyện
 
@@ -111,7 +110,6 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                   aria-expanded="false"
                 >
                   {state.selectedCity && state.selectedCity.name}{" "}
-                  {/* Hiển thị tên tỉnh được chọn */}
                 </button>
                 <ul
                   className="dropdown-menu"
@@ -331,32 +329,33 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                       )}
                       {activeTab === "Ẩm thực" && (
                         <div className="row mb-3">
-                          {foods.map((food, index) => (
-                            <div
-                              key={index}
-                              className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
-                            >
-                              <div className="form-check">
-                                <input
-                                  type="checkbox"
-                                  className="form-check-input"
-                                  id={`food-${index}`}
-                                  style={{ accentColor: "#28a745" }}
-                                />
-                                <label
-                                  className="form-check-label"
-                                  htmlFor={`food-${index}`}
-                                  style={{
-                                    fontSize: "14px",
-                                    color: "#555",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  {food}
-                                </label>
+                          {state.cuisines &&
+                            state.cuisines.map((food, index) => (
+                              <div
+                                key={index}
+                                className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
+                              >
+                                <div className="form-check">
+                                  <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    id={`food-${index}`}
+                                    style={{ accentColor: "#28a745" }}
+                                  />
+                                  <label
+                                    className="form-check-label"
+                                    htmlFor={`food-${index}`}
+                                    style={{
+                                      fontSize: "14px",
+                                      color: "#555",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    {food.name}
+                                  </label>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
                         </div>
                       )}
                       {activeTab === "Phân loại" && (
@@ -528,7 +527,7 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                     <button
                       className="btn btn-link text-decoration-none text-dark p-0"
                       onClick={() => {
-                        state.accessToken && logout(state.accessToken);
+                        logout();
                       }}
                     >
                       Đăng xuất

@@ -7,7 +7,7 @@ const cuisinesService = new CuisinesService(cuisinesRepo);
 
 export const addCuisines = cuisinesService.addCuisines();
 
-export const getAllCuisiness = cuisinesService.getAllCuisines();
+export const getAllCuisines = cuisinesService.getAllCuisines();
 
 export const getCuisinesById = cuisinesService.getCuisinesById();
 

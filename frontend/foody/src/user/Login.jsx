@@ -90,12 +90,18 @@ const LoginPage = () => {
             <Alert
               className="d-flex flex-column align-items-center text-center"
               variant={`${
-                status === "fail" || status === "error" ? "danger" : "success"
+                status === "fail" || status === "error" || status === 400
+                  ? "danger"
+                  : "success"
               }`}
               onClick={() => setShowModal(false)}
               dismissible
             >
-              <Alert.Heading>Error</Alert.Heading>
+              <Alert.Heading>
+                {status === "fail" || status === "error" || status === 400
+                  ? "Error"
+                  : "Success"}
+              </Alert.Heading>
               <p>{message}</p>
             </Alert>
           ) : (

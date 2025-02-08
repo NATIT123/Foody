@@ -1,9 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // For navigation
 import "bootstrap/dist/css/bootstrap.min.css";
 import Alert from "react-bootstrap/Alert";
 import { TbLockPassword } from "react-icons/tb";
+import { useData } from "../context/DataContext";
 const ForgotPasswordPage = () => {
+  const { state } = useData();
+  const navigate = useNavigate(); // For navigation to the home page
   const [email, setEmail] = useState("");
+  useEffect(() => {
+    if (state.user && !state.loading) {
+      navigate("/");
+    }
+  }, [navigate, state.user, state.loading]);
 
   const handleEmailChange = (e) => setEmail(e.target.value);
   const [showModal, setShowModal] = useState(false);
@@ -27,7 +36,7 @@ const ForgotPasswordPage = () => {
             setShowModal(true);
             setStatus(data.status);
             if (data.status !== "fail" && data.status !== "error") {
-              setEmail(null);
+              setEmail("");
             }
           }
         })
@@ -106,6 +115,7 @@ const ForgotPasswordPage = () => {
               />
             </div>
           </div>
+
           <button className="btn btn-primary w-100" type="submit">
             Gửi hướng dẫn đặt lại mật khẩu
           </button>

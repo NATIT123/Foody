@@ -10,6 +10,8 @@ import ForgotPasswordPage from "./user/ForgotPasswordPage";
 import OrderHistory from "./user/OrderHistory";
 import ProfilePage from "./user/ProfilePage";
 import Member from "./user/Member";
+import ChangePasswordPage from "./user/ChangePassword";
+import Dashboard from "./admin/Dashboard";
 // import Dashboard from "./admin/Dashboard";
 
 const App = () => {
@@ -25,6 +27,11 @@ const App = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/member" element={<Member />} />
           <Route path="/forgot" element={<ForgotPasswordPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/changePassword/:resetToken"
+            element={<ChangePasswordPage />}
+          />
         </Routes>
       </Router>
     </DataProvider>

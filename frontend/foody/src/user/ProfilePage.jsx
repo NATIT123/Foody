@@ -4,19 +4,23 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
+import Alert from "react-bootstrap/Alert";
 const ProfilePage = () => {
   const { state } = useData();
+  const [showModal, setShowModal] = useState(false);
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
-  const [name, setName] = useState(null);
-  const [email, setEmail] = useState(null);
-  const [phone, setPhone] = useState(null);
-  const [profilePic, setProfilePic] = useState(null);
-  const [showModal, setShowModal] = useState(false); // For phone number modal
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [profilePic, setProfilePic] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [showModalPhone, setShowModalPhone] = useState(false); // For phone number modal
   const [newPhone, setNewPhone] = useState(""); // New phone number input
   const [showPasswordFields, setShowPasswordFields] = useState(false); // For password fields
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -27,7 +31,7 @@ const ProfilePage = () => {
         setName(currentUser.fullname);
         setEmail(currentUser.email);
         setPhone(currentUser.phone);
-        setProfilePic(currentUser.photo);
+        setImageUrl(currentUser.photo);
       }
     }, 100);
 
@@ -48,7 +52,7 @@ const ProfilePage = () => {
   };
 
   const handleChangePhone = () => {
-    setShowModal(true); // Show phone number modal
+    setShowModalPhone(true); // Show phone number modal
   };
 
   const handleCloseModal = () => {
@@ -57,7 +61,7 @@ const ProfilePage = () => {
 
   const handleSavePhone = () => {
     setPhone(newPhone); // Save phone number
-    setShowModal(false); // Close modal
+    setShowModalPhone(false); // Close modal
     alert("Số điện thoại đã được cập nhật!");
   };
 
@@ -67,9 +71,62 @@ const ProfilePage = () => {
     alert("Xóa tài khoản!");
   };
 
+  const handleUploadPhoto = async () => {
+    const formData = new FormData();
+    formData.append("image", profilePic);
+    fetch(`${process.env.REACT_APP_BASE_URL}/user/uploadPhoto`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${state.accessToken}`,
+      },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setMessage(data.message);
+          setShowModal(true);
+          setStatus(data.status);
+          if (
+            data.status === "fail" ||
+            data.status !== "error" ||
+            data.status !== 400
+          ) {
+            setImageUrl(data.data.photo);
+          }
+        }
+      })
+      .catch((error) => {
+        setStatus("error");
+        setShowModal(true);
+        setMessage(error.message);
+      });
+  };
+
   return (
     <div>
       <Header />
+      {showModal ? (
+        <Alert
+          className="d-flex flex-column align-items-center text-center"
+          variant={`${
+            status === "fail" || status === "error" || status === 400
+              ? "danger"
+              : "success"
+          }`}
+          onClick={() => setShowModal(false)}
+          dismissible
+        >
+          <Alert.Heading>
+            {status === "fail" || status === "error" || status === 400
+              ? "Error"
+              : "Success"}
+          </Alert.Heading>
+          <p>{message}</p>
+        </Alert>
+      ) : (
+        <div></div>
+      )}
       <div className="container mt-5">
         <div className="row">
           {/* Sidebar */}
@@ -104,9 +161,9 @@ const ProfilePage = () => {
                   <div className="d-flex align-items-center">
                     <img
                       src={
-                        profilePic === "default.jpg"
+                        imageUrl === "default.jpg"
                           ? "/images/default.jpg"
-                          : profilePic
+                          : imageUrl
                       }
                       alt="Profile"
                       style={{
@@ -133,7 +190,12 @@ const ProfilePage = () => {
                       </small>
                     </div>
                   </div>
-                  <button className="btn btn-primary mt-3">Cập nhật</button>
+                  <button
+                    className="btn btn-primary mt-3"
+                    onClick={handleUploadPhoto}
+                  >
+                    Cập nhật
+                  </button>
                 </div>
 
                 <hr />
@@ -221,7 +283,7 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
-      {showModal && (
+      {showModalPhone && (
         <div
           className="modal fade show"
           style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}

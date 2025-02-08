@@ -2,13 +2,13 @@ import { Router } from "express";
 const router = Router();
 import {
   addCuisines,
-  getAllCuisiness,
+  getAllCuisines,
   updateCuisinesById,
   getCuisinesById,
   deleteCuisinesById,
 } from "../controllers/cuisinesController.js";
 
-router.get("/getAllCuisines", getAllCuisiness);
+router.get("/getAllCuisines", getAllCuisines);
 router.post("/addCuisines", addCuisines);
 router.delete("/deleteCuisines/:id", deleteCuisinesById);
 router.patch("/updateCuisines/:id", updateCuisinesById);

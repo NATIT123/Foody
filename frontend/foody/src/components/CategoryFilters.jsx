@@ -55,9 +55,9 @@ const CategoryFilters = ({
                 </option>
               ))}
             ?
-            {filter === "- Danh mục -" &&
-              state.subCategories &&
-              state.subCategories.map((option, index) => (
+            {filter === "- Ẩm thực -" &&
+              state.cuisines &&
+              state.cuisines.map((option, index) => (
                 <option key={index} value={option.name}>
                   {option.name}
                 </option>
