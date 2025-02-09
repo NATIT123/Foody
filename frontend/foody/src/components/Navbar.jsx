@@ -58,17 +58,17 @@ const Navbar = () => {
                 <h6 className="dropdown-header">Notifications</h6>
               </li>
               <li>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="/">
                   You have 3 new messages
                 </a>
               </li>
               <li>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="/">
                   Server rebooted
                 </a>
               </li>
               <li>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="/">
                   New user registered
                 </a>
               </li>
@@ -76,7 +76,7 @@ const Navbar = () => {
                 <hr className="dropdown-divider" />
               </li>
               <li>
-                <a className="dropdown-item text-center" href="#">
+                <a className="dropdown-item text-center" href="/">
                   View all
                 </a>
               </li>
@@ -99,12 +99,12 @@ const Navbar = () => {
               aria-labelledby="userDropdown"
             >
               <li>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="/">
                   Profile
                 </a>
               </li>
               <li>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="/">
                   Settings
                 </a>
               </li>
@@ -112,7 +112,7 @@ const Navbar = () => {
                 <hr className="dropdown-divider" />
               </li>
               <li>
-                <a className="dropdown-item text-danger" href="#">
+                <a className="dropdown-item text-danger" href="/">
                   Logout
                 </a>
               </li>

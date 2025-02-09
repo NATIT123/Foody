@@ -63,7 +63,7 @@ router.post("/logOut", getMe, logOut);
 
 router.post("/refresh", refreshToken);
 
-// router.use(restrictTo("admin"));
+router.use(restrictTo("admin"));
 
 router.get("/getAllUsers", getAllUsers);
 router.post("/addUser", addUser);

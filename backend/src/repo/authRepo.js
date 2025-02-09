@@ -222,7 +222,6 @@ class AuthRepository {
           )
         );
       }
-
       ///Check if POSTED current password is correct
       const correct = await user.correctPassword(
         req.body.password,

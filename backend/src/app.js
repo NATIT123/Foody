@@ -26,6 +26,7 @@ import districtRoute from "./router/district.js";
 import categoryRoute from "./router/category.js";
 import subCategoryRoute from "./router/subCategory.js";
 import cuisinesRoute from "./router/cuisines.js";
+import coordinateRoute from "./router/coordinate.js";
 import { importData } from "./controllers/handleFactory.js";
 import UserModel from "./models/userModel.js";
 import CountryModel from "./models/CountryModel.js";
@@ -38,6 +39,7 @@ import FoodModel from "./models/foodModel.js";
 import CommentModel from "./models/commentModel.js";
 import AlbumModel from "./models/AlbumModel.js";
 import CuisinesModel from "./models/CuisinesModel.js";
+import CoordinateModel from "./models/coordinateModel.js";
 
 ///Connect DB
 connectDb();
@@ -156,6 +158,10 @@ importData(SubCategoryModel, "subCategory");
 //Cuisines
 app.use("/api/v1/cuisines", cuisinesRoute);
 importData(CuisinesModel, "cuisines");
+
+//Coordinate
+app.use("/api/v1/coordinates", coordinateRoute);
+importData(CoordinateModel, "coordinates");
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

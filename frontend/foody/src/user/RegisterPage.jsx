@@ -35,7 +35,9 @@ const RegisterPage = () => {
 
   useEffect(() => {
     if (state.user && !state.loading) {
-      navigate("/");
+      console.log(state.user);
+      if (state.user.role === "admin") navigate("/dashboard");
+      if (state.user.role === "user") navigate("/");
     }
   }, [navigate, state.user, state.loading]);
 
