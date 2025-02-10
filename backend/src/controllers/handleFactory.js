@@ -144,7 +144,7 @@ export const updateOne = (Model) =>
     });
   });
 
-export const getOne = (Model, popOptions) =>
+export const getOne = (Model, popOptions, multipleOptions) =>
   catchAsync(async (req, res, next) => {
     const id = req.params.id;
 
@@ -162,13 +162,13 @@ export const getOne = (Model, popOptions) =>
     let document = Model.findById(id);
 
     if (popOptions) document = document.populate(popOptions);
+    if (Array.isArray(multipleOptions) && multipleOptions.length > 0) {
+      multipleOptions.forEach((option) => {
+        document = document.populate(option);
+      });
+    }
 
     const doc = await document;
-
-    //  await tour.findById(id);
-    // await tour.findById(id).populate('guides');
-    // console.log(tourDetail);
-    // await tour.findOne({ _id: id });
     if (!doc) {
       return next(
         new AppError(

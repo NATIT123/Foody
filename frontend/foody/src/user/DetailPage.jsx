@@ -23,7 +23,7 @@ const DetailPage = () => {
     fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurant/${id}`)
       .then((response) => response.json())
       .then((data) => {
-        if (data.data.data) {
+        if (data.data?.data) {
           setCurrentRestaurant(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
@@ -37,7 +37,7 @@ const DetailPage = () => {
     fetch(`${process.env.REACT_APP_BASE_URL}/food/getFoodsByRestaurant/${id}`)
       .then((response) => response.json())
       .then((data) => {
-        if (data.data.data) {
+        if (data.data?.data) {
           setCurrentFoods(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
@@ -53,12 +53,12 @@ const DetailPage = () => {
     )
       .then((response) => response.json())
       .then((data) => {
-        if (data.data.data) {
+        if (data.data?.data) {
           setCurrentComments(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
       .catch((error) => {
-        console.error("Error fetching provinces:", error);
+        console.error("Error fetching restaurants:", error);
       });
   }, [id]);
 
@@ -67,7 +67,7 @@ const DetailPage = () => {
     fetch(`${process.env.REACT_APP_BASE_URL}/album/getAlbumsByRestaurant/${id}`)
       .then((response) => response.json())
       .then((data) => {
-        if (data.data.data) {
+        if (data.data?.data) {
           setCurrentAlbums(data.data.data); // Lưu danh sách restaurant vào state
         }
       })

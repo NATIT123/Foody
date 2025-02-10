@@ -5,7 +5,7 @@ import Comments from "./Comments";
 import CommentsSection from "./CommentsSection";
 import { FaPlus } from "react-icons/fa";
 
-const MapModal = ({ isVisible, onClose }) => {
+const MapModal = ({ currentRestaurants, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
 
   return (
@@ -20,7 +20,7 @@ const MapModal = ({ isVisible, onClose }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title" id="mapModalLabel">
-              Bản đồ - Mì Dầu Hào HongKong Thượng Hạng
+              Bản đồ - {currentRestaurants.name}
             </h5>
             <button
               type="button"
@@ -33,7 +33,7 @@ const MapModal = ({ isVisible, onClose }) => {
             <div style={{ height: "400px" }}>
               <iframe
                 title="Google Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.4898942877085!2d105.85084937444965!3d21.013075388318644!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab23149b5aa5%3A0xe6f99884919762c7!2zQsOhbmggR2nDsiBDaOG7oyBOZ3V54buFbiBDw7RuZyBUcuG7qQ!5e0!3m2!1sen!2s!4v1739010064680!5m2!1sen!2s"
+                src={currentRestaurants?.coordinateId.iframe}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
@@ -71,7 +71,11 @@ const Slide = ({
   const menuItems = [
     { name: "Trang chủ", active: true },
 
-    { name: "Ảnh & Video", active: false, count: currentAlbums.length || 0 },
+    {
+      name: "Ảnh & Video",
+      active: false,
+      count: currentAlbums.length || 0,
+    },
     { name: "Bình luận", active: false, count: currentComments.length || 0 },
     { name: "Bản đồ", active: false },
   ];
@@ -102,9 +106,8 @@ const Slide = ({
                 style={{ cursor: "pointer" }}
               >
                 {menuItem.name}
-                {menuItem.count && (
-                  <span className="badge bg-secondary">{menuItem.count}</span>
-                )}
+
+                <span className="badge bg-secondary">{menuItem.count}</span>
               </li>
             ))}
           </ul>
@@ -209,11 +212,11 @@ const Slide = ({
             >
               <h4>Hình món ăn từ cộng đồng</h4>
               <div className="row">
-                {currentAlbums &&
+                {currentAlbums && currentAlbums.length > 0 ? (
                   currentAlbums.map((image, index) => (
                     <div key={index} className="col-6 col-md-3 mb-3">
                       <img
-                        src={currentAlbums.image}
+                        src={image.image} // SỬA LẠI Ở ĐÂY
                         alt={`Community Food ${index + 1}`}
                         className="img-fluid"
                         style={{
@@ -224,7 +227,12 @@ const Slide = ({
                         }}
                       />
                     </div>
-                  ))}
+                  ))
+                ) : (
+                  <p className="text-muted fw-bold text-center fs-4">
+                    Hiện tại không có hình ảnh nào
+                  </p>
+                )}
                 <div className="col-6 col-md-3 mb-3">
                   <div
                     className="d-flex align-items-center justify-content-center"
@@ -251,7 +259,7 @@ const Slide = ({
               <div className="col-md-8">
                 <div className="mt-5">
                   <h4>Bình luận</h4>
-                  {currentComments &&
+                  {currentComments && currentComments.length > 0 ? (
                     currentComments.map((review, index) => (
                       <div
                         key={index}
@@ -306,7 +314,12 @@ const Slide = ({
                           </button>
                         </div>
                       </div>
-                    ))}
+                    ))
+                  ) : (
+                    <p className="text-muted fw-bold text-center fs-4">
+                      Hiện tại không có bình luận nào
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -512,7 +525,7 @@ const Slide = ({
                   >
                     <iframe
                       title="Google Map"
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.8676005935885!2d105.79532781488302!3d21.028511793150485!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135abc06e3a1b99%3A0x678946e8f8d3c04f!2zVGhhbmggxJDhu6ljIFRo4buNIFRo4buNIFRoYW5o!5e0!3m2!1sen!2s!4v1670928133423!5m2!1sen!2s"
+                      src={currentRestaurants.coordinateId?.iframe}
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -676,7 +689,11 @@ const Slide = ({
         )}
 
         {activeSection === "Bản đồ" && (
-          <MapModal isVisible={isMapVisible} onClose={handleCloseModal} />
+          <MapModal
+            isVisible={isMapVisible}
+            onClose={handleCloseModal}
+            currentRestaurants={currentRestaurants}
+          />
         )}
       </div>
     </div>

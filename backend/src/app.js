@@ -27,6 +27,7 @@ import categoryRoute from "./router/category.js";
 import subCategoryRoute from "./router/subCategory.js";
 import cuisinesRoute from "./router/cuisines.js";
 import coordinateRoute from "./router/coordinate.js";
+import favoriteRestaurantRoute from "./router/favoriteRestaurant.js";
 import { importData } from "./controllers/handleFactory.js";
 import UserModel from "./models/userModel.js";
 import CountryModel from "./models/CountryModel.js";
@@ -162,6 +163,8 @@ importData(CuisinesModel, "cuisines");
 //Coordinate
 app.use("/api/v1/coordinates", coordinateRoute);
 importData(CoordinateModel, "coordinates");
+
+app.use("/api/v1/favorite", favoriteRestaurantRoute);
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below
