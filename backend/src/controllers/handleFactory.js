@@ -2,6 +2,10 @@ import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import fs from "fs";
@@ -140,7 +144,7 @@ export const updateOne = (Model) =>
     });
   });
 
-export const getOne = (Model, popOptions) =>
+export const getOne = (Model, popOptions, multipleOptions) =>
   catchAsync(async (req, res, next) => {
     const id = req.params.id;
 
@@ -158,13 +162,13 @@ export const getOne = (Model, popOptions) =>
     let document = Model.findById(id);
 
     if (popOptions) document = document.populate(popOptions);
+    if (Array.isArray(multipleOptions) && multipleOptions.length > 0) {
+      multipleOptions.forEach((option) => {
+        document = document.populate(option);
+      });
+    }
 
     const doc = await document;
-
-    //  await tour.findById(id);
-    // await tour.findById(id).populate('guides');
-    // console.log(tourDetail);
-    // await tour.findOne({ _id: id });
     if (!doc) {
       return next(
         new AppError(
@@ -254,7 +258,7 @@ export const importData = (Model, nameData) => {
     }
 
     // Sử dụng đường dẫn tuyệt đối
-    const dataPath = `./data/${nameData}.json`;
+    const dataPath = `${__dirname}/../data/${nameData}.json`;
     console.log(`Reading file from path: ${dataPath}`);
 
     // Đọc dữ liệu từ file JSON

@@ -1,7 +1,10 @@
 import nodemailer from "nodemailer";
 import pug from "pug";
+import path from "node:path";
 import { htmlToText } from "html-to-text";
-const __dirname = import.meta.dirname;
+import { fileURLToPath } from "node:url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default class Email {
   constructor(user, url) {
@@ -58,7 +61,7 @@ export default class Email {
   }
 
   async sendWelcome() {
-    await this.send("welcome", "Welcome to the Foody Service!");
+    await this.send("welcome", "Welcome to the Foody!");
   }
 
   async sendPasswordReset() {

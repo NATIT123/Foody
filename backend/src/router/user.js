@@ -6,6 +6,7 @@ import {
   deleteUserById,
   getAllUsers,
   getUserById,
+  uploadPhoto,
 } from "../controllers/userController.js";
 
 import {
@@ -21,18 +22,38 @@ import {
   updateMe,
   deleteMe,
   refreshToken,
+  checkPassword,
 } from "../controllers/authController.js";
+import AppError from "../utils/appError.js";
+import multer from "multer";
+const multerStorage = multer.memoryStorage();
 
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image! Please upload only images.", 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 router.post("/signUp", signUp);
 router.post("/login", logIn);
 
 router.post("/forgotPassword", forgotPassword);
+router.post("/checkPassword/:token", checkPassword);
 router.patch("/resetPassword/:token", resetPassword);
 
 // ///Protect all route
 router.use(protect);
 router.patch("/updatePassword", getMe, changePassword);
 router.get("/me", getMe, getUserById);
+
+router.post("/uploadPhoto", upload.single("image"), getMe, uploadPhoto);
 
 router.patch("/updateMe", getMe, updateMe);
 
@@ -42,7 +63,7 @@ router.post("/logOut", getMe, logOut);
 
 router.post("/refresh", refreshToken);
 
-// router.use(restrictTo("admin"));
+router.use(restrictTo("admin"));
 
 router.get("/getAllUsers", getAllUsers);
 router.post("/addUser", addUser);

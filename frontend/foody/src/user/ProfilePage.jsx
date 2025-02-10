@@ -1,58 +1,160 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useData } from "../context/DataContext";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
+import Alert from "react-bootstrap/Alert";
 const ProfilePage = () => {
-  const [name, setName] = useState("Thuận Cát");
-  const [gender, setGender] = useState("");
-  const [email, setEmail] = useState("huynhduythuan668@gmail.com");
-  const [phone, setPhone] = useState("0339171545");
-  const [profilePic, setProfilePic] = useState(null);
-  const [showModal, setShowModal] = useState(false); // For phone number modal
-  const [newPhone, setNewPhone] = useState(""); // New phone number input
+  const { state, logout } = useData();
+  const [showModal, setShowModal] = useState(false);
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [profilePic, setProfilePic] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [showPasswordFields, setShowPasswordFields] = useState(false); // For password fields
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [status, setStatus] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!state.user && !state.loading) {
+        navigate("/");
+      } else if (state.user) {
+        const currentUser = state.user;
+        setName(currentUser.fullname);
+        setEmail(currentUser.email);
+        setPhone(currentUser.phone);
+        setImageUrl(currentUser.photo);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer); // Cleanup tránh memory leak
+  }, [navigate, state.user, state.loading]);
 
   const handleFileChange = (event) => {
     setProfilePic(event.target.files[0]);
   };
 
   const handleSaveChanges = () => {
-    if (newPassword !== confirmPassword) {
-        alert("Mật khẩu không khớp!");
-        return;
-      }
-      alert("Mật khẩu đã được thay đổi!");
-      setShowPasswordFields(false); // Hide password fields
+    if (!newPassword || !confirmPassword || !currentPassword) {
+      setMessage("Vui lòng nhập mật khẩu");
+      setShowModal(true);
+      setStatus("fail");
+      return;
+    } else if (newPassword !== confirmPassword) {
+      setMessage("Mật khẩu không trùng khớp");
+      setShowModal(true);
+      setStatus("fail");
+      return;
+    } else {
+      fetch(`${process.env.REACT_APP_BASE_URL}/user/updatePassword`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${state.accessToken}`,
+        },
+        body: JSON.stringify({
+          password: currentPassword,
+          newPassword,
+          confirmPassword,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            setMessage(data.message);
+            setShowModal(true);
+            setStatus(data.status);
+            if (
+              data.status !== "fail" &&
+              data.status !== "error" &&
+              data.status !== 400
+            ) {
+              setNewPassword("");
+              setConfirmPassword("");
+              setCurrentPassword("");
+              setShowPasswordFields(false);
+              logout();
+              window.location.reload();
+            }
+          }
+        })
+        .catch((error) => {
+          setStatus("error");
+          setShowModal(true);
+          setMessage(error.message);
+        });
+    }
   };
 
-  const handleChangePhone = () => {
-    setShowModal(true); // Show phone number modal
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false); // Close phone number modal
-  };
-
-  const handleSavePhone = () => {
-    setPhone(newPhone); // Save phone number
-    setShowModal(false); // Close modal
-    alert("Số điện thoại đã được cập nhật!");
-  };
-
-  const handleSavePassword = () => {
-    
-  };
-
-  const handleDeleteAccount = () => {
-    alert("Xóa tài khoản!");
+  const handleUploadPhoto = async () => {
+    if (!profilePic) {
+      setMessage("Vui lòng chọn ảnh");
+      setShowModal(true);
+      setStatus("fail");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("image", profilePic);
+    fetch(`${process.env.REACT_APP_BASE_URL}/user/uploadPhoto`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${state.accessToken}`,
+      },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setMessage(data.message);
+          setShowModal(true);
+          setStatus(data.status);
+          if (
+            data.status === "fail" ||
+            data.status !== "error" ||
+            data.status !== 400
+          ) {
+            setImageUrl(data.data.photo);
+          }
+        }
+      })
+      .catch((error) => {
+        setStatus("error");
+        setShowModal(true);
+        setMessage(error.message);
+      });
   };
 
   return (
     <div>
       <Header />
+      {showModal ? (
+        <Alert
+          className="d-flex flex-column align-items-center text-center"
+          variant={`${
+            status === "fail" || status === "error" || status === 400
+              ? "danger"
+              : "success"
+          }`}
+          onClick={() => setShowModal(false)}
+          dismissible
+        >
+          <Alert.Heading>
+            {status === "fail" || status === "error" || status === 400
+              ? "Error"
+              : "Success"}
+          </Alert.Heading>
+          <p>{message}</p>
+        </Alert>
+      ) : (
+        <div></div>
+      )}
       <div className="container mt-5">
         <div className="row">
           {/* Sidebar */}
@@ -73,19 +175,19 @@ const ProfilePage = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                   <h5 className="card-title">Thông tin người dùng</h5>
-                  <button
-                    className="btn btn-outline-danger"
-                    onClick={handleDeleteAccount}
-                  >
-                    Xóa tài khoản
-                  </button>
                 </div>
 
                 {/* Profile Picture */}
                 <div className="mb-4">
                   <label className="form-label fw-bold">Tải Ảnh đại diện</label>
                   <div className="d-flex align-items-center">
-                    <div
+                    <img
+                      src={
+                        imageUrl === "default.jpg"
+                          ? "/images/default.jpg"
+                          : imageUrl
+                      }
+                      alt="Profile"
                       style={{
                         width: "60px",
                         height: "60px",
@@ -98,9 +200,7 @@ const ProfilePage = () => {
                         fontSize: "24px",
                         marginRight: "15px",
                       }}
-                    >
-                      {name.charAt(0).toUpperCase()}
-                    </div>
+                    ></img>
                     <div>
                       <input
                         type="file"
@@ -108,12 +208,16 @@ const ProfilePage = () => {
                         onChange={handleFileChange}
                       />
                       <small className="text-muted">
-                        Chấp nhận GIF, JPEG, PNG, BMP với kích thước tối đa
-                        5MB.
+                        Chấp nhận GIF, JPEG, PNG, BMP với kích thước tối đa 5MB.
                       </small>
                     </div>
                   </div>
-                  <button className="btn btn-primary mt-3">Cập nhật</button>
+                  <button
+                    className="btn btn-primary mt-3"
+                    onClick={handleUploadPhoto}
+                  >
+                    Cập nhật
+                  </button>
                 </div>
 
                 <hr />
@@ -124,28 +228,17 @@ const ProfilePage = () => {
                   <input
                     type="text"
                     className="form-control"
-                    value={name}
+                    value={name && name}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
-                <div className="mb-3">
-                  <label className="form-label fw-bold">Giới tính</label>
-                  <select
-                    className="form-select"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                  >
-                    <option value="">Không chọn</option>
-                    <option value="Nam">Nam</option>
-                    <option value="Nữ">Nữ</option>
-                  </select>
-                </div>
+
                 <div className="mb-3">
                   <label className="form-label fw-bold">Email</label>
                   <input
                     type="email"
                     className="form-control"
-                    value={email}
+                    value={email && email}
                     disabled
                   />
                 </div>
@@ -168,6 +261,16 @@ const ProfilePage = () => {
                     </>
                   ) : (
                     <div>
+                      <label className="form-label">
+                        Nhập mật khẩu hiện tại
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control mb-2"
+                        placeholder="Mật khẩu hiện tại"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                      />
                       <label className="form-label">Mật khẩu mới</label>
                       <input
                         type="password"
@@ -176,7 +279,9 @@ const ProfilePage = () => {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                       />
-                      <label className="form-label">Nhập lại mật khẩu mới</label>
+                      <label className="form-label">
+                        Nhập lại mật khẩu mới
+                      </label>
                       <input
                         type="password"
                         className="form-control mb-3"
@@ -184,15 +289,11 @@ const ProfilePage = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                       />
-                      
                     </div>
                   )}
                 </div>
 
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSaveChanges}
-                >
+                <button className="btn btn-primary" onClick={handleSaveChanges}>
                   Lưu thay đổi
                 </button>
 
@@ -201,65 +302,20 @@ const ProfilePage = () => {
                 {/* Phone Number Management */}
                 <div className="mb-3">
                   <h6 className="fw-bold">Quản lý số điện thoại</h6>
-                  <p>{phone}</p>
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleChangePhone}
-                  >
-                    Cập nhật số điện thoại
-                  </button>
+
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={phone && phone}
+                    disabled
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      {showModal && (
-        <div
-          className="modal fade show"
-          style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-          tabIndex="-1"
-          role="dialog"
-        >
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Cập nhật số điện thoại</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={handleCloseModal}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <label className="form-label">Số điện thoại mới</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                />
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleCloseModal}
-                >
-                  Đóng
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleSavePhone}
-                >
-                  Lưu thay đổi
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
       <Footer />
     </div>
   );

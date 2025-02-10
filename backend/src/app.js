@@ -25,6 +25,9 @@ import cityRoute from "./router/city.js";
 import districtRoute from "./router/district.js";
 import categoryRoute from "./router/category.js";
 import subCategoryRoute from "./router/subCategory.js";
+import cuisinesRoute from "./router/cuisines.js";
+import coordinateRoute from "./router/coordinate.js";
+import favoriteRestaurantRoute from "./router/favoriteRestaurant.js";
 import { importData } from "./controllers/handleFactory.js";
 import UserModel from "./models/userModel.js";
 import CountryModel from "./models/CountryModel.js";
@@ -36,6 +39,8 @@ import RestaurantModel from "./models/restaurantModel.js";
 import FoodModel from "./models/foodModel.js";
 import CommentModel from "./models/commentModel.js";
 import AlbumModel from "./models/AlbumModel.js";
+import CuisinesModel from "./models/CuisinesModel.js";
+import CoordinateModel from "./models/coordinateModel.js";
 
 ///Connect DB
 connectDb();
@@ -68,7 +73,7 @@ app.use(
 
 //Body parser, reading data  from body into req.body
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: "5mb" }));
 
 ///Cookie-Parser
 app.use(cookieParser());
@@ -150,6 +155,16 @@ importData(CategoryModel, "category");
 //SubCategory
 app.use("/api/v1/subCategory", subCategoryRoute);
 importData(SubCategoryModel, "subCategory");
+
+//Cuisines
+app.use("/api/v1/cuisines", cuisinesRoute);
+importData(CuisinesModel, "cuisines");
+
+//Coordinate
+app.use("/api/v1/coordinates", coordinateRoute);
+importData(CoordinateModel, "coordinates");
+
+app.use("/api/v1/favorite", favoriteRestaurantRoute);
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

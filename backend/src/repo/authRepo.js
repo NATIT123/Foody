@@ -20,8 +20,8 @@ class AuthRepository {
   signUp = () =>
     catchAsync(async (req, res, next) => {
       const newUser = await this.userModel.create(req.body);
-
-      const url = `${req.protocol}://${req.get("host")}/me`;
+      console.log(newUser);
+      const url = `${req.protocol}://localhost:3001/`;
       await new Email(newUser, url).sendWelcome();
       createSendToken(this.userModel, newUser, 201, res);
     });
@@ -129,9 +129,7 @@ class AuthRepository {
       //Send it to user's email
 
       try {
-        const resetURL = `${req.protocol}://${req.get(
-          "host"
-        )}/api/v1/user/resetPassword/${resetToken}`;
+        const resetURL = `${req.protocol}://localhost:3001/changePassword/${resetToken}`;
 
         await new Email(user, resetURL).sendPasswordReset();
 
@@ -152,6 +150,31 @@ class AuthRepository {
           )
         );
       }
+    });
+
+  checkPassword = () =>
+    catchAsync(async (req, res, next) => {
+      ///Get user based on the token
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(req.params.token)
+        .digest("hex");
+
+      const user = await this.userModel.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() },
+      });
+
+      ///If token has not experied,and there is user,set the new password
+      if (!user) {
+        return next(new AppError("Token is invalid or has expeired", 400));
+      }
+
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
+        status: "success",
+        data: [],
+      });
     });
 
   resetPassword = () =>
@@ -199,7 +222,6 @@ class AuthRepository {
           )
         );
       }
-
       ///Check if POSTED current password is correct
       const correct = await user.correctPassword(
         req.body.password,

@@ -88,7 +88,7 @@ const ItemList = ({ currentItems, handleShowModal }) => (
                   background: "#ccc",
                 }}
               />
-              <p className="mb-0 d-flex justify-content-between align-items-center">
+              <div className="mb-0 d-flex justify-content-between align-items-center">
                 <div
                   className="d-flex align-items-center"
                   style={{ fontSize: "14px" }}
@@ -110,7 +110,7 @@ const ItemList = ({ currentItems, handleShowModal }) => (
                     <FaBookmark /> {"Lưu"}
                   </span>
                 </div>
-              </p>
+              </div>
             </div>
           </div>
         </div>

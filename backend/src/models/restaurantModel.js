@@ -1,4 +1,5 @@
 import mongoose, { Schema, model } from "mongoose";
+import { type } from "node:os";
 
 const RestaurantDetailSchema = new Schema(
   {
@@ -14,6 +15,8 @@ const RestaurantDetailSchema = new Schema(
       default: true,
     },
     districtId: { type: mongoose.Schema.Types.ObjectId, ref: "districts" },
+    coordinateId: { type: mongoose.Schema.Types.ObjectId, ref: "coordinates" },
+    cuisinesId: { type: mongoose.Schema.Types.ObjectId, ref: "cuisines" },
     subCategoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "subcategories",

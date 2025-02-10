@@ -30,7 +30,10 @@ class RestaurantRepository {
   }
 
   getRestaurantById() {
-    return getOne(this.restaurantModel, "districtId");
+    return getOne(this.restaurantModel, "districtId", [
+      "coordinateId",
+      "cuisinesId",
+    ]);
   }
 
   updateRestaurantById() {

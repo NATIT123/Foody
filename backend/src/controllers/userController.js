@@ -15,3 +15,5 @@ export const getUserById = userService.getUserById();
 export const updateUserById = userService.updateUserById();
 
 export const deleteUserById = userService.deleteUserById();
+
+export const uploadPhoto = userService.uploadPhoto();

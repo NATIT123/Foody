@@ -50,6 +50,9 @@ class AuthService {
   processNewToken() {
     return this.authRepo.processNewToken();
   }
+  checkPassword() {
+    return this.authRepo.checkPassword();
+  }
 }
 
 export default AuthService;

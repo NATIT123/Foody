@@ -13,13 +13,6 @@ import { IoMapSharp } from "react-icons/io5";
 const DetailPage = () => {
   const { id } = useParams();
   const [searchQuery, setSearchQuery] = useState(""); // State lưu từ khóa tìm kiếm
-  const [provinces, setProvinces] = useState([]); // Lưu danh sách tỉnh
-  const [categories, setCategories] = useState([]); // Lưu danh sách tỉnh
-  const [selectedProvince, setSelectedProvince] = useState([]); // Tỉnh được chọn với id và name
-  const [selectedCategory, setSelectedCategory] = useState({}); // Category được chọn với id và name
-  const [districts, setDistricts] = useState([]); // Danh sách quận/huyện
-  const [selectedDistricts, setSelectedDistricts] = useState([]); // Quận/huyện được chọn
-  const [subcategories, setSubCategories] = useState([]); // Danh sách quận/huyện
   const [currentRestaurant, setCurrentRestaurant] = useState([]); // Dữ liệu sau khi lọc
   const [currentFoods, setCurrentFoods] = useState([]); // Dữ liệu sau khi lọc
   const [currentComments, setCurrentComments] = useState([]); // Dữ liệu sau khi lọc
@@ -30,7 +23,7 @@ const DetailPage = () => {
     fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurant/${id}`)
       .then((response) => response.json())
       .then((data) => {
-        if (data.data.data) {
+        if (data.data?.data) {
           setCurrentRestaurant(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
@@ -44,7 +37,7 @@ const DetailPage = () => {
     fetch(`${process.env.REACT_APP_BASE_URL}/food/getFoodsByRestaurant/${id}`)
       .then((response) => response.json())
       .then((data) => {
-        if (data.data.data) {
+        if (data.data?.data) {
           setCurrentFoods(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
@@ -60,12 +53,12 @@ const DetailPage = () => {
     )
       .then((response) => response.json())
       .then((data) => {
-        if (data.data.data) {
+        if (data.data?.data) {
           setCurrentComments(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
       .catch((error) => {
-        console.error("Error fetching provinces:", error);
+        console.error("Error fetching restaurants:", error);
       });
   }, [id]);
 
@@ -74,7 +67,7 @@ const DetailPage = () => {
     fetch(`${process.env.REACT_APP_BASE_URL}/album/getAlbumsByRestaurant/${id}`)
       .then((response) => response.json())
       .then((data) => {
-        if (data.data.data) {
+        if (data.data?.data) {
           setCurrentAlbums(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
@@ -84,22 +77,6 @@ const DetailPage = () => {
   }, [id]);
 
   // Fetch API lấy detail restaurant
-<<<<<<< HEAD
-  useEffect(() => {
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByRecommendation/${id}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data.data) {
-          setSuggestRestaurants(data.data.data); // Lưu danh sách restaurant vào state
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching restaurants:", error);
-      });
-  }, [id]);
-=======
   // useEffect(() => {
   //   fetch(
   //     `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByRecommendation/${id}`
@@ -114,95 +91,13 @@ const DetailPage = () => {
   //       console.error("Error fetching restaurants:", error);
   //     });
   // }, [id]);
->>>>>>> c9aa10a (Update)
 
   const handleSearch = (query) => {
     setSearchQuery(query); // Cập nhật state từ khóa tìm kiếm
   };
-
-  // Fetch API lấy danh sách tỉnh
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/city/getAllCity`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data.data) {
-          const province = data.data.data.find((el) => {
-            return el.name === "Hà Nội"; // Return the element to satisfy the find method
-          });
-          setProvinces(data.data.data); // Lưu danh sách tỉnh vào state
-          setSelectedProvince(province); // Chọn tỉnh Hà Nội mặc định
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching provinces:", error);
-      });
-  }, []);
-
-  // Fetch API lấy danh sách category
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/category/getAllCategory`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data.data) {
-          setCategories(data.data.data); // Lưu danh sách category vào category
-          setSelectedCategory(data.data.data[0]);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-      });
-  }, []);
-
-  // Fetch API lấy danh sách subcategory khi category được chọn
-  useEffect(() => {
-    if (selectedCategory._id) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/subCategory/getSubCategoryByCategory/${selectedCategory._id}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.data.data) {
-            setSubCategories(data.data.data); // Lưu danh sách quận/huyện vào state
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching subCategories:", error);
-        });
-    }
-  }, [selectedCategory]);
-
-  // Fetch API lấy danh sách quận/huyện khi tỉnh thành được chọn
-  useEffect(() => {
-    if (selectedProvince._id) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/district/getDistrictsByCity/${selectedProvince._id}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.data.data) {
-            setDistricts(data.data.data); // Lưu danh sách quận/huyện vào state
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching districts:", error);
-        });
-    }
-  }, [selectedProvince]);
   return (
     <div>
-      <Header
-        selectedDistricts={selectedDistricts}
-        onSearch={handleSearch}
-        provinces={provinces}
-        categories={categories}
-        selectedProvince={selectedProvince}
-        selectedCategory={selectedCategory}
-        districts={districts}
-        subcategories={subcategories}
-        setSelectedCategory={setSelectedCategory}
-        setSelectedProvince={setSelectedProvince}
-        setSelectedDistricts={setSelectedDistricts}
-      />
+      <Header />
 
       <div className="container mt-5">
         <div className="card shadow">

@@ -6,11 +6,6 @@ const ImageGallery = ({ currentAlbums }) => {
 
   const categories = [
     { name: "Tất cả hình", count: currentAlbums.length, id: "all" },
-    { name: "Không gian", count: 0, id: "space" },
-    { name: "Món ăn", count: 0, id: "food" },
-    { name: "Thực đơn", count: 0, id: "menu" },
-    { name: "Tổng hợp", count: 174, id: "summary" },
-    { name: "Professional", count: 0, id: "professional" },
   ];
 
   return (
