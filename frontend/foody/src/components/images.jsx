@@ -43,8 +43,8 @@ const ImageGallery = ({ currentAlbums }) => {
                 }}
               >
                 <img
-                  src={image.src}
-                  alt={`Image ${index + 1}`}
+                  src={image.image}
+                  alt={`${index + 1}`}
                   className="img-fluid w-100 h-100"
                   style={{ objectFit: "cover" }}
                 />

@@ -79,21 +79,24 @@ class CommentRepository {
           {
             $limit: 10, // Lấy 10 bản ghi đầu tiên
           },
+          {
+            $project: {
+              userId: 1,
+              time: 1,
+              rate: 1,
+              title: 1,
+              description: 1,
+              type: 1,
+              "user.fullname": 1,
+              "user.photo": 1,
+            },
+          },
         ]),
         req.query
       ).limitFields();
 
       // Thực hiện truy vấn
       const doc = await features.query;
-
-      if (!doc || doc.length === 0) {
-        return next(
-          new AppError(
-            customResourceResponse.recordNotFound.message,
-            customResourceResponse.recordNotFound.statusCode
-          )
-        );
-      }
 
       // Gửi phản hồi
       res.status(customResourceResponse.success.statusCode).json({

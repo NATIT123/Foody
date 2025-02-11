@@ -1,121 +1,134 @@
 import { Link } from "react-router-dom";
 import { FaComment, FaCamera, FaBookmark, FaUser } from "react-icons/fa";
-const ItemList = ({ currentItems, handleShowModal }) => (
-  <div className="row">
-    {currentItems &&
-      currentItems.map((item) => (
-        <div key={item._id} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
-          <div className="card h-100">
-            <img
-              src={item.image}
-              className="card-img-top"
-              alt={item.name}
-              style={{ objectFit: "cover", height: "180px" }}
-            />
-            <div className="card-body">
-              <Link
-                to={`/details/${item._id}`}
-                style={{ textDecoration: "none" }}
-              >
-                <h4
-                  className="card-title text-truncate"
-                  style={{
-                    fontSize: "14px",
-                    textAlign: "left",
-                    margin: "0",
-                  }}
-                >
-                  {item.name}
-                </h4>
-              </Link>
-
-              <h6 className="card-subtitle mb-2 text-muted text-truncate">
-                {item.address}
-              </h6>
-              <hr
-                style={{
-                  flex: 1,
-                  border: 0,
-                  height: "1px",
-                  background: "#ccc",
-                }}
+const ItemList = ({ currentItems, handleShowModal }) => {
+  return (
+    <div className="row">
+      {currentItems &&
+        currentItems.map((item) => (
+          <div
+            key={item._id}
+            className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4"
+          >
+            <div className="card h-100">
+              <img
+                src={item.image}
+                className="card-img-top"
+                alt={item.name}
+                style={{ objectFit: "cover", height: "180px" }}
               />
-              <h6 className="card-subtitle mb-2 text-muted d-flex justify-content-start align-items-center">
-                {/* User Avatar */}
-                <FaUser
+              <div className="card-body">
+                <Link
+                  to={`/details/${item._id}`}
+                  style={{ textDecoration: "none" }}
+                >
+                  <h4
+                    className="card-title text-truncate"
+                    style={{
+                      fontSize: "14px",
+                      textAlign: "left",
+                      margin: "0",
+                    }}
+                  >
+                    {item.name}
+                  </h4>
+                </Link>
+
+                <h6 className="card-subtitle mb-2 text-muted text-truncate">
+                  {item.address}
+                </h6>
+                <hr
                   style={{
-                    fontSize: "16px",
-                    color: "#333",
-                    cursor: "pointer",
-                    padding: "3px",
-                    borderRadius: "50%",
-                    backgroundColor: "#dcdcdc",
-                    width: "30px",
-                    height: "30px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    flex: 1,
+                    border: 0,
+                    height: "1px",
+                    background: "#ccc",
                   }}
                 />
+                {item.commentCount > 0 ? (
+                  <h6 className="card-subtitle mb-2 text-muted d-flex justify-content-start align-items-center">
+                    {/* User Avatar */}
+                    {item?.comments[0]?.user?.photo && (
+                      <img
+                        src={
+                          item?.comments[0].user.photo === "default.jpg"
+                            ? "/images/default.jpg"
+                            : item?.comments[0].user.photo
+                        }
+                        alt="User Avatar"
+                        style={{
+                          width: "30px",
+                          height: "30px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          cursor: "pointer",
+                        }}
+                      />
+                    )}
 
-                {/* User Name and Description */}
-                <span
-                  className="d-flex align-items-center ms-2"
-                  style={{
-                    color: "#333",
-                    maxWidth: "200px", // You can adjust the width as needed
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  sadsad
-                </span>
-                <span
-                  className="d-flex align-items-center ms-2 text-muted text-truncate"
-                  style={{
-                    color: "#444",
-                  }}
-                >
-                  sadsadd
-                </span>
-              </h6>
-              <hr
-                style={{
-                  flex: 1,
-                  border: 0,
-                  height: "1px",
-                  background: "#ccc",
-                }}
-              />
-              <div className="mb-0 d-flex justify-content-between align-items-center">
-                <div
-                  className="d-flex align-items-center"
-                  style={{ fontSize: "14px" }}
-                >
-                  <i className="bi bi-chat-dots me-2"></i>
-                  <FaComment
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleShowModal(item)}
-                  />
-                  <span className="ms-1">sadsad</span>
-                  <i className="bi bi-chat-dots me-2"></i>
-                  <FaCamera />
-                  <span className="ms-1">sadsad</span>
-                </div>
+                    {/* User Name and Description */}
+                    <span
+                      className="d-flex align-items-center ms-2"
+                      style={{
+                        color: "#333",
+                        maxWidth: "200px",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {item.comments[0]?.user?.fullname
+                        ? item.comments[0]?.user?.fullname.substring(0, 5)
+                        : "Ẩn danh"}{" "}
+                      {/* Hiển thị tên user nếu có */}
+                    </span>
+                    <span
+                      className="d-flex align-items-center ms-2 text-muted text-truncate"
+                      style={{ color: "#444" }}
+                    >
+                      {item.comments[0]?.description
+                        ? item.comments[0].description.substring(0, 15)
+                        : "Không có tiêu đề"}
+                    </span>
+                  </h6>
+                ) : (
+                  <p className="text-muted fw-bold">Không có bình luận</p>
+                )}
 
-                <div style={{ backgroundColor: "#f5f5f5" }}>
-                  <span className="text-muted d-flex align-items-center">
-                    <i className="bi bi-heart me-1"></i>
-                    <FaBookmark /> {"Lưu"}
-                  </span>
+                <hr
+                  style={{
+                    flex: 1,
+                    border: 0,
+                    height: "1px",
+                    background: "#ccc",
+                  }}
+                />
+                <div className="mb-0 d-flex justify-content-between align-items-center">
+                  <div
+                    className="d-flex align-items-center"
+                    style={{ fontSize: "14px" }}
+                  >
+                    <FaComment
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleShowModal(item)}
+                    />
+                    <span className="ms-1">{item?.commentCount || 0}</span>
+
+                    <FaCamera style={{ marginLeft: "10px" }} />
+                    <span className="ms-1">{item?.albumCount || 0}</span>
+                  </div>
+
+                  <div style={{ backgroundColor: "#f5f5f5" }}>
+                    <span className="text-muted d-flex align-items-center">
+                      <FaBookmark /> {"Lưu"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
-  </div>
-);
+        ))}
+    </div>
+  );
+};
 
 export default ItemList;

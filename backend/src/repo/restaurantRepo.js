@@ -26,7 +26,111 @@ class RestaurantRepository {
   }
 
   getAllRestaurants() {
-    return getAll(this.restaurantModel);
+    return catchAsync(async (req, res, next) => {
+      try {
+        const page = req.query.page * 1 || 1;
+        const limit = req.query?.limit * 1 || 100;
+        const skip = (page - 1) * limit;
+        const restaurants = await this.restaurantModel.aggregate([
+          {
+            $match: { active: true },
+          },
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $lookup: {
+              from: "comments",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user",
+                  },
+                },
+                {
+                  $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+                },
+                { $sort: { createdAt: -1 } },
+                {
+                  $project: {
+                    description: 1,
+                    "user.fullname": 1,
+                    "user.photo": 1,
+                  },
+                },
+              ],
+              as: "comments",
+            },
+          },
+          {
+            $lookup: {
+              from: "albums",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                { $sort: { createdAt: -1 } },
+                { $project: { _id: 1, image: 1 } },
+              ],
+              as: "albums",
+            },
+          },
+
+          {
+            $addFields: {
+              commentCount: { $size: "$comments" },
+              albumCount: { $size: "$albums" },
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              address: 1,
+              image: 1,
+              commentCount: 1,
+              albumCount: 1,
+              comments: 1,
+              albums: 1,
+            },
+          },
+          {
+            $facet: {
+              metadata: [{ $count: "total" }],
+              data: [{ $skip: skip }, { $limit: limit }], // Phân trang
+            },
+          },
+        ]);
+        const total = restaurants[0].metadata[0]?.total || 0;
+        const totalPages = Math.ceil(total / limit);
+        const docs = restaurants[0].data;
+
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: docs.length,
+          totalPages: totalPages,
+          currentPage: req.query.page * 1 || 1,
+          data: {
+            data: docs,
+          },
+        });
+      } catch (error) {
+        console.error("Error fetching restaurants", error);
+        return next(new AppError("Server error", 500));
+      }
+    });
   }
 
   getRestaurantById() {

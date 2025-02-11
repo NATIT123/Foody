@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import "../css/Slide.css";
 import ImageGallery from "./images";
 import Comments from "./Comments";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import CommentsSection from "./CommentsSection";
 import { FaPlus } from "react-icons/fa";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const MapModal = ({ currentRestaurants, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
@@ -57,6 +59,19 @@ const Slide = ({
 }) => {
   const [activeSection, setActiveSection] = useState("Trang chủ");
   const [isMapVisible, setIsMapVisible] = useState(false);
+
+  const [totalRate, setTotalRate] = useState(0);
+
+  useEffect(() => {
+    let total =
+      currentRestaurants.qualityRate +
+      currentRestaurants.serviceRate +
+      currentRestaurants.locationRate +
+      currentRestaurants.priceRate +
+      currentRestaurants.spaceRate;
+    total /= 5;
+    setTotalRate(total);
+  }, [currentRestaurants]);
 
   useEffect(() => {
     if (activeSection === "Bản đồ") {
@@ -216,7 +231,7 @@ const Slide = ({
                   currentAlbums.map((image, index) => (
                     <div key={index} className="col-6 col-md-3 mb-3">
                       <img
-                        src={image.image} // SỬA LẠI Ở ĐÂY
+                        src={image.image}
                         alt={`Community Food ${index + 1}`}
                         className="img-fluid"
                         style={{
@@ -270,26 +285,63 @@ const Slide = ({
                           boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                         }}
                       >
-                        <div className="d-flex justify-content-between">
-                          <strong>{review.name}</strong>
-                          <span className="text-muted small">
-                            {review.date} {review.device}
-                          </span>
-                        </div>
-                        <div className="d-flex align-items-center my-2">
+                        <div className="d-flex align-items-center">
+                          {/* Avatar */}
+                          <img
+                            src={
+                              review?.user[0].photo === "default.jpg"
+                                ? "/images/default.jpg"
+                                : review?.user[0].photo
+                            }
+                            alt="User Avatar"
+                            className="rounded-circle me-2"
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              objectFit: "cover",
+                            }}
+                          />
+
+                          {/* Thông tin người dùng */}
+                          <div>
+                            <div className="d-flex align-items-center">
+                              <strong className="me-2">
+                                {review?.user[0].fullname || "empty"}
+                              </strong>
+
+                              <img
+                                src="https://cdn-icons-png.flaticon.com/512/190/190411.png" // Icon xác nhận (dấu check)
+                                alt="Verified"
+                                style={{ width: "16px", height: "16px" }}
+                              />
+                            </div>
+
+                            {/* Nguồn và thời gian */}
+                            <div className="d-flex align-items-center text-muted small">
+                              <span className="fw-bold me-1">via iPhone</span>
+                              <i className="bi bi-phone"></i>{" "}
+                              {/* Icon điện thoại (Bootstrap Icons) */}
+                              <span className="ms-2">{review.time}</span>
+                            </div>
+                          </div>
+
+                          {/* Đánh giá (badge sao) */}
                           <span
-                            className="badge bg-success"
+                            className="badge bg-success ms-auto"
                             style={{
                               fontSize: "14px",
                               padding: "4px 8px",
                               borderRadius: "8px",
                             }}
                           >
-                            {review.rating}
+                            {review.rate}
                           </span>
-                          <span className="ms-3 fw-bold">{review.title}</span>
                         </div>
-                        <p className="text-muted">{review.reviewText}</p>
+
+                        <div className="fw-bold">{review.title}</div>
+                        <p className="text-muted fw-semibold">
+                          {review.description}
+                        </p>
                         {/* Action Icons */}
                         <div className="d-flex align-items-center mt-3">
                           <button
@@ -333,33 +385,8 @@ const Slide = ({
                     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                   }}
                 >
-                  <h6>40 bình luận đã chia sẻ</h6>
-                  <ul className="list-unstyled mb-3">
-                    <li>
-                      <span style={{ color: "#6200ea", fontWeight: "bold" }}>
-                        1
-                      </span>{" "}
-                      Tuyệt vời
-                    </li>
-                    <li>
-                      <span style={{ color: "#388e3c", fontWeight: "bold" }}>
-                        34
-                      </span>{" "}
-                      Khá tốt
-                    </li>
-                    <li>
-                      <span style={{ color: "#fbc02d", fontWeight: "bold" }}>
-                        4
-                      </span>{" "}
-                      Trung bình
-                    </li>
-                    <li>
-                      <span style={{ color: "#d32f2f", fontWeight: "bold" }}>
-                        1
-                      </span>{" "}
-                      Kém
-                    </li>
-                  </ul>
+                  <h6>{currentComments.length || 0} bình luận đã chia sẻ</h6>
+                  <ul className="list-unstyled mb-3"></ul>
 
                   <h6>Tiêu chí</h6>
                   <ul className="list-unstyled" style={{ fontSize: "14px" }}>
@@ -385,7 +412,7 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        7.7
+                        {currentRestaurants.locationRate}
                       </span>
                     </li>
                     <li className="d-flex justify-content-between align-items-center mb-2">
@@ -410,7 +437,7 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        7.2
+                        {currentRestaurants.priceRate}
                       </span>
                     </li>
                     <li className="d-flex justify-content-between align-items-center mb-2">
@@ -435,7 +462,7 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        7.2
+                        {currentRestaurants.qualityRate}
                       </span>
                     </li>
                     <li className="d-flex justify-content-between align-items-center mb-2">
@@ -460,7 +487,7 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        7.6
+                        {currentRestaurants.serviceRate}
                       </span>
                     </li>
                     <li className="d-flex justify-content-between align-items-center mb-2">
@@ -485,13 +512,13 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        7.7
+                        {currentRestaurants.spaceRate}
                       </span>
                     </li>
                   </ul>
 
                   <div className="text-center mt-3">
-                    <h4 className="text-success">7.5 điểm - Khá tốt</h4>
+                    <h4 className="text-success">{totalRate} điểm - Khá tốt</h4>
                     <button className="btn btn-primary w-100 mt-3">
                       <i className="fas fa-pencil-alt me-2"></i> Viết bình luận
                     </button>

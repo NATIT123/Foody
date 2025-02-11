@@ -5,19 +5,19 @@ import Footer from "../components/Footer";
 import ProductSuggestion from "../components/ProductSuggestion";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { FaLocationArrow, FaClock } from "react-icons/fa";
-import { MdError } from "react-icons/md";
 import { IoIosPricetag } from "react-icons/io";
 import { IoMapSharp } from "react-icons/io5";
 
 const DetailPage = () => {
   const { id } = useParams();
+  const [totalRate, setTotalRate] = useState(0);
   const [searchQuery, setSearchQuery] = useState(""); // State lưu từ khóa tìm kiếm
   const [currentRestaurant, setCurrentRestaurant] = useState([]); // Dữ liệu sau khi lọc
   const [currentFoods, setCurrentFoods] = useState([]); // Dữ liệu sau khi lọc
   const [currentComments, setCurrentComments] = useState([]); // Dữ liệu sau khi lọc
   const [currentAlbums, setCurrentAlbums] = useState([]); // Dữ liệu sau khi lọc
   const [suggestRestaurants, setSuggestRestaurants] = useState([]); // Dữ liệu sau khi lọc
+
   // Fetch API lấy detail restaurant
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurant/${id}`)
@@ -25,6 +25,15 @@ const DetailPage = () => {
       .then((data) => {
         if (data.data?.data) {
           setCurrentRestaurant(data.data.data); // Lưu danh sách restaurant vào state
+          const restaurant = data.data.data;
+          let total =
+            restaurant.qualityRate +
+            restaurant.serviceRate +
+            restaurant.locationRate +
+            restaurant.priceRate +
+            restaurant.spaceRate;
+          total /= 5;
+          setTotalRate(total);
         }
       })
       .catch((error) => {
@@ -54,6 +63,7 @@ const DetailPage = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.data?.data) {
+          console.log(data.data.data);
           setCurrentComments(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
@@ -145,7 +155,7 @@ const DetailPage = () => {
                         justifyContent: "center",
                       }}
                     >
-                      {currentRestaurant.locationRate}
+                      {totalRate}
                     </div>
                   </div>
                   <div className="text-center">
@@ -191,7 +201,7 @@ const DetailPage = () => {
                   <li className="mb-2">
                     <i className="fas fa-map-marker-alt text-success me-2"></i>
                     <span>
-                      <FaLocationArrow />{" "}
+                      {" "}
                       {currentRestaurant.address &&
                         currentRestaurant.address
                           .split(",")
@@ -213,16 +223,11 @@ const DetailPage = () => {
                   </li>
                   <li className="mb-2">
                     <i className="fas fa-clock text-success me-2"></i>
-                    <span>
-                      <FaClock /> Đang mở cửa {currentRestaurant.timeOpen}{" "}
-                      <MdError />
-                    </span>
+                    <span>Đang mở cửa {currentRestaurant.timeOpen} </span>
                   </li>
                   <li className="mb-2">
                     <i className="fas fa-money-bill-wave text-success me-2"></i>
-                    <span>
-                      <IoIosPricetag /> {currentRestaurant.priceRange}
-                    </span>
+                    <span>{currentRestaurant.priceRange}</span>
                   </li>
                 </ul>
               </div>
