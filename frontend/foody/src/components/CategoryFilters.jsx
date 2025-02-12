@@ -50,7 +50,7 @@ const CategoryFilters = ({
             {filter === "- Danh mục -" &&
               state.subCategories &&
               state.subCategories.map((option, index) => (
-                <option key={index} value={option.name}>
+                <option key={index} value={option._id}>
                   {option.name}
                 </option>
               ))}
@@ -58,7 +58,7 @@ const CategoryFilters = ({
             {filter === "- Ẩm thực -" &&
               state.cuisines &&
               state.cuisines.map((option, index) => (
-                <option key={index} value={option.name}>
+                <option key={index} value={option._id}>
                   {option.name}
                 </option>
               ))}
@@ -66,7 +66,7 @@ const CategoryFilters = ({
             {filter === "- Quận/Huyện -" &&
               state.districts &&
               state.districts.map((option, index) => (
-                <option key={index} value={option.name}>
+                <option key={index} value={option._id}>
                   {option.name}
                 </option>
               ))}

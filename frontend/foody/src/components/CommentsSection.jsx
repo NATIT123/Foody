@@ -1,13 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useData } from "../context/DataContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const CommentsSection = ({ currentComments }) => {
+  const { state } = useData();
   const [activeTab, setActiveTab] = useState("latest"); // State for active tab
-
-  const tabs = [
-    { name: "Mới nhất", count: currentComments.length || 0, id: "latest" },
-    { name: "Của tôi", count: 0, id: "mine" },
-  ];
+  const [myComments, setMyComments] = useState([]);
+  const [tabs, setTabs] = useState([]);
+  useEffect(() => {
+    if (state.userId) {
+      setMyComments(currentComments.filter((el) => el.userId === state.userId));
+    }
+    setTabs([
+      { name: "Mới nhất", count: currentComments.length || 0, id: "latest" },
+      { name: "Của tôi", count: myComments.length || 0, id: "mine" },
+    ]);
+  }, [currentComments, state, myComments.length]);
 
   return (
     <div className="col-md-9">
@@ -47,42 +55,61 @@ const CommentsSection = ({ currentComments }) => {
                   border: "1px solid #ddd",
                 }}
               >
-                {/* Header */}
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <div className="d-flex flex-column">
-                    <strong>{comment.user}</strong>
-                    <span className="text-muted small">
-                      {comment.device} - {comment.date}
-                    </span>
+                <div className="d-flex align-items-center">
+                  {/* Avatar */}
+                  <img
+                    src={
+                      comment?.user[0].photo === "default.jpg"
+                        ? "/images/default.jpg"
+                        : comment?.user[0].photo
+                    }
+                    alt="User Avatar"
+                    className="rounded-circle me-2"
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      objectFit: "cover",
+                    }}
+                  />
+
+                  {/* Thông tin người dùng */}
+                  <div>
+                    <div className="d-flex align-items-center">
+                      <strong className="me-2">
+                        {comment?.user[0].fullname || "empty"}
+                      </strong>
+
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/512/190/190411.png" // Icon xác nhận (dấu check)
+                        alt="Verified"
+                        style={{ width: "16px", height: "16px" }}
+                      />
+                    </div>
+
+                    {/* Nguồn và thời gian */}
+                    <div className="d-flex align-items-center text-muted small">
+                      <span className="fw-bold me-1">{comment.type}</span>
+                      <i className="bi bi-phone"></i>{" "}
+                      {/* Icon điện thoại (Bootstrap Icons) */}
+                      <span className="ms-2">{comment.time}</span>
+                    </div>
                   </div>
+
+                  {/* Đánh giá (badge sao) */}
                   <span
-                    className={`badge ${
-                      parseFloat(comment.rating) >= 7
-                        ? "bg-success"
-                        : "bg-danger"
-                    }`}
+                    className="badge bg-success ms-auto"
                     style={{
                       fontSize: "14px",
                       padding: "4px 8px",
                       borderRadius: "8px",
                     }}
                   >
-                    {comment.rating}
+                    {comment.rate}
                   </span>
                 </div>
-                <div className="d-flex align-items-center my-2">
-                  <span className="fw-bold">{comment.restaurant}</span>
-                </div>
-                {/* Comment Text */}
-                <p className="mb-1">{comment.comment}</p>
-                <p className="text-muted small">{comment.details}</p>
 
-                {/* Footer */}
-                <div className="text-muted small">
-                  - Đây là nhận xét từ Thành Viên trên Foody, không phải từ
-                  Foody Corp. -
-                </div>
-
+                <div className="fw-bold">{comment.title}</div>
+                <p className="text-muted fw-semibold">{comment.description}</p>
                 {/* Action Buttons */}
                 <div className="d-flex align-items-center mt-3">
                   <button
@@ -115,8 +142,8 @@ const CommentsSection = ({ currentComments }) => {
       )}
       {activeTab === "mine" && (
         <div className="mt-3">
-          {currentComments && currentComments.length > 0 ? (
-            currentComments.map((comment, index) => (
+          {myComments && myComments.length > 0 ? (
+            myComments.map((comment, index) => (
               <div
                 key={index}
                 className="p-3 mb-3"
@@ -127,40 +154,61 @@ const CommentsSection = ({ currentComments }) => {
                 }}
               >
                 {/* Header */}
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <div className="d-flex flex-column">
-                    <strong>{comment.user}</strong>
-                    <span className="text-muted small">
-                      {comment.device} - {comment.date}
-                    </span>
+                <div className="d-flex align-items-center">
+                  {/* Avatar */}
+                  <img
+                    src={
+                      comment?.user[0].photo === "default.jpg"
+                        ? "/images/default.jpg"
+                        : comment?.user[0].photo
+                    }
+                    alt="User Avatar"
+                    className="rounded-circle me-2"
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      objectFit: "cover",
+                    }}
+                  />
+
+                  {/* Thông tin người dùng */}
+                  <div>
+                    <div className="d-flex align-items-center">
+                      <strong className="me-2">
+                        {comment?.user[0].fullname || "empty"}
+                      </strong>
+
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/512/190/190411.png" // Icon xác nhận (dấu check)
+                        alt="Verified"
+                        style={{ width: "16px", height: "16px" }}
+                      />
+                    </div>
+
+                    {/* Nguồn và thời gian */}
+                    <div className="d-flex align-items-center text-muted small">
+                      <span className="fw-bold me-1">{comment.type}</span>
+                      <i className="bi bi-phone"></i>{" "}
+                      {/* Icon điện thoại (Bootstrap Icons) */}
+                      <span className="ms-2">{comment.time}</span>
+                    </div>
                   </div>
+
+                  {/* Đánh giá (badge sao) */}
                   <span
-                    className={`badge ${
-                      parseFloat(comment.rating) >= 7
-                        ? "bg-success"
-                        : "bg-danger"
-                    }`}
+                    className="badge bg-success ms-auto"
                     style={{
                       fontSize: "14px",
                       padding: "4px 8px",
                       borderRadius: "8px",
                     }}
                   >
-                    {comment.rating}
+                    {comment.rate}
                   </span>
                 </div>
-                <div className="d-flex align-items-center my-2">
-                  <span className="fw-bold">{comment.restaurant}</span>
-                </div>
-                {/* Comment Text */}
-                <p className="mb-1">{comment.comment}</p>
-                <p className="text-muted small">{comment.details}</p>
 
-                {/* Footer */}
-                <div className="text-muted small">
-                  - Đây là nhận xét từ Thành Viên trên Foody, không phải từ
-                  Foody Corp. -
-                </div>
+                <div className="fw-bold">{comment.title}</div>
+                <p className="text-muted fw-semibold">{comment.description}</p>
 
                 {/* Action Buttons */}
                 <div className="d-flex align-items-center mt-3">

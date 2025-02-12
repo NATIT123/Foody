@@ -23,3 +23,6 @@ export const updateFavoriteRestaurantById =
 
 export const deleteFavoriteRestaurantById =
   favoriteRestaurantService.deleteFavoriteRestaurantById();
+
+export const getFavoriteRestaurantByUserId =
+  favoriteRestaurantService.getFavoriteRestaurantsByUserId();

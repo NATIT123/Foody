@@ -42,6 +42,10 @@ class RestaurantService {
   getRestaurantByRecommendation() {
     return this.restaurantRepo.getRestaurantByRecommendation();
   }
+
+  getNearestRestaurants() {
+    return this.restaurantRepo.getNearestRestaurants();
+  }
 }
 
 export default RestaurantService;

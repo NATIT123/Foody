@@ -11,9 +11,10 @@ import {
   getRestaurantTopDeals,
   getRestaurantByFields,
   getRestaurantByRecommendation,
+  getNearestRestaurants,
 } from "../controllers/restaurantController.js";
 
-router.get("/getAllRestaurants", getAllRestaurants);
+router.post("/getAllRestaurants", getAllRestaurants);
 router.post("/addRestaurant", addRestaurant);
 router.delete("/deleteRestaurant/:id", deleteRestaurantById);
 router.patch("/updateRestaurant/:id", updateRestaurantById);
@@ -34,5 +35,7 @@ router.get(
   "/getRestaurantByRecommendation/:restaurantId",
   getRestaurantByRecommendation
 );
+
+router.post("/getNearestRestaurants", getNearestRestaurants);
 
 export default router;

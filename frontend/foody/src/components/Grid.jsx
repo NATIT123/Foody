@@ -8,7 +8,8 @@ import ItemsEat from "./ItemsEat";
 import Comments from "./Comments.jsx";
 import Blogs from "./Blogs.jsx";
 import Modal from "./Modal.jsx";
-const categoriesEat = ["Mới nhất", "Lượt xem", "Phổ biến", "Đã lưu"];
+import { useData } from "../context/DataContext.js";
+const categoriesEat = ["Mới nhất", "Phổ biến", "Đã lưu"];
 
 const categories = ["Mới nhất", "Gần tôi", "Đã lưu"];
 const filters = ["- Danh mục -", "- Ẩm thực -", "- Quận/Huyện -"];
@@ -124,6 +125,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 };
 
 const Grid = ({ searchQuery }) => {
+  const { state } = useData();
   const [activeCategoryEat, setActiveCategoryEat] = useState(categories[0]);
   const [activeCategory, setActiveCategory] = useState(categories[0]);
   const [filtersState, setFiltersState] = useState(filters);
@@ -132,29 +134,93 @@ const Grid = ({ searchQuery }) => {
   const [selectedItem, setSelectedItem] = useState(null); // Lưu trữ mục được chọn
   const [showModal, setShowModal] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
-
   const [currentItems, setCurrentItems] = useState([]); // Dữ liệu sau khi lọc
-
-  useEffect(() => {
-    console.log("filtersState changed:", filtersState);
-  }, [filtersState]);
 
   // Fetch API lấy danh sách restaurant
   useEffect(() => {
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          setTotalPages(data.totalPages); // Lưu tổng số trang
-          setCurrentItems(data.data.data); // Lưu danh sách restaurant vào state
+    setCurrentItems([]);
+    if (activeCategory === categories[0]) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            subCategory: filtersState[0],
+            cuisines: filtersState[1],
+            district: filtersState[2],
+          }),
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching provinces:", error);
-      });
-  }, [currentPage]);
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            setTotalPages(data.totalPages);
+            setCurrentItems(data.data.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+        });
+    } else if (activeCategory === categories[2]) {
+      setCurrentItems([]);
+      if (state.user && state.user._id) {
+        fetch(
+          `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data?.data) {
+              setTotalPages(data.totalPages); // Lưu tổng số trang
+              setCurrentItems(data.data.data); // Lưu danh sách restaurant vào state
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching restaurants:", error);
+          });
+      }
+    } else {
+      setCurrentItems([]);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          fetch(
+            `${process.env.REACT_APP_BASE_URL}/restaurant/getNearestRestaurants?page=${currentPage}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                subCategory: filtersState[0],
+                cuisines: filtersState[1],
+                district: filtersState[2],
+                latitude,
+                longitude,
+                maxDistance: 1000,
+              }),
+            }
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              if (data?.data) {
+                setTotalPages(data.totalPages); // Lưu tổng số trang
+                setCurrentItems(data.data.data); // Lưu danh sách restaurant vào state
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching restaurants:", error);
+            });
+        },
+        (error) => {
+          console.error("Lỗi lấy vị trí: ", error);
+        }
+      );
+    }
+  }, [currentPage, activeCategory, state, filtersState]);
 
   // Lọc dữ liệu khi searchQuery thay đổi
   useEffect(() => {
@@ -251,12 +317,14 @@ const Grid = ({ searchQuery }) => {
             />
 
             <ItemList
+              categories={categories}
+              activeCategory={activeCategory}
               currentItems={currentItems}
               handleShowModal={handleShowModal}
             />
 
             {/* Pagination */}
-            {renderPagination()}
+            {currentItems && currentItems.length > 0 && renderPagination()}
           </>
         )}
 

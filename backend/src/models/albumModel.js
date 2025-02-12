@@ -8,7 +8,11 @@ const AlbumDetailSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: "restaurants" },
+    restaurantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "restaurants",
+      index: true,
+    },
   },
   {
     timestamps: true,

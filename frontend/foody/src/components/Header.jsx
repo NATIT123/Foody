@@ -1,7 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import { FaBell, FaSearch, FaFilter } from "react-icons/fa";
+import { MdLocationOn } from "react-icons/md";
+import { PiBowlFoodFill } from "react-icons/pi";
+import { BiCategoryAlt } from "react-icons/bi";
 import "../css/Header.css"; // Import file CSS tùy chỉnh
+import "bootstrap-icons/font/bootstrap-icons.css";
 import React, { useState, useEffect, useRef } from "react";
 import { useData } from "../context/DataContext";
 
@@ -245,10 +249,10 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                         }}
                         onClick={() => setActiveTab("Khu vực")}
                       >
-                        <i
-                          className="bi bi-geo-alt-fill me-2"
+                        <MdLocationOn
                           style={{ fontSize: "18px", color: "#007bff" }}
-                        ></i>
+                        />
+
                         <span>Khu vực</span>
                       </div>
                       <div
@@ -262,10 +266,10 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                         }}
                         onClick={() => setActiveTab("Ẩm thực")}
                       >
-                        <i
-                          className="bi bi-egg-fried me-2"
+                        <PiBowlFoodFill
                           style={{ fontSize: "18px", color: "#28a745" }}
-                        ></i>
+                        />
+
                         <span>Ẩm thực</span>
                       </div>
                       <div
@@ -279,10 +283,10 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                         }}
                         onClick={() => setActiveTab("Phân loại")}
                       >
-                        <i
-                          className="bi bi-grid-3x3-gap-fill me-2"
+                        <BiCategoryAlt
                           style={{ fontSize: "18px", color: "#ffc107" }}
-                        ></i>
+                        />
+
                         <span>Phân loại</span>
                       </div>
                     </div>

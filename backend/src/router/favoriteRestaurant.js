@@ -6,6 +6,7 @@ import {
   updateFavoriteRestaurantById,
   getFavoriteRestaurantById,
   deleteFavoriteRestaurantById,
+  getFavoriteRestaurantByUserId,
 } from "../controllers/favoriteRestaurantController.js";
 
 router.get("/getAllFavoriteRestaurant", getAllFavoriteRestaurants);
@@ -13,5 +14,9 @@ router.post("/addFavoriteRestaurant", addFavoriteRestaurant);
 router.delete("/deleteFavoriteRestaurant/:id", deleteFavoriteRestaurantById);
 router.patch("/updateFavoriteRestaurant/:id", updateFavoriteRestaurantById);
 router.get("/getFavoriteRestaurant/:id", getFavoriteRestaurantById);
+router.get(
+  "/getFavoriteRestaurantByUserId/:userId",
+  getFavoriteRestaurantByUserId
+);
 
 export default router;
