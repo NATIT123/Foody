@@ -16,9 +16,9 @@ import customResourceResponse from "../utils/constant.js";
 import AppError from "../utils/appError.js";
 
 class RestaurantRepository {
-  constructor(restaurantModel, countryModel) {
+  constructor(restaurantModel, coordinateModel) {
     this.restaurantModel = restaurantModel;
-    this.countryModel = countryModel;
+    this.coordinateModel = coordinateModel;
   }
 
   addRestaurant() {
@@ -28,9 +28,26 @@ class RestaurantRepository {
   getAllRestaurants() {
     return catchAsync(async (req, res, next) => {
       try {
+        const { subCategory, cuisines, district } = req.body;
         const page = req.query.page * 1 || 1;
         const limit = req.query?.limit * 1 || 100;
         const skip = (page - 1) * limit;
+        let matchConditions = {};
+
+        if (mongoose.Types.ObjectId.isValid(subCategory)) {
+          matchConditions["subCategoryId"] = new mongoose.Types.ObjectId(
+            subCategory
+          );
+        }
+
+        if (mongoose.Types.ObjectId.isValid(district)) {
+          matchConditions["districtId"] = new mongoose.Types.ObjectId(district);
+        }
+
+        if (mongoose.Types.ObjectId.isValid(cuisines)) {
+          matchConditions["cuisinesId"] = new mongoose.Types.ObjectId(cuisines);
+        }
+
         const restaurants = await this.restaurantModel.aggregate([
           {
             $match: { active: true },
@@ -73,6 +90,9 @@ class RestaurantRepository {
               as: "comments",
             },
           },
+          ...(Object.keys(matchConditions).length > 0
+            ? [{ $match: matchConditions }]
+            : []),
           {
             $lookup: {
               from: "albums",
@@ -500,27 +520,38 @@ class RestaurantRepository {
 
   getNearestRestaurants() {
     return catchAsync(async (req, res, next) => {
-      const { latitude, longitude } = req.params;
-      if (!latitude || !longitude) {
-        return next(new AppError("Please provide latitude and longitude", 400));
-      }
-
-      const maxDistance = parseInt(req.query.maxDistance) || 5000;
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const skip = (page - 1) * limit;
-
       try {
-        const restaurants = await this.restaurantModel.aggregate([
-          {
-            $lookup: {
-              from: "coordinates",
-              localField: "coordinateId",
-              foreignField: "_id",
-              as: "coordinate",
-            },
-          },
-          { $unwind: "$coordinate" },
+        const { latitude, longitude, subCategory, cuisines, district } =
+          req.body;
+
+        if (!latitude || !longitude) {
+          return next(
+            new AppError("Please provide latitude and longitude", 400)
+          );
+        }
+
+        const maxDistance = parseInt(req.body.maxDistance) || 1000;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        let matchConditions = {};
+
+        if (mongoose.Types.ObjectId.isValid(subCategory)) {
+          matchConditions["restaurant.subCategoryId"] =
+            new mongoose.Types.ObjectId(subCategory);
+        }
+
+        if (mongoose.Types.ObjectId.isValid(district)) {
+          matchConditions["restaurant.districtId"] =
+            new mongoose.Types.ObjectId(district);
+        }
+
+        if (mongoose.Types.ObjectId.isValid(cuisines)) {
+          matchConditions["restaurant.cuisinesId"] =
+            new mongoose.Types.ObjectId(cuisines);
+        }
+
+        const restaurants = await this.coordinateModel.aggregate([
           {
             $geoNear: {
               near: {
@@ -530,36 +561,145 @@ class RestaurantRepository {
               distanceField: "distance",
               spherical: true,
               maxDistance: maxDistance,
-              key: "coordinate.location",
+              key: "location",
             },
           },
-          { $sort: { distance: 1 } },
-          { $skip: skip }, // Bỏ qua số lượng item theo pagination
-          { $limit: limit }, // Giới hạn số lượng item trả về
+          {
+            $lookup: {
+              from: "restaurants",
+              localField: "_id",
+              foreignField: "coordinateId",
+              as: "restaurant",
+            },
+          },
+          { $unwind: "$restaurant" },
+
+          ...(Object.keys(matchConditions).length > 0
+            ? [{ $match: matchConditions }]
+            : []),
+          {
+            $addFields: {
+              restaurantId: "$restaurant._id",
+            },
+          },
+
+          {
+            $replaceRoot: {
+              newRoot: {
+                $mergeObjects: [
+                  "$restaurant",
+                  { distance: "$distance", restaurantId: "$restaurantId" },
+                ],
+              },
+            },
+          },
+
+          {
+            $lookup: {
+              from: "comments",
+              let: { restaurantId: "$restaurantId" }, // Dùng restaurantId ở đây
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user",
+                  },
+                },
+                {
+                  $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+                },
+                { $sort: { createdAt: -1 } },
+                {
+                  $project: {
+                    rate: 1,
+                    type: 1,
+                    description: 1,
+                    "user.fullname": 1,
+                    "user.photo": 1,
+                  },
+                },
+              ],
+              as: "comments",
+            },
+          },
+
+          {
+            $lookup: {
+              from: "albums",
+              let: { restaurantId: "$restaurantId" },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                { $sort: { createdAt: -1 } },
+                { $project: { _id: 1, image: 1 } },
+              ],
+              as: "albums",
+            },
+          },
+
+          {
+            $addFields: {
+              commentCount: { $size: "$comments" },
+              albumCount: { $size: "$albums" },
+            },
+          },
+          ...(Object.keys(matchConditions).length > 0
+            ? [{ $match: matchConditions }]
+            : []),
+
           {
             $project: {
+              _id: "$restaurantId", // Xuất `_id` của restaurantId
               name: 1,
-              address: 1,
               image: 1,
+              address: 1,
+              serviceRate: 1,
+              locationRate: 1,
+              priceRate: 1,
+              spaceRate: 1,
+              qualityRate: 1,
               distance: 1,
-              "coordinate.address": 1,
+              commentCount: 1,
+              albumCount: 1,
+              comments: 1,
+              albums: 1,
+            },
+          },
+
+          {
+            $facet: {
+              metadata: [{ $count: "total" }],
+              data: [{ $skip: skip }, { $limit: limit }],
             },
           },
         ]);
 
-        const totalRestaurants = await this.restaurantModel.countDocuments();
-        const totalPages = Math.ceil(totalRestaurants / limit);
+        const total = restaurants[0].metadata[0]?.total || 0;
+        const totalPages = Math.ceil(total / limit);
+        const docs = restaurants[0].data;
 
-        return res.status(200).json({
-          message: "Success",
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
           status: "success",
-          results: restaurants.length,
+          results: docs.length,
           totalPages: totalPages,
           currentPage: page,
-          data: restaurants,
+          data: {
+            data: docs,
+          },
         });
       } catch (error) {
-        console.error("Error fetching restaurants", error);
+        console.log(error);
         return next(new AppError("Server error", 500));
       }
     });

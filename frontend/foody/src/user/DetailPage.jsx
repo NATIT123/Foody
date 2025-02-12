@@ -130,7 +130,9 @@ const DetailPage = () => {
             <div className="col-md-8">
               <div className="card-body">
                 <h1 className="card-title">{currentRestaurant.name}</h1>
+
                 <p className="text-muted">
+                  {currentRestaurant?.cuisinesId?.name || ""}
                   {currentRestaurant.audiences === "empty"
                     ? "Ăn vặt/vỉa hè - Món Việt - Sinh viên, Cặp đôi, Nhóm bạn"
                     : currentRestaurant.audiences}

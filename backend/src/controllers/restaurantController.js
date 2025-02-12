@@ -2,7 +2,8 @@ import RestaurantRepo from "../repo/restaurantRepo.js";
 import RestaurantService from "../services/restaurantService.js";
 
 import RestauranModel from "../models/restaurantModel.js";
-const restaurantRepo = new RestaurantRepo(RestauranModel);
+import CoordinateModel from "../models/coordinateModel.js";
+const restaurantRepo = new RestaurantRepo(RestauranModel, CoordinateModel);
 const restaurantService = new RestaurantService(restaurantRepo);
 
 export const addRestaurant = restaurantService.addRestaurant();

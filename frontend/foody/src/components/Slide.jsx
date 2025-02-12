@@ -554,7 +554,12 @@ const Slide = ({
                   >
                     <iframe
                       title="Google Map"
-                      src={currentRestaurants.coordinateId?.iframe}
+                      src={
+                        currentRestaurants.coordinateId?.iframe ===
+                        "Không tìm thấy nút Chia sẻ"
+                          ? "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3920.033019962903!2d106.69676687486857!3d10.73193666001315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317528b2747a81a3%3A0x33c1813055acb613!2zxJDhuqFpIGjhu41jIFTDtG4gxJDhu6ljIFRo4bqvbmc!5e0!3m2!1svi!2s!4v1739377005781!5m2!1svi!2s"
+                          : currentRestaurants.coordinateId?.iframe
+                      }
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
