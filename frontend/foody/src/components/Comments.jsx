@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const Comments = () => {
   const [activeTab, setActiveTab] = useState("new"); // State for active tab
   const [currentPage, setCurrentPage] = useState(1); // Current page state
-  const itemsPerPage = 2; // Số bình luận hiển thị trên mỗi trang
+  const itemsPerPage = 4; // Số bình luận hiển thị trên mỗi trang
 
   const comments = [
     {

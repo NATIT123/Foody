@@ -33,7 +33,7 @@ const DetailPage = () => {
             restaurant.priceRate +
             restaurant.spaceRate;
           total /= 5;
-          setTotalRate(total);
+          setTotalRate(Math.floor(total));
         }
       })
       .catch((error) => {

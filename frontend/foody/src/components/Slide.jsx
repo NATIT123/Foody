@@ -518,7 +518,9 @@ const Slide = ({
                   </ul>
 
                   <div className="text-center mt-3">
-                    <h4 className="text-success">{totalRate} điểm - Khá tốt</h4>
+                    <h4 className="text-success">
+                      {Math.floor(totalRate)} điểm - Khá tốt
+                    </h4>
                     <button className="btn btn-primary w-100 mt-3">
                       <i className="fas fa-pencil-alt me-2"></i> Viết bình luận
                     </button>

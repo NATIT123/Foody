@@ -1,6 +1,23 @@
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaComment, FaCamera, FaBookmark, FaUser } from "react-icons/fa";
+import { FaComment, FaCamera, FaBookmark } from "react-icons/fa";
+import LoginModal from "./LoginModal";
+import { useNavigate } from "react-router-dom";
+import { useData } from "../context/DataContext";
+
 const ItemList = ({ currentItems, handleShowModal }) => {
+  const navigate = useNavigate(); // Hook điều hướng
+  const { state } = useData();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const handleLogin = () => {
+    setShowLoginModal(false);
+    navigate("/login"); // Chuyển hướng sang trang đăng nhập
+  };
+  const handleOpenSaveModal = () => {
+    if (!state.user && !state.loading) {
+      setShowLoginModal(true);
+    }
+  };
   return (
     <div className="row">
       {currentItems &&
@@ -119,7 +136,7 @@ const ItemList = ({ currentItems, handleShowModal }) => {
 
                   <div style={{ backgroundColor: "#f5f5f5" }}>
                     <span className="text-muted d-flex align-items-center">
-                      <FaBookmark /> {"Lưu"}
+                      <FaBookmark onClick={handleOpenSaveModal} /> {"Lưu"}
                     </span>
                   </div>
                 </div>
@@ -127,6 +144,11 @@ const ItemList = ({ currentItems, handleShowModal }) => {
             </div>
           </div>
         ))}
+      <LoginModal
+        show={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLogin={handleLogin}
+      />
     </div>
   );
 };

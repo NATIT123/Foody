@@ -62,6 +62,8 @@ class RestaurantRepository {
                 { $sort: { createdAt: -1 } },
                 {
                   $project: {
+                    rate: 1,
+                    type: 1,
                     description: 1,
                     "user.fullname": 1,
                     "user.photo": 1,
@@ -96,6 +98,11 @@ class RestaurantRepository {
           },
           {
             $project: {
+              serviceRate: 1,
+              locationRate: 1,
+              priceRate: 1,
+              spaceRate: 1,
+              qualityRate: 1,
               name: 1,
               address: 1,
               image: 1,
