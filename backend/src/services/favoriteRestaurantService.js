@@ -23,8 +23,8 @@ class FavoriteRestaurantService {
     return this.favoriteRestaurantRepo.deleteFavoriteRestaurantById();
   }
 
-  getFavoriteRestaurantsByCity() {
-    return this.favoriteRestaurantRepo.getFavoriteRestaurantsByCity();
+  getFavoriteRestaurantsByUserId() {
+    return this.favoriteRestaurantRepo.getFavoriteRestaurantByUserId();
   }
 }
 

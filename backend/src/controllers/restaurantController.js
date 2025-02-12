@@ -26,3 +26,5 @@ export const getRestaurantByFields = restaurantService.getRestaurantByFileds();
 
 export const getRestaurantByRecommendation =
   restaurantService.getRestaurantByRecommendation();
+
+export const getNearestRestaurants = restaurantService.getNearestRestaurants();

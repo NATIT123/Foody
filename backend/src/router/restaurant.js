@@ -11,6 +11,7 @@ import {
   getRestaurantTopDeals,
   getRestaurantByFields,
   getRestaurantByRecommendation,
+  getNearestRestaurants,
 } from "../controllers/restaurantController.js";
 
 router.get("/getAllRestaurants", getAllRestaurants);
@@ -34,5 +35,7 @@ router.get(
   "/getRestaurantByRecommendation/:restaurantId",
   getRestaurantByRecommendation
 );
+
+router.get("/getNearestRestaurants", getNearestRestaurants);
 
 export default router;

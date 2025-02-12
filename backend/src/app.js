@@ -41,6 +41,7 @@ import CommentModel from "./models/commentModel.js";
 import AlbumModel from "./models/AlbumModel.js";
 import CuisinesModel from "./models/CuisinesModel.js";
 import CoordinateModel from "./models/coordinateModel.js";
+import FavoriteRestaurantModel from "./models/favoriteRestaurantModel.js";
 
 ///Connect DB
 connectDb();
@@ -165,6 +166,7 @@ app.use("/api/v1/coordinates", coordinateRoute);
 importData(CoordinateModel, "coordinates");
 
 app.use("/api/v1/favorite", favoriteRestaurantRoute);
+importData(FavoriteRestaurantModel, "favoriteRestaurants");
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

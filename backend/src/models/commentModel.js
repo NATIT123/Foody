@@ -14,7 +14,7 @@ const CommentDetailSchema = new Schema(
       required: [true, "Please tell us your description"],
     },
     type: { type: String, required: [true, "Please tell us your type"] },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "users", index: true },
     restaurantId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "restaurants",

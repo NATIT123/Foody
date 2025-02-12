@@ -497,6 +497,73 @@ class RestaurantRepository {
       }
     });
   }
+
+  getNearestRestaurants() {
+    return catchAsync(async (req, res, next) => {
+      const { latitude, longitude } = req.params;
+      if (!latitude || !longitude) {
+        return next(new AppError("Please provide latitude and longitude", 400));
+      }
+
+      const maxDistance = parseInt(req.query.maxDistance) || 5000;
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      try {
+        const restaurants = await this.restaurantModel.aggregate([
+          {
+            $lookup: {
+              from: "coordinates",
+              localField: "coordinateId",
+              foreignField: "_id",
+              as: "coordinate",
+            },
+          },
+          { $unwind: "$coordinate" },
+          {
+            $geoNear: {
+              near: {
+                type: "Point",
+                coordinates: [parseFloat(longitude), parseFloat(latitude)],
+              },
+              distanceField: "distance",
+              spherical: true,
+              maxDistance: maxDistance,
+              key: "coordinate.location",
+            },
+          },
+          { $sort: { distance: 1 } },
+          { $skip: skip }, // Bỏ qua số lượng item theo pagination
+          { $limit: limit }, // Giới hạn số lượng item trả về
+          {
+            $project: {
+              name: 1,
+              address: 1,
+              image: 1,
+              distance: 1,
+              "coordinate.address": 1,
+            },
+          },
+        ]);
+
+        const totalRestaurants = await this.restaurantModel.countDocuments();
+        const totalPages = Math.ceil(totalRestaurants / limit);
+
+        return res.status(200).json({
+          message: "Success",
+          status: "success",
+          results: restaurants.length,
+          totalPages: totalPages,
+          currentPage: page,
+          data: restaurants,
+        });
+      } catch (error) {
+        console.error("Error fetching restaurants", error);
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
 }
 async function getOneFetch(itemId) {
   const response = await fetch(

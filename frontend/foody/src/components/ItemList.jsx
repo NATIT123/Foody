@@ -20,7 +20,7 @@ const ItemList = ({ currentItems, handleShowModal }) => {
   };
   return (
     <div className="row">
-      {currentItems &&
+      {currentItems && currentItems.length > 0 ? (
         currentItems.map((item) => (
           <div
             key={item._id}
@@ -96,7 +96,6 @@ const ItemList = ({ currentItems, handleShowModal }) => {
                       {item.comments[0]?.user?.fullname
                         ? item.comments[0]?.user?.fullname.substring(0, 5)
                         : "Ẩn danh"}{" "}
-                      {/* Hiển thị tên user nếu có */}
                     </span>
                     <span
                       className="d-flex align-items-center ms-2 text-muted text-truncate"
@@ -143,7 +142,13 @@ const ItemList = ({ currentItems, handleShowModal }) => {
               </div>
             </div>
           </div>
-        ))}
+        ))
+      ) : (
+        <div className="text-center w-100">
+          <h5 className="text-muted mt-3">Hiện tại không có nhà hàng nào.</h5>
+        </div>
+      )}
+
       <LoginModal
         show={showLoginModal}
         onClose={() => setShowLoginModal(false)}

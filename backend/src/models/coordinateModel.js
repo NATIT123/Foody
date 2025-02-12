@@ -10,13 +10,16 @@ const CoordinateDetailSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    longitude: {
-      type: Number,
-      required: [true, "Please tell us your longitude"],
-    },
-    latitude: {
-      type: Number,
-      required: [true, "Please tell us your latitude"],
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
     },
     iframe: { type: String, required: [true, "Please tell us your iframe"] },
   },
@@ -24,6 +27,8 @@ const CoordinateDetailSchema = new Schema(
     timestamps: true,
   }
 );
+
+CoordinateDetailSchema.index({ location: "2dsphere" });
 
 const CoordinateModel = model("coordinates", CoordinateDetailSchema);
 
