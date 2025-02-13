@@ -28,24 +28,38 @@ class RestaurantRepository {
   getAllRestaurants() {
     return catchAsync(async (req, res, next) => {
       try {
-        const { subCategory, cuisines, district } = req.body;
-        const page = req.query.page * 1 || 1;
-        const limit = req.query?.limit * 1 || 100;
+        const {
+          subCategory,
+          cuisines,
+          district,
+          selectedCity,
+          selectedCategory,
+        } = req.body;
+        const page = Math.max(req.query.page * 1 || 1, 1); // Ensure page is a positive integer
+        const limit = Math.max(req.query?.limit * 1 || 100, 1); // Ensure limit is a positive integer
         const skip = (page - 1) * limit;
         let matchConditions = {};
 
+        // Apply match conditions based on incoming filters
         if (mongoose.Types.ObjectId.isValid(subCategory)) {
           matchConditions["subCategoryId"] = new mongoose.Types.ObjectId(
             subCategory
           );
         }
-
         if (mongoose.Types.ObjectId.isValid(district)) {
           matchConditions["districtId"] = new mongoose.Types.ObjectId(district);
         }
-
         if (mongoose.Types.ObjectId.isValid(cuisines)) {
           matchConditions["cuisinesId"] = new mongoose.Types.ObjectId(cuisines);
+        }
+        if (mongoose.Types.ObjectId.isValid(selectedCategory)) {
+          matchConditions["subCategoryDetails.categoryId"] =
+            new mongoose.Types.ObjectId(selectedCategory);
+        }
+
+        if (mongoose.Types.ObjectId.isValid(selectedCity)) {
+          matchConditions["districtDetails.cityId"] =
+            new mongoose.Types.ObjectId(selectedCity);
         }
 
         const restaurants = await this.restaurantModel.aggregate([
@@ -54,6 +68,22 @@ class RestaurantRepository {
           },
           {
             $sort: { createdAt: -1 },
+          },
+          {
+            $lookup: {
+              from: "subcategories",
+              localField: "subCategoryId",
+              foreignField: "_id",
+              as: "subCategoryDetails",
+            },
+          },
+          {
+            $lookup: {
+              from: "districts",
+              localField: "districtId",
+              foreignField: "_id",
+              as: "districtDetails",
+            },
           },
           {
             $lookup: {
@@ -103,6 +133,11 @@ class RestaurantRepository {
                     $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
                   },
                 },
+                {
+                  $match: {
+                    image: { $not: { $regex: "^data:image/png;base64," } },
+                  },
+                },
                 { $sort: { createdAt: -1 } },
                 { $project: { _id: 1, image: 1 } },
               ],
@@ -114,10 +149,31 @@ class RestaurantRepository {
             $addFields: {
               commentCount: { $size: "$comments" },
               albumCount: { $size: "$albums" },
+              averageRate: {
+                $round: [
+                  {
+                    $divide: [
+                      {
+                        $add: [
+                          { $ifNull: ["$qualityRate", 0] },
+                          { $ifNull: ["$serviceRate", 0] },
+                          { $ifNull: ["$locationRate", 0] },
+                          { $ifNull: ["$priceRate", 0] },
+                          { $ifNull: ["$spaceRate", 0] },
+                        ],
+                      },
+                      5,
+                    ],
+                  },
+                  1,
+                ],
+              },
             },
           },
           {
             $project: {
+              averageRate: 1,
+              subCategory: { $arrayElemAt: ["$subCategoryDetails.name", 0] }, // Get the first element of the subCategoryDetails array
               timeOpen: 1,
               priceRange: 1,
               serviceRate: 1,
@@ -137,10 +193,11 @@ class RestaurantRepository {
           {
             $facet: {
               metadata: [{ $count: "total" }],
-              data: [{ $skip: skip }, { $limit: limit }], // Phân trang
+              data: [{ $skip: skip }, { $limit: limit }], // Paging
             },
           },
         ]);
+
         const total = restaurants[0].metadata[0]?.total || 0;
         const totalPages = Math.ceil(total / limit);
         const docs = restaurants[0].data;
@@ -150,10 +207,8 @@ class RestaurantRepository {
           status: "success",
           results: docs.length,
           totalPages: totalPages,
-          currentPage: req.query.page * 1 || 1,
-          data: {
-            data: docs,
-          },
+          currentPage: page,
+          data: { data: docs },
         });
       } catch (error) {
         console.error("Error fetching restaurants", error);
@@ -523,8 +578,14 @@ class RestaurantRepository {
   getNearestRestaurants() {
     return catchAsync(async (req, res, next) => {
       try {
-        const { latitude, longitude, subCategory, cuisines, district } =
-          req.body;
+        const {
+          latitude,
+          longitude,
+          subCategory,
+          cuisines,
+          district,
+          maxDistance,
+        } = req.body;
 
         if (!latitude || !longitude) {
           return next(
@@ -532,23 +593,23 @@ class RestaurantRepository {
           );
         }
 
-        const maxDistance = parseInt(req.body.maxDistance) || 1000;
+        const maxDist = parseInt(maxDistance) || 1000;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
+
+        // Tạo điều kiện match
         let matchConditions = {};
 
-        if (mongoose.Types.ObjectId.isValid(subCategory)) {
+        if (subCategory && mongoose.Types.ObjectId.isValid(subCategory)) {
           matchConditions["restaurant.subCategoryId"] =
             new mongoose.Types.ObjectId(subCategory);
         }
-
-        if (mongoose.Types.ObjectId.isValid(district)) {
+        if (district && mongoose.Types.ObjectId.isValid(district)) {
           matchConditions["restaurant.districtId"] =
             new mongoose.Types.ObjectId(district);
         }
-
-        if (mongoose.Types.ObjectId.isValid(cuisines)) {
+        if (cuisines && mongoose.Types.ObjectId.isValid(cuisines)) {
           matchConditions["restaurant.cuisinesId"] =
             new mongoose.Types.ObjectId(cuisines);
         }
@@ -562,7 +623,7 @@ class RestaurantRepository {
               },
               distanceField: "distance",
               spherical: true,
-              maxDistance: maxDistance,
+              maxDistance: maxDist,
               key: "location",
             },
           },
@@ -574,17 +635,19 @@ class RestaurantRepository {
               as: "restaurant",
             },
           },
-          { $unwind: "$restaurant" },
+          {
+            $unwind: { path: "$restaurant", preserveNullAndEmptyArrays: false },
+          },
 
           ...(Object.keys(matchConditions).length > 0
             ? [{ $match: matchConditions }]
             : []),
+
           {
             $addFields: {
               restaurantId: "$restaurant._id",
             },
           },
-
           {
             $replaceRoot: {
               newRoot: {
@@ -595,11 +658,10 @@ class RestaurantRepository {
               },
             },
           },
-
           {
             $lookup: {
               from: "comments",
-              let: { restaurantId: "$restaurantId" }, // Dùng restaurantId ở đây
+              let: { restaurantId: "$restaurantId" },
               pipeline: [
                 {
                   $match: {
@@ -631,7 +693,6 @@ class RestaurantRepository {
               as: "comments",
             },
           },
-
           {
             $lookup: {
               from: "albums",
@@ -640,6 +701,11 @@ class RestaurantRepository {
                 {
                   $match: {
                     $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $match: {
+                    image: { $not: /^data:image\/png/ }, // Lọc bỏ image bắt đầu bằng "data:image/png"
                   },
                 },
                 { $sort: { createdAt: -1 } },
@@ -655,13 +721,9 @@ class RestaurantRepository {
               albumCount: { $size: "$albums" },
             },
           },
-          ...(Object.keys(matchConditions).length > 0
-            ? [{ $match: matchConditions }]
-            : []),
-
           {
             $project: {
-              _id: "$restaurantId", // Xuất `_id` của restaurantId
+              _id: "$restaurantId",
               name: 1,
               image: 1,
               address: 1,
@@ -677,7 +739,6 @@ class RestaurantRepository {
               albums: 1,
             },
           },
-
           {
             $facet: {
               metadata: [{ $count: "total" }],
@@ -696,12 +757,10 @@ class RestaurantRepository {
           results: docs.length,
           totalPages: totalPages,
           currentPage: page,
-          data: {
-            data: docs,
-          },
+          data: { data: docs },
         });
       } catch (error) {
-        console.log(error);
+        console.error(error);
         return next(new AppError("Server error", 500));
       }
     });

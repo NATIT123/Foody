@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useData } from "../context/DataContext";
 import { useNavigate } from "react-router-dom"; // For navigation
-const UserManagement = () => {
+const UserManagement = ({ searchQuery }) => {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate(); // For navigation to the home page
   const [email, setEmail] = useState("");
@@ -17,7 +17,22 @@ const UserManagement = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const { state } = useData();
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredUsers(users);
+    } else {
+      setFilteredUsers(
+        users.filter(
+          (user) =>
+            user.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.phone.includes(searchQuery)
+        )
+      );
+    }
+  }, [searchQuery, users]);
   useEffect(() => {
     if (!state.accessToken) return;
 
@@ -276,47 +291,48 @@ const UserManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user._id}>
-                  <td className="d-flex align-items-center">
-                    <img
-                      src={
-                        user.photo === "default.jpg"
-                          ? "/images/default.jpg"
-                          : user.photo
-                      }
-                      alt="Profile"
-                      style={{
-                        width: "60px",
-                        height: "60px",
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                        marginRight: "15px",
-                      }}
-                      onError={(e) => (e.target.src = "/images/default.jpg")} // Nếu ảnh lỗi, hiển thị ảnh mặc định
-                    />
-                    {user.email}
-                  </td>
-                  <td>{user.fullname}</td>
-                  <td>{user.phone}</td>
-                  <td>{user.address}</td>
-                  <td>{user.role}</td>
-                  <td className="text-center">
-                    <button
-                      className="btn btn-sm btn-warning me-2"
-                      onClick={() => handleEditUser(user._id)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => handleDeleteUser(user._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filteredUsers &&
+                filteredUsers.map((user) => (
+                  <tr key={user._id}>
+                    <td className="d-flex align-items-center">
+                      <img
+                        src={
+                          user.photo === "default.jpg"
+                            ? "/images/default.jpg"
+                            : user.photo
+                        }
+                        alt="Profile"
+                        style={{
+                          width: "60px",
+                          height: "60px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          marginRight: "15px",
+                        }}
+                        onError={(e) => (e.target.src = "/images/default.jpg")} // Nếu ảnh lỗi, hiển thị ảnh mặc định
+                      />
+                      {user.email}
+                    </td>
+                    <td>{user.fullname}</td>
+                    <td>{user.phone}</td>
+                    <td>{user.address}</td>
+                    <td>{user.role}</td>
+                    <td className="text-center">
+                      <button
+                        className="btn btn-sm btn-warning me-2"
+                        onClick={() => handleEditUser(user._id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => handleDeleteUser(user._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

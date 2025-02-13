@@ -13,37 +13,7 @@ const categoriesEat = ["Mới nhất", "Phổ biến", "Đã lưu"];
 
 const categories = ["Mới nhất", "Gần tôi", "Đã lưu"];
 const filters = ["- Danh mục -", "- Ẩm thực -", "- Quận/Huyện -"];
-const itemsPerPage = 12;
-const itemsEat = [
-  {
-    id: 1,
-    title: "Phở Bò Hà Nội",
-    subtitle: "Số 10, Đường Láng, Hà Nội",
-    imgSrc:
-      "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwgecy7t793taa@resize_ss400x400",
-    review: "Phở bò thơm ngon, nước dùng đậm đà.",
-    rating: 4.5,
-    commentCount: 12,
-    likes: 150,
-    userAvatar:
-      "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwf8w1ku4l3vc7@resize_ss60x60", // Avatar người dùng
-    userName: "Nguyễn Văn A", // Tên người dùng
-  },
-  {
-    id: 2,
-    title: "Cơm gà",
-    subtitle: "Số 5, Nguyễn Huệ, TP. Hồ Chí Minh",
-    imgSrc:
-      "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwh0ggp4ai8p1d@resize_ss400x400",
-    review: "Bánh mì giòn rụm, nhân đa dạng.",
-    rating: 4.7,
-    commentCount: 8,
-    likes: 200,
-    userAvatar:
-      "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwf8w1ku4l3vc7@resize_ss60x60",
-    userName: "Trần Văn B",
-  },
-];
+const itemsPerPage = 100;
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const menuItems = ["Khám phá", "Ăn gì", "Blogs", "Bình luận"];
@@ -125,6 +95,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 };
 
 const Grid = ({ searchQuery }) => {
+  const [itemsEat, setItemEat] = useState([]);
   const { state } = useData();
   const [activeCategoryEat, setActiveCategoryEat] = useState(categories[0]);
   const [activeCategory, setActiveCategory] = useState(categories[0]);
@@ -148,6 +119,8 @@ const Grid = ({ searchQuery }) => {
             "Content-type": "application/json",
           },
           body: JSON.stringify({
+            selectedCity: state.selectedCity?._id || "",
+            selectedCategory: state.selectedCategory?._id || "",
             subCategory: filtersState[0],
             cuisines: filtersState[1],
             district: filtersState[2],
@@ -159,6 +132,7 @@ const Grid = ({ searchQuery }) => {
           if (data) {
             setTotalPages(data.totalPages);
             setCurrentItems(data.data.data);
+            setItemEat(data.data.data);
           }
         })
         .catch((error) => {
@@ -337,6 +311,7 @@ const Grid = ({ searchQuery }) => {
             />
 
             <ItemsEat
+              totalPages={totalPages}
               items={itemsEat} // Truyền danh sách dữ liệu gốc
               itemsPerPage={itemsPerPage} // Truyền số mục mỗi trang
               handleShowModal={handleShowModal}

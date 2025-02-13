@@ -1,6 +1,6 @@
 import React from "react";
 
-const Navbar = () => {
+const Navbar = ({ searchQuery, setSearchQuery }) => {
   return (
     <header className="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4 py-2">
       <a href="/" className="navbar-brand fw-bold text-primary">
@@ -23,6 +23,7 @@ const Navbar = () => {
           {/* Tìm kiếm */}
           <form className="d-flex flex-grow-1 flex-lg-grow-0">
             <input
+              onChange={(e) => setSearchQuery(e.target.value)}
               type="text"
               className="form-control rounded-pill"
               placeholder="Search..."
@@ -99,15 +100,11 @@ const Navbar = () => {
               aria-labelledby="userDropdown"
             >
               <li>
-                <a className="dropdown-item" href="/">
+                <a className="dropdown-item" href="/profile">
                   Profile
                 </a>
               </li>
-              <li>
-                <a className="dropdown-item" href="/">
-                  Settings
-                </a>
-              </li>
+
               <li>
                 <hr className="dropdown-divider" />
               </li>
