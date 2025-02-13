@@ -55,8 +55,13 @@ const LoginPage = () => {
             setStatus(data.status);
             if (data.status !== "fail" && data.status !== "error") {
               setAccessToken(data.access_token);
-              navigate("/");
+
               setShowModal(false);
+              if (data.data.data.role === "admin") {
+                navigate("/dashboard");
+              } else {
+                navigate("/");
+              }
             }
           }
         })

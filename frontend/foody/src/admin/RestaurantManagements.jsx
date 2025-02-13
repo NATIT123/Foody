@@ -1,30 +1,41 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // For navigation
 const RestaurantManagement = () => {
-  const [restaurants, setRestaurants] = useState([
-    {
-      id: 1,
-      name: "Chè Sầu - Văn Cao",
-      categories: "Ăn vặt/vỉa hè - Món Việt",
-      location: "44 Văn Cao, Quận Ba Đình, Hà Nội",
-      openHours: "08:00 - 22:00",
-      priceRange: "15.000đ - 30.000đ",
-      ratings: {
-        viTri: 7.5,
-        giaCa: 8.0,
-        chatLuong: 8.0,
-        khongGian: 7.7,
-        phucVu: 7.3,
-        binhLuan: 6.3,
-      },
-      image:
-        "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwbt9sfun7x7c2@resize_ss640x400",
-    },
-  ]);
-
+  const [restaurants, setRestaurants] = useState([]);
+  const navigate = useNavigate(); // For navigation to the home page
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState(""); // "add", "edit", "view"
   const [formData, setFormData] = useState({});
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
+      {
+        method: "POST", // 🔥 Đổi từ "POST" thành "GET"
+        headers: { "Content-Type": "application/json" },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data && data.data && Array.isArray(data.data.data)) {
+          if (!["fail", "error", 400].includes(data.status)) {
+            setTotalPages(data.totalPages);
+            setRestaurants(data.data.data);
+          }
+        } else {
+          console.error("Invalid API response:", data);
+          navigate("/");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching restaurants:", error);
+        if (error.response && [401, 403].includes(error.response.status)) {
+          navigate("/");
+        }
+      });
+  }, [currentPage]); // Dependency rỗng -> Chạy 1 lần khi component mount
 
   const handleOpenModal = (mode, restaurant = null) => {
     setModalMode(mode);
@@ -69,6 +80,51 @@ const RestaurantManagement = () => {
     }
     handleCloseModal();
   };
+  const changePage = (page) => {
+    setCurrentPage(page);
+  };
+  const renderPagination = () => {
+    if (totalPages <= 1) return null; // Ẩn nếu chỉ có 1 trang
+
+    return (
+      <nav>
+        <ul className="pagination justify-content-center mt-4">
+          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+            <button
+              className="page-link"
+              onClick={() => changePage(currentPage - 1)}
+            >
+              &laquo; Trước
+            </button>
+          </li>
+
+          {[...Array(totalPages)].map((_, i) => (
+            <li
+              key={i + 1}
+              className={`page-item ${i + 1 === currentPage ? "active" : ""}`}
+            >
+              <button className="page-link" onClick={() => changePage(i + 1)}>
+                {i + 1}
+              </button>
+            </li>
+          ))}
+
+          <li
+            className={`page-item ${
+              currentPage === totalPages ? "disabled" : ""
+            }`}
+          >
+            <button
+              className="page-link"
+              onClick={() => changePage(currentPage + 1)}
+            >
+              Sau &raquo;
+            </button>
+          </li>
+        </ul>
+      </nav>
+    );
+  };
 
   return (
     <div className="container mt-2">
@@ -83,7 +139,7 @@ const RestaurantManagement = () => {
 
       <div className="row">
         {restaurants.map((restaurant) => (
-          <div className="col-12" key={restaurant.id}>
+          <div className="col-12" key={restaurant._id}>
             <div className="card mb-3 shadow-sm w-100">
               <div className="row g-0">
                 <div className="col-md-4">
@@ -97,14 +153,14 @@ const RestaurantManagement = () => {
                 <div className="col-md-8">
                   <div className="card-body">
                     <h5 className="card-title">{restaurant.name}</h5>
-                    <p className="card-text text-muted">
+                    {/* <p className="card-text text-muted">
                       {restaurant.categories}
+                    </p> */}
+                    <p className="card-text">
+                      <strong>Location:</strong> {restaurant.address}
                     </p>
                     <p className="card-text">
-                      <strong>Location:</strong> {restaurant.location}
-                    </p>
-                    <p className="card-text">
-                      <strong>Open Hours:</strong> {restaurant.openHours}
+                      <strong>Open Hours:</strong> {restaurant.timeOpen}
                     </p>
                     <p className="card-text">
                       <strong>Price Range:</strong> {restaurant.priceRange}
@@ -129,6 +185,8 @@ const RestaurantManagement = () => {
         ))}
       </div>
 
+      {restaurants && restaurants.length > 0 && renderPagination()}
+
       {/* Modal */}
       {isModalOpen && (
         <div
@@ -145,17 +203,24 @@ const RestaurantManagement = () => {
                     ? "Edit Restaurant"
                     : "Add Restaurant"}
                 </h5>
-               
               </div>
 
               <div className="modal-body">
                 {modalMode === "view" ? (
                   <div>
                     <h5>{formData.name}</h5>
-                    <p><strong>Categories:</strong> {formData.categories}</p>
-                    <p><strong>Location:</strong> {formData.location}</p>
-                    <p><strong>Open Hours:</strong> {formData.openHours}</p>
-                    <p><strong>Price Range:</strong> {formData.priceRange}</p>
+                    <p>
+                      <strong>Categories:</strong> {formData.categories}
+                    </p>
+                    <p>
+                      <strong>Location:</strong> {formData.location}
+                    </p>
+                    <p>
+                      <strong>Open Hours:</strong> {formData.openHours}
+                    </p>
+                    <p>
+                      <strong>Price Range:</strong> {formData.priceRange}
+                    </p>
                     <p>
                       <strong>Ratings:</strong>
                       <ul>
@@ -168,27 +233,25 @@ const RestaurantManagement = () => {
                       </ul>
                     </p>
                     <div
-  className="d-flex justify-content-center align-items-center"
-  style={{
-    height: "300px", // Chiều cao khung ảnh
-    overflow: "hidden", // Ẩn nội dung vượt khung
-  }}
->
-  <img
-    src={formData.image}
-    alt={formData.name}
-    className="img-fluid"
-    style={{
-      maxWidth: "500px", // Giới hạn chiều rộng
-      maxHeight: "250px", // Giới hạn chiều cao
-      objectFit: "cover", // Cắt ảnh vừa khung
-      borderRadius: "10px", // Bo góc nhẹ
-      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)", // Hiệu ứng đổ bóng
-    }}
-  />
-</div>
-
-
+                      className="d-flex justify-content-center align-items-center"
+                      style={{
+                        height: "300px", // Chiều cao khung ảnh
+                        overflow: "hidden", // Ẩn nội dung vượt khung
+                      }}
+                    >
+                      <img
+                        src={formData.image}
+                        alt={formData.name}
+                        className="img-fluid"
+                        style={{
+                          maxWidth: "500px", // Giới hạn chiều rộng
+                          maxHeight: "250px", // Giới hạn chiều cao
+                          objectFit: "cover", // Cắt ảnh vừa khung
+                          borderRadius: "10px", // Bo góc nhẹ
+                          boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)", // Hiệu ứng đổ bóng
+                        }}
+                      />
+                    </div>
                   </div>
                 ) : (
                   <form>
