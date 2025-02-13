@@ -90,20 +90,26 @@ export const createSendToken = (Model, user, statusCode, res) => {
 
 export const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    const document = await Model.create(req.body);
-    if (!document) {
+    try {
+      const document = await Model.create(req.body);
+      if (!document) {
+        return next(
+          new AppError(
+            customResourceResponse.serverError.message,
+            customResourceResponse.serverError.statusCode
+          )
+        );
+      }
+      res.status(customResourceResponse.created.statusCode).json({
+        status: "success",
+        message: customResourceResponse.created.message,
+        data: { data: document._id },
+      });
+    } catch (err) {
       return next(
-        new AppError(
-          customResourceResponse.serverError.message,
-          customResourceResponse.serverError.statusCode
-        )
+        new AppError(err.message, customResourceResponse.serverError.statusCode)
       );
     }
-    res.status(customResourceResponse.created.statusCode).json({
-      status: "success",
-      message: customResourceResponse.created.message,
-      data: { data: document._id },
-    });
   });
 
 export const updateOne = (Model) =>
