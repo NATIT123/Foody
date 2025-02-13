@@ -118,6 +118,8 @@ class RestaurantRepository {
           },
           {
             $project: {
+              timeOpen: 1,
+              priceRange: 1,
               serviceRate: 1,
               locationRate: 1,
               priceRate: 1,

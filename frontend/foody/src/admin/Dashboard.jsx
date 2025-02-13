@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import { Line, Bar } from "react-chartjs-2";
 import {
@@ -15,7 +15,8 @@ import {
 import UserManagement from "./ManagementUser";
 import Navbar from "../components/Navbar";
 import RestaurantManagement from "./RestaurantManagements";
-
+import { useData } from "../context/DataContext";
+import { useNavigate } from "react-router-dom"; // For navigation
 // Đăng ký các thành phần của Chart.js
 ChartJS.register(
   CategoryScale,
@@ -29,6 +30,14 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+  const { state, logout } = useData();
+  const navigate = useNavigate(); // For navigation to the home page
+  useEffect(() => {
+    if (state.user && !state.loading) {
+      if (state.user?.role !== "admin") navigate("/");
+    }
+  }, [navigate, state.user, state.loading]);
+
   const [activeTab, setActiveTab] = useState("dashboard");
 
   const dataLine = {
