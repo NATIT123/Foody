@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const ItemsEat = ({ items, itemsPerPage, totalPages }) => {
+import { useNavigate } from "react-router-dom";
+import { useData } from "../context/DataContext";
+const ItemsEat = ({
+  items,
+  itemsPerPage,
+  totalPages,
+  activeCategoryEat,
+  categoriesEat,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Calculate pagination
+  const { state } = useData();
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = items.slice(startIndex, startIndex + itemsPerPage);
 
@@ -15,12 +21,27 @@ const ItemsEat = ({ items, itemsPerPage, totalPages }) => {
   const handlePrev = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
+  const navigate = useNavigate(); // Hook điều hướng
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  useEffect(() => {
+    const handleShowModalLogin = () => {
+      if (!state.loading && !state.user) {
+        setShowLoginModal(true);
+        return;
+      }
+    };
+    handleShowModalLogin();
+  }, [state, setShowLoginModal]);
+  const handleLogin = () => {
+    setShowLoginModal(false);
+    navigate("/login");
+  };
 
   return (
     <>
       {/* Items Section */}
       <div className="row mt-3">
-        {currentItems &&
+        {currentItems && currentItems.length > 0 ? (
           currentItems.map((item) => (
             <div
               key={item._id}
@@ -95,6 +116,53 @@ const ItemsEat = ({ items, itemsPerPage, totalPages }) => {
                     </span>
                   </div>
 
+                  {showLoginModal && activeCategoryEat === categoriesEat[3] && (
+                    <div
+                      className="modal show fade"
+                      style={{
+                        display: "block",
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      }}
+                      tabIndex="-1"
+                    >
+                      <div className="modal-dialog">
+                        <div className="modal-content">
+                          <div className="modal-header">
+                            <h5 className="modal-title">"Login"</h5>
+                            <button
+                              type="button"
+                              className="btn-close"
+                              onClick={() => {
+                                setShowLoginModal(false);
+                              }}
+                            ></button>
+                          </div>
+                          <div className="modal-body">
+                            <p>Đăng nhập để sử dụng tính năng này</p>
+                          </div>
+                          <div className="modal-footer">
+                            <button
+                              type="button"
+                              className="btn btn-secondary"
+                              onClick={() => {
+                                setShowLoginModal(false);
+                              }}
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={handleLogin}
+                            >
+                              Login
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Interactions */}
                   {item.comments.length > 0 ? (
                     <div className="d-flex justify-content-between align-items-center">
@@ -144,29 +212,36 @@ const ItemsEat = ({ items, itemsPerPage, totalPages }) => {
                 </div>
               </div>
             </div>
-          ))}
+          ))
+        ) : (
+          <div className="text-center w-100">
+            <h5 className="text-muted mt-3">Hiện tại không có nhà hàng nào.</h5>
+          </div>
+        )}
       </div>
 
       {/* Pagination Controls */}
-      <div className="d-flex justify-content-center align-items-center mt-4">
-        <button
-          className="btn btn-outline-primary mx-2"
-          onClick={handlePrev}
-          disabled={currentPage === 1}
-        >
-          &laquo; Trước
-        </button>
-        <span className="mx-3 text-muted">
-          Trang {currentPage} / {totalPages}
-        </span>
-        <button
-          className="btn btn-outline-primary mx-2"
-          onClick={handleNext}
-          disabled={currentPage === totalPages}
-        >
-          Sau &raquo;
-        </button>
-      </div>
+      {currentItems && currentItems.length > 0 && (
+        <div className="d-flex justify-content-center align-items-center mt-4">
+          <button
+            className="btn btn-outline-primary mx-2"
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+          >
+            &laquo; Trước
+          </button>
+          <span className="mx-3 text-muted">
+            Trang {currentPage} / {totalPages}
+          </span>
+          <button
+            className="btn btn-outline-primary mx-2"
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+          >
+            Sau &raquo;
+          </button>
+        </div>
+      )}
     </>
   );
 };

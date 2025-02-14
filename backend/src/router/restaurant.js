@@ -27,7 +27,7 @@ router.get(
 
 router.get("/getRestaurantByCity/city/:cityId", getRestaurantByCity);
 
-router.get("/getRestaurantTopDeals/city/:cityId", getRestaurantTopDeals);
+router.post("/getRestaurantTopDeals", getRestaurantTopDeals);
 
 router.get("/getRestaurantByFileds/city/:cityId", getRestaurantByFields);
 

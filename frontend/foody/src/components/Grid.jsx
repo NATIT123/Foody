@@ -9,7 +9,7 @@ import Comments from "./Comments.jsx";
 import Blogs from "./Blogs.jsx";
 import Modal from "./Modal.jsx";
 import { useData } from "../context/DataContext.js";
-const categoriesEat = ["Mới nhất", "Phổ biến", "Đã lưu"];
+const categoriesEat = ["Mới nhất", "Lượt xem", "Phổ biến", "Đã lưu"];
 
 const categories = ["Mới nhất", "Gần tôi", "Đã lưu"];
 const filters = ["- Danh mục -", "- Ẩm thực -", "- Quận/Huyện -"];
@@ -106,11 +106,19 @@ const Grid = ({ searchQuery }) => {
   const [showModal, setShowModal] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [currentItems, setCurrentItems] = useState([]); // Dữ liệu sau khi lọc
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const handleShowModalLogin = () => {
+    if (!state.loading && !state.user) {
+      setShowLoginModal(true);
+      return;
+    }
+  };
 
   // Fetch API lấy danh sách restaurant
   useEffect(() => {
-    setCurrentItems([]);
     if (activeCategory === categories[0]) {
+      setCurrentItems([]);
       fetch(
         `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
         {
@@ -132,7 +140,6 @@ const Grid = ({ searchQuery }) => {
           if (data) {
             setTotalPages(data.totalPages);
             setCurrentItems(data.data.data);
-            setItemEat(data.data.data);
           }
         })
         .catch((error) => {
@@ -140,6 +147,8 @@ const Grid = ({ searchQuery }) => {
         });
     } else if (activeCategory === categories[2]) {
       setCurrentItems([]);
+      handleShowModalLogin();
+      if (showLoginModal) return;
       if (state.user && state.user._id) {
         fetch(
           `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`
@@ -155,7 +164,7 @@ const Grid = ({ searchQuery }) => {
             console.error("Error fetching restaurants:", error);
           });
       }
-    } else {
+    } else if (categories[1] === activeCategory) {
       setCurrentItems([]);
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -195,6 +204,88 @@ const Grid = ({ searchQuery }) => {
       );
     }
   }, [currentPage, activeCategory, state, filtersState]);
+
+  // Fetch API lấy danh sách restaurant
+  useEffect(() => {
+    setItemEat([]);
+    if (activeCategoryEat === categoriesEat[0]) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            selectedCity: state.selectedCity?._id || "",
+            selectedCategory: state.selectedCategory?._id || "",
+            subCategory: filtersState[0],
+            cuisines: filtersState[1],
+            district: filtersState[2],
+          }),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            setTotalPages(data.totalPages);
+            setItemEat(data.data.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+        });
+    } else if (activeCategoryEat === categoriesEat[2]) {
+      setItemEat([]);
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantTopDeals?page=${currentPage}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            selectedCity: state.selectedCity?._id || "",
+            selectedCategory: state.selectedCategory?._id || "",
+            subCategory: filtersState[0],
+            cuisines: filtersState[1],
+            district: filtersState[2],
+          }),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data?.data) {
+            setTotalPages(data.totalPages); // Lưu tổng số trang
+            setItemEat(data.data.data); // Lưu danh sách restaurant vào state
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+        });
+    } else if (categoriesEat[1] === activeCategoryEat) {
+      setItemEat([]);
+    } else if (categoriesEat[3] === activeCategoryEat) {
+      setItemEat([]);
+      handleShowModalLogin();
+      if (showLoginModal) return;
+      if (state.user && state.user._id) {
+        fetch(
+          `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data?.data) {
+              setTotalPages(data.totalPages); // Lưu tổng số trang
+              setItemEat(data.data.data); // Lưu danh sách restaurant vào state
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching restaurants:", error);
+          });
+      }
+    }
+  }, [currentPage, activeCategoryEat, state, filtersState]);
 
   // Lọc dữ liệu khi searchQuery thay đổi
   useEffect(() => {
@@ -291,8 +382,10 @@ const Grid = ({ searchQuery }) => {
             />
 
             <ItemList
-              categories={categories}
+              setShowLoginModal1={setShowLoginModal}
+              showLoginModal1={showLoginModal}
               activeCategory={activeCategory}
+              categories={categories}
               currentItems={currentItems}
               handleShowModal={handleShowModal}
             />
@@ -311,6 +404,11 @@ const Grid = ({ searchQuery }) => {
             />
 
             <ItemsEat
+              activeCategoryEat={activeCategoryEat}
+              categoriesEat={categoriesEat}
+              showLoginModal={showLoginModal}
+              setShowLoginModal={setShowLoginModal}
+              categories={categories}
               totalPages={totalPages}
               items={itemsEat} // Truyền danh sách dữ liệu gốc
               itemsPerPage={itemsPerPage} // Truyền số mục mỗi trang

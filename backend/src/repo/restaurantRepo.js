@@ -342,84 +342,196 @@ class RestaurantRepository {
 
   getTopDeals() {
     return catchAsync(async (req, res, next) => {
-      const cityId = req.params.cityId;
+      try {
+        const {
+          subCategory,
+          cuisines,
+          district,
+          selectedCity,
+          selectedCategory,
+        } = req.body;
+        const page = Math.max(req.query.page * 1 || 1, 1); // Ensure page is a positive integer
+        const limit = Math.max(req.query?.limit * 1 || 100, 1); // Ensure limit is a positive integer
+        const skip = (page - 1) * limit;
+        let matchConditions = {};
 
-      // Kiểm tra tính hợp lệ của cityId
-      if (!cityId.match(/^[0-9a-fA-F]{24}$/)) {
-        return next(
-          new AppError(
-            customResourceResponse.notValidId.message,
-            customResourceResponse.notValidId.statusCode
-          )
-        );
-      }
+        // Apply match conditions based on incoming filters
+        if (mongoose.Types.ObjectId.isValid(subCategory)) {
+          matchConditions["subCategoryId"] = new mongoose.Types.ObjectId(
+            subCategory
+          );
+        }
+        if (mongoose.Types.ObjectId.isValid(district)) {
+          matchConditions["districtId"] = new mongoose.Types.ObjectId(district);
+        }
+        if (mongoose.Types.ObjectId.isValid(cuisines)) {
+          matchConditions["cuisinesId"] = new mongoose.Types.ObjectId(cuisines);
+        }
+        if (mongoose.Types.ObjectId.isValid(selectedCategory)) {
+          matchConditions["subCategoryDetails.categoryId"] =
+            new mongoose.Types.ObjectId(selectedCategory);
+        }
 
-      // Tạo query với aggregation
-      const features = new APIFeatures(
-        this.restaurantModel.aggregate([
+        if (mongoose.Types.ObjectId.isValid(selectedCity)) {
+          matchConditions["districtDetails.cityId"] =
+            new mongoose.Types.ObjectId(selectedCity);
+        }
+
+        const restaurants = await this.restaurantModel.aggregate([
+          {
+            $match: { active: true },
+          },
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $lookup: {
+              from: "subcategories",
+              localField: "subCategoryId",
+              foreignField: "_id",
+              as: "subCategoryDetails",
+            },
+          },
+          {
+            $lookup: {
+              from: "districts",
+              localField: "districtId",
+              foreignField: "_id",
+              as: "districtDetails",
+            },
+          },
+          {
+            $lookup: {
+              from: "comments",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user",
+                  },
+                },
+                {
+                  $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+                },
+                { $sort: { createdAt: -1 } },
+                {
+                  $project: {
+                    rate: 1,
+                    type: 1,
+                    description: 1,
+                    "user.fullname": 1,
+                    "user.photo": 1,
+                  },
+                },
+              ],
+              as: "comments",
+            },
+          },
+          ...(Object.keys(matchConditions).length > 0
+            ? [{ $match: matchConditions }]
+            : []),
+          {
+            $lookup: {
+              from: "albums",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $match: {
+                    image: { $not: { $regex: "^data:image/png;base64," } },
+                  },
+                },
+                { $sort: { createdAt: -1 } },
+                { $project: { _id: 1, image: 1 } },
+              ],
+              as: "albums",
+            },
+          },
+
           {
             $addFields: {
-              averageSales: {
-                $avg: [
-                  "$qualityRate",
-                  "$serviceRate",
-                  "$locationRate",
-                  "$priceRate",
-                  "$serviceRate",
+              commentCount: { $size: "$comments" },
+              albumCount: { $size: "$albums" },
+              averageRate: {
+                $round: [
+                  {
+                    $divide: [
+                      {
+                        $add: [
+                          { $ifNull: ["$qualityRate", 0] },
+                          { $ifNull: ["$serviceRate", 0] },
+                          { $ifNull: ["$locationRate", 0] },
+                          { $ifNull: ["$priceRate", 0] },
+                          { $ifNull: ["$spaceRate", 0] },
+                        ],
+                      },
+                      5,
+                    ],
+                  },
+                  1,
                 ],
               },
             },
           },
           {
-            $lookup: {
-              from: "districts", // Tên collection district
-              localField: "districtId", // Trường trong collection restaurant
-              foreignField: "_id", // Trường trong collection district
-              as: "district", // Kết quả join sẽ có trường "district"
+            $sort: { averageRate: -1 },
+          },
+          {
+            $project: {
+              averageRate: 1,
+              subCategory: { $arrayElemAt: ["$subCategoryDetails.name", 0] }, // Get the first element of the subCategoryDetails array
+              timeOpen: 1,
+              priceRange: 1,
+              serviceRate: 1,
+              locationRate: 1,
+              priceRate: 1,
+              spaceRate: 1,
+              qualityRate: 1,
+              name: 1,
+              address: 1,
+              image: 1,
+              commentCount: 1,
+              albumCount: 1,
+              comments: 1,
+              albums: 1,
             },
           },
           {
-            $lookup: {
-              from: "subcategories", // Tên collection subcategory
-              localField: "subCategoryId", // Trường trong collection restaurant
-              foreignField: "_id", // Trường trong collection subcategory
-              as: "subcategory", // Kết quả join sẽ có trường "subcategory"
+            $facet: {
+              metadata: [{ $count: "total" }],
+              data: [{ $skip: skip }, { $limit: limit }], // Paging
             },
           },
-          {
-            $sort: { averageSales: -1, createdAt: -1 }, // Sắp xếp theo averageSales và createdAt
-          },
-          {
-            $match: { "district.cityId": new mongoose.Types.ObjectId(cityId) },
-          },
-          {
-            $limit: parseInt(req.query.limit) || 5, // Lấy 5 bản ghi đầu tiên
-          },
-        ]),
-        req.query
-      ).limitFields();
+        ]);
 
-      // Thực hiện truy vấn
-      const doc = await features.query;
+        const total = restaurants[0].metadata[0]?.total || 0;
+        const totalPages = Math.ceil(total / limit);
+        const docs = restaurants[0].data;
 
-      if (!doc || doc.length === 0) {
-        return next(
-          new AppError(
-            customResourceResponse.recordNotFound.message,
-            customResourceResponse.recordNotFound.statusCode
-          )
-        );
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: docs.length,
+          totalPages: totalPages,
+          currentPage: page,
+          data: { data: docs },
+        });
+      } catch (error) {
+        console.error("Error fetching restaurants", error);
+        return next(new AppError("Server error", 500));
       }
-
-      // Gửi phản hồi
-      res.status(customResourceResponse.success.statusCode).json({
-        message: customResourceResponse.success.message,
-        status: "success",
-        results: doc.length,
-        data: {
-          data: doc,
-        },
-      });
     });
   }
 
