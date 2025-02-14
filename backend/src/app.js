@@ -28,6 +28,7 @@ import subCategoryRoute from "./router/subCategory.js";
 import cuisinesRoute from "./router/cuisines.js";
 import coordinateRoute from "./router/coordinate.js";
 import favoriteRestaurantRoute from "./router/favoriteRestaurant.js";
+import notificationRoute from "./router/notification.js";
 import { importData } from "./controllers/handleFactory.js";
 import UserModel from "./models/userModel.js";
 import CountryModel from "./models/CountryModel.js";
@@ -42,7 +43,7 @@ import AlbumModel from "./models/AlbumModel.js";
 import CuisinesModel from "./models/CuisinesModel.js";
 import CoordinateModel from "./models/coordinateModel.js";
 import FavoriteRestaurantModel from "./models/favoriteRestaurantModel.js";
-
+import NotificationModel from "./models/notificationModel.js";
 ///Connect DB
 connectDb();
 
@@ -165,8 +166,13 @@ importData(CuisinesModel, "cuisines");
 app.use("/api/v1/coordinates", coordinateRoute);
 importData(CoordinateModel, "coordinates");
 
+//FavoriteRestaurant
 app.use("/api/v1/favorite", favoriteRestaurantRoute);
 importData(FavoriteRestaurantModel, "favoriteRestaurants");
+
+//Notification
+app.use("/api/v1/notification", notificationRoute);
+importData(NotificationModel, "notifications");
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

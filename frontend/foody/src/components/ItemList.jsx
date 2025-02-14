@@ -5,16 +5,23 @@ import LoginModal from "./LoginModal";
 import { useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
 
-const ItemList = ({ currentItems, handleShowModal }) => {
+const ItemList = ({
+  currentItems,
+  handleShowModal,
+  showLoginModal1,
+  setShowLoginModal1,
+}) => {
   const navigate = useNavigate(); // Hook điều hướng
   const { state } = useData();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const handleLogin = () => {
+    setShowLoginModal1(false);
     setShowLoginModal(false);
-    navigate("/login"); // Chuyển hướng sang trang đăng nhập
+    navigate("/login");
   };
   const handleOpenSaveModal = () => {
     if (!state.user && !state.loading) {
+      setShowLoginModal1(true);
       setShowLoginModal(true);
     }
   };
@@ -148,12 +155,52 @@ const ItemList = ({ currentItems, handleShowModal }) => {
           <h5 className="text-muted mt-3">Hiện tại không có nhà hàng nào.</h5>
         </div>
       )}
-
-      <LoginModal
-        show={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onLogin={handleLogin}
-      />
+      {showLoginModal ||
+        (showLoginModal1 && (
+          <div
+            className="modal show fade"
+            style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">"Login"</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => {
+                      setShowLoginModal(false);
+                      setShowLoginModal1(false);
+                    }}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>Đăng nhập để sử dụng tính năng này</p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setShowLoginModal(false);
+                      setShowLoginModal1(false);
+                    }}
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleLogin}
+                  >
+                    Login
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
     </div>
   );
 };

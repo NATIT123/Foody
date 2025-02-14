@@ -9,41 +9,11 @@ import Comments from "./Comments.jsx";
 import Blogs from "./Blogs.jsx";
 import Modal from "./Modal.jsx";
 import { useData } from "../context/DataContext.js";
-const categoriesEat = ["Mới nhất", "Phổ biến", "Đã lưu"];
+const categoriesEat = ["Mới nhất", "Lượt xem", "Phổ biến", "Đã lưu"];
 
 const categories = ["Mới nhất", "Gần tôi", "Đã lưu"];
 const filters = ["- Danh mục -", "- Ẩm thực -", "- Quận/Huyện -"];
-const itemsPerPage = 12;
-const itemsEat = [
-  {
-    id: 1,
-    title: "Phở Bò Hà Nội",
-    subtitle: "Số 10, Đường Láng, Hà Nội",
-    imgSrc:
-      "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwgecy7t793taa@resize_ss400x400",
-    review: "Phở bò thơm ngon, nước dùng đậm đà.",
-    rating: 4.5,
-    commentCount: 12,
-    likes: 150,
-    userAvatar:
-      "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwf8w1ku4l3vc7@resize_ss60x60", // Avatar người dùng
-    userName: "Nguyễn Văn A", // Tên người dùng
-  },
-  {
-    id: 2,
-    title: "Cơm gà",
-    subtitle: "Số 5, Nguyễn Huệ, TP. Hồ Chí Minh",
-    imgSrc:
-      "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwh0ggp4ai8p1d@resize_ss400x400",
-    review: "Bánh mì giòn rụm, nhân đa dạng.",
-    rating: 4.7,
-    commentCount: 8,
-    likes: 200,
-    userAvatar:
-      "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwf8w1ku4l3vc7@resize_ss60x60",
-    userName: "Trần Văn B",
-  },
-];
+const itemsPerPage = 100;
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const menuItems = ["Khám phá", "Ăn gì", "Blogs", "Bình luận"];
@@ -125,6 +95,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 };
 
 const Grid = ({ searchQuery }) => {
+  const [itemsEat, setItemEat] = useState([]);
   const { state } = useData();
   const [activeCategoryEat, setActiveCategoryEat] = useState(categories[0]);
   const [activeCategory, setActiveCategory] = useState(categories[0]);
@@ -135,11 +106,19 @@ const Grid = ({ searchQuery }) => {
   const [showModal, setShowModal] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [currentItems, setCurrentItems] = useState([]); // Dữ liệu sau khi lọc
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const handleShowModalLogin = () => {
+    if (!state.loading && !state.user) {
+      setShowLoginModal(true);
+      return;
+    }
+  };
 
   // Fetch API lấy danh sách restaurant
   useEffect(() => {
-    setCurrentItems([]);
     if (activeCategory === categories[0]) {
+      setCurrentItems([]);
       fetch(
         `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
         {
@@ -148,6 +127,8 @@ const Grid = ({ searchQuery }) => {
             "Content-type": "application/json",
           },
           body: JSON.stringify({
+            selectedCity: state.selectedCity?._id || "",
+            selectedCategory: state.selectedCategory?._id || "",
             subCategory: filtersState[0],
             cuisines: filtersState[1],
             district: filtersState[2],
@@ -166,6 +147,8 @@ const Grid = ({ searchQuery }) => {
         });
     } else if (activeCategory === categories[2]) {
       setCurrentItems([]);
+      handleShowModalLogin();
+      if (showLoginModal) return;
       if (state.user && state.user._id) {
         fetch(
           `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`
@@ -181,7 +164,7 @@ const Grid = ({ searchQuery }) => {
             console.error("Error fetching restaurants:", error);
           });
       }
-    } else {
+    } else if (categories[1] === activeCategory) {
       setCurrentItems([]);
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -195,9 +178,6 @@ const Grid = ({ searchQuery }) => {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                subCategory: filtersState[0],
-                cuisines: filtersState[1],
-                district: filtersState[2],
                 latitude,
                 longitude,
                 maxDistance: 1000,
@@ -221,6 +201,115 @@ const Grid = ({ searchQuery }) => {
       );
     }
   }, [currentPage, activeCategory, state, filtersState]);
+
+  // Fetch API lấy danh sách restaurant
+  useEffect(() => {
+    setItemEat([]);
+    if (activeCategoryEat === categoriesEat[0]) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            selectedCity: state.selectedCity?._id || "",
+            selectedCategory: state.selectedCategory?._id || "",
+            subCategory: filtersState[0],
+            cuisines: filtersState[1],
+            district: filtersState[2],
+          }),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            setTotalPages(data.totalPages);
+            setItemEat(data.data.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+        });
+    } else if (activeCategoryEat === categoriesEat[2]) {
+      setItemEat([]);
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantTopDeals?page=${currentPage}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            selectedCity: state.selectedCity?._id || "",
+            selectedCategory: state.selectedCategory?._id || "",
+            subCategory: filtersState[0],
+            cuisines: filtersState[1],
+            district: filtersState[2],
+          }),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data?.data) {
+            setTotalPages(data.totalPages); // Lưu tổng số trang
+            setItemEat(data.data.data); // Lưu danh sách restaurant vào state
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+        });
+    } else if (categoriesEat[1] === activeCategoryEat) {
+      setItemEat([]);
+
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByViews?page=${currentPage}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            selectedCity: state.selectedCity?._id || "",
+            selectedCategory: state.selectedCategory?._id || "",
+            subCategory: filtersState[0],
+            cuisines: filtersState[1],
+            district: filtersState[2],
+          }),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data?.data) {
+            setTotalPages(data.totalPages); // Lưu tổng số trang
+            setItemEat(data.data.data); // Lưu danh sách restaurant vào state
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+        });
+    } else if (categoriesEat[3] === activeCategoryEat) {
+      setItemEat([]);
+      handleShowModalLogin();
+      if (showLoginModal) return;
+      if (state.user && state.user._id) {
+        fetch(
+          `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data?.data) {
+              setTotalPages(data.totalPages); // Lưu tổng số trang
+              setItemEat(data.data.data); // Lưu danh sách restaurant vào state
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching restaurants:", error);
+          });
+      }
+    }
+  }, [currentPage, activeCategoryEat, state, filtersState]);
 
   // Lọc dữ liệu khi searchQuery thay đổi
   useEffect(() => {
@@ -317,8 +406,10 @@ const Grid = ({ searchQuery }) => {
             />
 
             <ItemList
-              categories={categories}
+              setShowLoginModal1={setShowLoginModal}
+              showLoginModal1={showLoginModal}
               activeCategory={activeCategory}
+              categories={categories}
               currentItems={currentItems}
               handleShowModal={handleShowModal}
             />
@@ -337,6 +428,12 @@ const Grid = ({ searchQuery }) => {
             />
 
             <ItemsEat
+              activeCategoryEat={activeCategoryEat}
+              categoriesEat={categoriesEat}
+              showLoginModal={showLoginModal}
+              setShowLoginModal={setShowLoginModal}
+              categories={categories}
+              totalPages={totalPages}
               items={itemsEat} // Truyền danh sách dữ liệu gốc
               itemsPerPage={itemsPerPage} // Truyền số mục mỗi trang
               handleShowModal={handleShowModal}

@@ -6,6 +6,13 @@ const CommentDetailSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    numberOfLikes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+      },
+    ],
+
     time: { type: String, required: [true, "Please tell us your time"] },
     rate: { type: Number, required: [true, "Please tell us your rate"] },
     title: { type: String, required: [true, "Please tell us your title"] },
@@ -13,7 +20,10 @@ const CommentDetailSchema = new Schema(
       type: String,
       required: [true, "Please tell us your description"],
     },
-    type: { type: String, required: [true, "Please tell us your type"] },
+    type: {
+      type: String,
+      default: "via Web",
+    },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "users", index: true },
     restaurantId: {
       type: mongoose.Schema.Types.ObjectId,

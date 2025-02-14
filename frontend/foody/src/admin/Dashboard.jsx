@@ -40,6 +40,8 @@ const Dashboard = () => {
 
   const [activeTab, setActiveTab] = useState("dashboard");
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const dataLine = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
@@ -67,7 +69,7 @@ const Dashboard = () => {
   return (
     <div className="container-fluid">
       {/* Navbar */}
-      <Navbar />
+      <Navbar setSearchQuery={setSearchQuery} />
 
       <div className="row">
         {/* Sidebar */}
@@ -115,7 +117,7 @@ const Dashboard = () => {
               <div className="row mb-4">
                 <div className="col-lg-3 col-md-6 col-sm-12 mb-3">
                   <div className="card p-3 shadow-sm">
-                    <h6>Today's Money</h6>
+                    <h6>Today's Restaurants</h6>
                     <h3>$53k</h3>
                     <p className="text-success">+55% than last week</p>
                   </div>
@@ -173,12 +175,12 @@ const Dashboard = () => {
           {/* Các tab khác */}
           {activeTab === "Quản lí người dùng" && (
             <div>
-              <UserManagement />
+              <UserManagement searchQuery={searchQuery} />
             </div>
           )}
           {activeTab === "Quản lí nhà hàng" && (
             <div>
-              <RestaurantManagement />
+              <RestaurantManagement searchQuery={searchQuery} />
             </div>
           )}
         </div>

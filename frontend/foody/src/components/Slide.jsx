@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import "../css/Slide.css";
 import ImageGallery from "./images";
 import Comments from "./Comments";
+import { useNavigate } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import CommentsSection from "./CommentsSection";
 import { FaPlus } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import { useData } from "../context/DataContext";
 const MapModal = ({ currentRestaurants, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
 
@@ -57,11 +58,16 @@ const Slide = ({
   currentAlbums,
   currentRestaurants,
 }) => {
+  const { state } = useData();
   const [activeSection, setActiveSection] = useState("Trang chủ");
   const [isMapVisible, setIsMapVisible] = useState(false);
-
+  const navigate = useNavigate(); // Hook điều hướng
   const [totalRate, setTotalRate] = useState(0);
-
+  const [showModalLogin, setShowModalLogin] = useState(false);
+  const handleLogin = () => {
+    setShowModalLogin(false);
+    navigate("/login");
+  };
   useEffect(() => {
     let total =
       currentRestaurants.qualityRate +
@@ -98,6 +104,12 @@ const Slide = ({
     setActiveSection(name); // Update active section based on the clicked menu item
   };
 
+  const handleComment = () => {
+    if (!state.user && !state.loading) {
+      setShowModalLogin(true);
+    }
+  };
+
   return (
     <div className="container my-4">
       <div className="row">
@@ -127,6 +139,45 @@ const Slide = ({
             ))}
           </ul>
         </div>
+        {showModalLogin && (
+          <div
+            className="modal show fade"
+            style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">"Login"</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowModalLogin(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>Đăng nhập để sử dụng tính năng này</p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowModalLogin(false)}
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleLogin}
+                  >
+                    Login
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {activeSection === "Trang chủ" && (
           <div className="col-md-9">
@@ -521,7 +572,10 @@ const Slide = ({
                     <h4 className="text-success">
                       {Math.floor(totalRate)} điểm - Khá tốt
                     </h4>
-                    <button className="btn btn-primary w-100 mt-3">
+                    <button
+                      className="btn btn-primary w-100 mt-3"
+                      onClick={handleComment}
+                    >
                       <i className="fas fa-pencil-alt me-2"></i> Viết bình luận
                     </button>
                   </div>

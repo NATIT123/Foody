@@ -8,6 +8,10 @@ const RestaurantDetailSchema = new Schema(
       required: [true, "Please tell us your name"],
       unique: true,
     },
+    numberView: {
+      type: Number,
+      default: 0,
+    },
     image: { type: String, required: [true, "Please tell us your image"] },
     address: { type: String, required: [true, "Please tell us your address"] },
     active: {

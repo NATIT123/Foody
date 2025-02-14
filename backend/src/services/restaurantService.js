@@ -46,6 +46,10 @@ class RestaurantService {
   getNearestRestaurants() {
     return this.restaurantRepo.getNearestRestaurants();
   }
+
+  getRestaurantByViews() {
+    return this.restaurantRepo.getRestaurantByViews();
+  }
 }
 
 export default RestaurantService;

@@ -1,25 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { useData } from "../context/DataContext";
 import { useNavigate } from "react-router-dom"; // For navigation
-const UserManagement = () => {
+const UserManagement = ({ searchQuery }) => {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate(); // For navigation to the home page
   const [email, setEmail] = useState("");
+  const [id, setId] = useState("");
   const [fullname, setFullName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  const [photo, setPhoto] = useState("");
   const [role, setRole] = useState("user");
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showModalDelete, setShowModalDelete] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const { state } = useData();
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
   useEffect(() => {
-    if (!state.accessToken) return; // Không làm gì nếu chưa có accessToken
-
-    console.log("Fetching users with token:", state.accessToken);
+    if (!searchQuery) {
+      setFilteredUsers(users);
+    } else {
+      setFilteredUsers(
+        users.filter(
+          (user) =>
+            user.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.phone.includes(searchQuery)
+        )
+      );
+    }
+  }, [searchQuery, users]);
+  useEffect(() => {
+    if (!state.accessToken) return;
 
     fetch(
       `${process.env.REACT_APP_BASE_URL}/user/getAllUsers?page=${currentPage}`,
@@ -56,16 +71,51 @@ const UserManagement = () => {
     setAddress("");
     setPhone("");
     setRole("user");
-    setEditId(null);
+    setEditId("Add User");
   };
 
   const handleDeleteUser = (id) => {
-    setUsers(users.filter((user) => user.id !== id));
+    const user = users.find((u) => u._id === id);
+    if (user) {
+      setId(user._id);
+      setFullName(user.fullname);
+      setShowModalDelete(true);
+    }
+  };
+
+  const deleteUser = () => {
+    if (!state.accessToken) return;
+    fetch(`${process.env.REACT_APP_BASE_URL}/user/deleteUser/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${state.accessToken}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          if (
+            data.status !== "fail" &&
+            data.status !== "error" &&
+            data.status !== 400
+          ) {
+            setUsers(users.filter((user) => user._id !== id));
+            console.log("Delete Success");
+          }
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    setShowModalDelete(false);
   };
 
   const handleEditUser = (id) => {
-    const user = users.find((u) => u.id === id);
+    const user = users.find((u) => u._id === id);
     if (user) {
+      setPhoto(user.photo);
+      setId(user._id);
       setFullName(user.fullname);
       setPhone(user.phone);
       setAddress(user.address);
@@ -77,21 +127,91 @@ const UserManagement = () => {
   };
 
   const handleSaveUser = () => {
-    if (editId) {
+    if (editId === "Edit User") {
       // Update user
-      setUsers(
-        users.map((user) =>
-          user.id === editId ? { ...user, email, role } : user
-        )
-      );
-    } else {
+      if (!email || !address || !phone || !fullname || !role) {
+        console.log("Please fill input");
+        return;
+      }
       // Add new user
       const newUser = {
-        id: Date.now(),
+        _id: id,
         email,
+        address,
+        phone,
+        fullname,
+        photo,
         role,
       };
-      setUsers([...users, newUser]);
+      if (!state.accessToken) return;
+      fetch(`${process.env.REACT_APP_BASE_URL}/user/updateUser/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${state.accessToken}`,
+        },
+        body: JSON.stringify(newUser),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            if (
+              data.status !== "fail" &&
+              data.status !== "error" &&
+              data.status !== 400
+            ) {
+              setUsers(
+                users.map((user) => (user._id === id ? { ...newUser } : user))
+              );
+              console.log("Update Success");
+            }
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      if (!email || !address || !phone || !fullname || !role) {
+        console.log("Please fill input");
+        return;
+      }
+      // Add new user
+      const newUser = {
+        photo: "default.jpg",
+        email,
+        address,
+        phone,
+        fullname,
+        password: "Password123",
+        confirmPassword: "Password123",
+        role,
+      };
+      if (!state.accessToken) return;
+      fetch(`${process.env.REACT_APP_BASE_URL}/user/addUser`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${state.accessToken}`,
+        },
+        body: JSON.stringify(newUser),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            if (
+              data.status !== "fail" &&
+              data.status !== "error" &&
+              data.status !== 400
+            ) {
+              newUser["_id"] = data.data.data;
+              setUsers([newUser, ...users]);
+              console.log("Add Success");
+            }
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
     setShowModal(false);
     setRole("user");
@@ -171,47 +291,48 @@ const UserManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td className="d-flex align-items-center">
-                    <img
-                      src={
-                        user.photo === "default.jpg"
-                          ? "/images/default.jpg"
-                          : user.photo
-                      }
-                      alt="Profile"
-                      style={{
-                        width: "60px",
-                        height: "60px",
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                        marginRight: "15px",
-                      }}
-                      onError={(e) => (e.target.src = "/images/default.jpg")} // Nếu ảnh lỗi, hiển thị ảnh mặc định
-                    />
-                    {user.email}
-                  </td>
-                  <td>{user.fullname}</td>
-                  <td>{user.phone}</td>
-                  <td>{user.address}</td>
-                  <td>{user.role}</td>
-                  <td className="text-center">
-                    <button
-                      className="btn btn-sm btn-warning me-2"
-                      onClick={() => handleEditUser(user.id)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => handleDeleteUser(user.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filteredUsers &&
+                filteredUsers.map((user) => (
+                  <tr key={user._id}>
+                    <td className="d-flex align-items-center">
+                      <img
+                        src={
+                          user.photo === "default.jpg"
+                            ? "/images/default.jpg"
+                            : user.photo
+                        }
+                        alt="Profile"
+                        style={{
+                          width: "60px",
+                          height: "60px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          marginRight: "15px",
+                        }}
+                        onError={(e) => (e.target.src = "/images/default.jpg")} // Nếu ảnh lỗi, hiển thị ảnh mặc định
+                      />
+                      {user.email}
+                    </td>
+                    <td>{user.fullname}</td>
+                    <td>{user.phone}</td>
+                    <td>{user.address}</td>
+                    <td>{user.role}</td>
+                    <td className="text-center">
+                      <button
+                        className="btn btn-sm btn-warning me-2"
+                        onClick={() => handleEditUser(user._id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => handleDeleteUser(user._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -305,6 +426,46 @@ const UserManagement = () => {
                   onClick={handleSaveUser}
                 >
                   Save changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showModalDelete && (
+        <div
+          className="modal show fade"
+          style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+          tabIndex="-1"
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Delete User</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowModalDelete(false)}
+                ></button>
+              </div>
+              <div class="modal-body">
+                <p>{`Do you want to delete ${fullname}`} </p>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowModalDelete(false)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={deleteUser}
+                >
+                  Delete
                 </button>
               </div>
             </div>

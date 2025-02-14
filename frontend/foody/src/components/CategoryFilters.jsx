@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useData } from "../context/DataContext";
 const CategoryFilters = ({
   categories,
@@ -21,7 +21,9 @@ const CategoryFilters = ({
                 ? "text-danger fw-bold border-bottom border-danger"
                 : "text-dark"
             }`}
-            onClick={() => setActiveCategory(category)}
+            onClick={() => {
+              setActiveCategory(category);
+            }}
             style={{
               paddingBottom: "5px", // Bottom padding for the button
             }}
