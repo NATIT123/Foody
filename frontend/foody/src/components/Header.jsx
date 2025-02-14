@@ -34,11 +34,85 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
     );
   };
 
-  const notifications = [
-    { id: 1, message: "Bạn có đơn hàng mới đang chờ xác nhận." },
-    { id: 2, message: "Chương trình khuyến mãi mới vừa được cập nhật!" },
-    { id: 3, message: "Một đánh giá mới về địa điểm bạn quan tâm." },
-  ];
+  const [notifications, setNotifications] = useState([]);
+  const [unreadExists, setUnreadExists] = useState(false);
+  useEffect(() => {
+    // Cập nhật unreadExists mỗi khi notifications thay đổi
+    setUnreadExists(notifications.some((n) => !n.isRead));
+  }, [notifications]);
+
+  const handleToggleNotifications = () => {
+    if (!state.loading && !state.user) {
+      console.log("Không có user, fetch không chạy.");
+      return;
+    }
+
+    if (!state.user || !state.user._id) {
+      console.log("User ID không hợp lệ.");
+      return;
+    }
+
+    const apiUrl = `${process.env.REACT_APP_BASE_URL}/notification/makeAll/${state.user._id}`;
+
+    // Chỉ gọi API khi đóng thông báo và có thông báo chưa đọc
+    if (showNotifications && unreadExists) {
+      fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (
+            data &&
+            data.status !== "fail" &&
+            data.status !== "error" &&
+            data.status !== 400
+          ) {
+            console.log("Tất cả thông báo đã được đánh dấu là đọc.");
+            setNotifications(
+              (prev) => prev.map((n) => ({ ...n, isRead: true })) // Cập nhật UI ngay
+            );
+          } else {
+            console.log("Lỗi từ server:", data);
+          }
+        })
+        .catch((error) => {
+          console.error("Lỗi khi fetch dữ liệu:", error);
+        });
+    }
+
+    // Đảo trạng thái show/hide thông báo
+    setShowNotifications(!showNotifications);
+  };
+  useEffect(() => {
+    if (!state.loading && !state.user) return;
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/notification/getAllNotifications`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`,
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          if (
+            data.status !== "fail" &&
+            data.status !== "error" &&
+            data.status !== 400
+          ) {
+            setNotifications(data.data.data);
+          }
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [state, showNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -52,6 +126,20 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const timeAgo = (timestamp) => {
+    const givenTime = new Date(timestamp);
+    const currentTime = new Date();
+    const timeDifference = Math.floor((currentTime - givenTime) / 1000); // Chênh lệch (giây)
+
+    if (timeDifference < 60) return `${timeDifference} giây trước`;
+    if (timeDifference < 3600)
+      return `${Math.floor(timeDifference / 60)} phút trước`;
+    if (timeDifference < 86400)
+      return `${Math.floor(timeDifference / 3600)} giờ trước`;
+
+    return `${Math.floor(timeDifference / 86400)} ngày trước`;
+  };
   return (
     <>
       {/* Navigation Bar */}
@@ -561,7 +649,7 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                   alignItems: "center",
                   justifyContent: "center",
                 }}
-                onClick={() => setShowNotifications(!showNotifications)} // Toggle trạng thái thông báo
+                onClick={handleToggleNotifications}
               />
               {showNotifications && (
                 <div
@@ -588,10 +676,10 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                     >
                       Thông báo
                     </h6>
-                    {notifications.length > 0 ? (
+                    {notifications && notifications.length > 0 ? (
                       notifications.map((notification, index) => (
                         <div
-                          key={notification.id}
+                          key={notification._id}
                           className="d-flex align-items-center border-bottom pb-2 mb-2"
                           style={{
                             padding: "10px",
@@ -605,7 +693,9 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                             style={{
                               width: "40px",
                               height: "40px",
-                              backgroundColor: "#007bff",
+                              backgroundColor: !notification.isRead
+                                ? "red"
+                                : "#007bff",
                               color: "white",
                               borderRadius: "50%",
                               display: "flex",
@@ -626,7 +716,7 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                                 fontSize: "14px",
                               }}
                             >
-                              {notification.message}
+                              {notification.description}
                             </p>
                             <span
                               className="text-muted"
@@ -635,7 +725,7 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                                 marginTop: "4px",
                               }}
                             >
-                              {notification.time || "Vừa xong"}
+                              {timeAgo(notification.createdAt) || "Vừa xong"}
                             </span>
                           </div>
 

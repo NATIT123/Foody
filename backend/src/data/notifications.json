@@ -1,0 +1,20 @@
+[
+  {
+    "description": "Thông báo 1: Bạn có đơn hàng mới!",
+    "active": true,
+    "isRead": false,
+    "userId": "67a4e1f16d05e2df70f1d985"
+  },
+  {
+    "description": "Thông báo 2: Đơn hàng của bạn đang được xử lý.",
+    "active": true,
+    "isRead": true,
+    "userId": "67a4e1f16d05e2df70f1d985"
+  },
+  {
+    "description": "Thông báo 3: Đơn hàng của bạn đã được giao thành công!",
+    "active": true,
+    "isRead": false,
+    "userId": "67a4e1f16d05e2df70f1d985"
+  }
+]

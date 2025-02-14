@@ -178,9 +178,6 @@ const Grid = ({ searchQuery }) => {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                subCategory: filtersState[0],
-                cuisines: filtersState[1],
-                district: filtersState[2],
                 latitude,
                 longitude,
                 maxDistance: 1000,
@@ -265,6 +262,33 @@ const Grid = ({ searchQuery }) => {
         });
     } else if (categoriesEat[1] === activeCategoryEat) {
       setItemEat([]);
+
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByViews?page=${currentPage}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            selectedCity: state.selectedCity?._id || "",
+            selectedCategory: state.selectedCategory?._id || "",
+            subCategory: filtersState[0],
+            cuisines: filtersState[1],
+            district: filtersState[2],
+          }),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data?.data) {
+            setTotalPages(data.totalPages); // Lưu tổng số trang
+            setItemEat(data.data.data); // Lưu danh sách restaurant vào state
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+        });
     } else if (categoriesEat[3] === activeCategoryEat) {
       setItemEat([]);
       handleShowModalLogin();
