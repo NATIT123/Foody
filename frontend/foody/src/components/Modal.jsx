@@ -4,7 +4,7 @@ import LoginModal from "./LoginModal";
 import CommentModal from "./CommentModal";
 import { useData } from "../context/DataContext";
 
-const Modal = ({ show, onClose, item }) => {
+const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
   const navigate = useNavigate(); // Hook điều hướng
   const { state } = useData();
   const [activeTab, setActiveTab] = useState("latest"); // State for active tab
@@ -488,6 +488,9 @@ const Modal = ({ show, onClose, item }) => {
         onLogin={handleLogin}
       />
       <CommentModal
+        currentItems={currentItems}
+        setCurrentItems={setCurrentItems}
+        restaurant={item}
         show={showCommentModal}
         onClose={() => setShowCommentModal(false)}
         onSubmit={handleCommentSubmit}

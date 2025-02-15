@@ -634,7 +634,8 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
             )}
 
             {/* Bell Icon */}
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", display: "inline-block" }}>
+              {/* Biểu tượng chuông */}
               <FaBell
                 style={{
                   fontSize: "16px",
@@ -651,6 +652,33 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                 }}
                 onClick={handleToggleNotifications}
               />
+
+              {/* Badge hiển thị số thông báo chưa đọc */}
+              {notifications?.filter((n) => !n.isRead).length > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "0",
+                    right: "0",
+                    transform: "translate(50%, -50%)",
+                    backgroundColor: "red",
+                    color: "white",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    borderRadius: "50%",
+                    width: "18px",
+                    height: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 0 5px rgba(0, 0, 0, 0.2)",
+                  }}
+                >
+                  {notifications.filter((n) => !n.isRead).length}
+                </span>
+              )}
+
+              {/* Dropdown thông báo */}
               {showNotifications && (
                 <div
                   className="notifications-dropdown"
@@ -720,10 +748,7 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                             </p>
                             <span
                               className="text-muted"
-                              style={{
-                                fontSize: "12px",
-                                marginTop: "4px",
-                              }}
+                              style={{ fontSize: "12px", marginTop: "4px" }}
                             >
                               {timeAgo(notification.createdAt) || "Vừa xong"}
                             </span>

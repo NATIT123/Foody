@@ -10,7 +10,7 @@ import {
 } from "../controllers/commentController.js";
 
 router.get("/getAllComment", getAllComments);
-router.post("/addComment", addComment);
+router.post("/addComment/user/:userId/restaurant/:restaurantId", addComment);
 router.delete("/deleteComment/:id", deleteCommentById);
 router.patch("/updateComment/:id", updateCommentById);
 router.get("/getComment/:id", getCommentById);

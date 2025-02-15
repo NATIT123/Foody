@@ -455,6 +455,8 @@ const Grid = ({ searchQuery }) => {
         {/* Modal */}
         {selectedItem && (
           <Modal
+            currentItems={currentItems}
+            setCurrentItem={setCurrentItems}
             show={showModal}
             onClose={handleCloseModal}
             item={selectedItem}
