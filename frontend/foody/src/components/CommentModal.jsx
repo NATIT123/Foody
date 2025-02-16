@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useData } from "../context/DataContext";
 const CommentModal = ({
   show,
   onClose,
   restaurant,
+  setMyComments,
   currentItems,
   setCurrentItems,
+  myComments,
 }) => {
   const [title, setTitle] = useState(restaurant.name);
   const [description, setDescription] = useState("");
@@ -15,7 +17,7 @@ const CommentModal = ({
     const formatDate = () => {
       const now = new Date();
       const day = String(now.getDate()).padStart(2, "0");
-      const month = String(now.getMonth() + 1).padStart(2, "0"); // Tháng tính từ 0-11
+      const month = String(now.getMonth() + 1).padStart(2, "0");
       const year = now.getFullYear();
       const hours = String(now.getHours()).padStart(2, "0");
       const minutes = String(now.getMinutes()).padStart(2, "0");
@@ -54,6 +56,46 @@ const CommentModal = ({
             data.data.status !== "error" &&
             data.data.status !== 400
           ) {
+            setMyComments([
+              {
+                ...commentData,
+                type: "Via Web",
+                _id: data.data.data,
+                user: [
+                  {
+                    _id: state.user._id,
+                    fullname: state.user.fullname,
+                    photo: state.user.photo,
+                  },
+                ],
+              },
+              ...myComments,
+            ]);
+
+            setCurrentItems((prevItems) =>
+              prevItems.map((el) =>
+                el._id.toString() === restaurant._id.toString()
+                  ? {
+                      ...el, // Spread existing item to keep other properties unchanged
+                      comments: [
+                        {
+                          ...commentData,
+                          type: "Via Web",
+                          _id: data.data.data,
+                          user: {
+                            _id: state.user._id,
+                            fullname: state.user.fullname,
+                            photo: state.user.photo,
+                          },
+                        },
+                        ...el.comments,
+                      ],
+                      commentCount: el.commentCount + 1,
+                    }
+                  : el
+              )
+            );
+
             console.log("Success");
           }
         }
@@ -62,7 +104,6 @@ const CommentModal = ({
         console.error("Error fetching restaurants:", error);
       });
 
-    setTitle(""); // Reset title
     setDescription(""); // Reset description
     setRate(1); // Reset rate to default
     onClose(); // Close modal

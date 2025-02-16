@@ -40,13 +40,13 @@ class CommentRepository {
           userId,
           restaurantId,
         };
-        console.log(newComment);
         const savedComment = await this.commentModel.create(newComment);
+        console.log(savedComment);
         res.status(customResourceResponse.success.statusCode).json({
           message: customResourceResponse.success.message,
           status: "success",
           data: {
-            data: savedComment._id,
+            data: savedComment._id.toString(),
           },
         });
       } catch (err) {
@@ -117,6 +117,7 @@ class CommentRepository {
           },
           {
             $project: {
+              "user._id": 1,
               "user.fullname": 1,
               "user.photo": 1,
               "restaurant.name": 1,

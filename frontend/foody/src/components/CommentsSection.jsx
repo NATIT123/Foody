@@ -8,8 +8,10 @@ const CommentsSection = ({ currentComments }) => {
   const [myComments, setMyComments] = useState([]);
   const [tabs, setTabs] = useState([]);
   useEffect(() => {
-    if (state.userId) {
-      setMyComments(currentComments.filter((el) => el.userId === state.userId));
+    if (state.user) {
+      setMyComments(
+        currentComments.filter((el) => el.user._id === state.user._id)
+      );
     }
     setTabs([
       { name: "Mới nhất", count: currentComments.length || 0, id: "latest" },

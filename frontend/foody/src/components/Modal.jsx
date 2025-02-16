@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginModal from "./LoginModal";
 import CommentModal from "./CommentModal";
@@ -10,23 +10,34 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
   const [activeTab, setActiveTab] = useState("latest"); // State for active tab
   const [myComments, setMyComments] = useState([]);
 
-  const [tabs, setTabs] = useState([]);
+  const restaurant = useMemo(() => {
+    return (
+      currentItems.find((el) => el._id.toString() === item._id.toString()) ||
+      item
+    );
+  }, [currentItems, item]);
+
+  const [tabs, setTabs] = useState([
+    { name: "Mới nhất", count: item.commentCount || 0, id: "latest" },
+    { name: "Của tôi", count: 0, id: "mine" },
+  ]);
 
   useEffect(() => {
-    if (state.userId && !state.loading) {
-      setMyComments(item.comments.filter((el) => el.userId === state.userId));
+    if (!state.loading && state.user) {
+      const filteredComments = restaurant.comments.filter(
+        (el) => el.user._id === state.user._id
+      );
+      setMyComments(filteredComments);
+      setTabs((prevTabs) =>
+        prevTabs.map((el) =>
+          el.id === "latest"
+            ? { ...el, count: restaurant.commentCount || 0 }
+            : { ...el, count: filteredComments.length || 0 }
+        )
+      );
     }
-    setTabs([
-      { name: "Mới nhất", count: item.commentCount.length || 0, id: "latest" },
-      { name: "Của tôi", count: myComments.length || 0, id: "mine" },
-    ]);
-  }, [
-    item.comments,
-    item.commentCount.length,
-    state.userId,
-    myComments.length,
-    state.loading,
-  ]);
+  }, [item.comments, item.commentCount, state.user, state.loading, restaurant]);
+
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [ratings, setRatings] = useState([]);
@@ -36,10 +47,6 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
     navigate("/login"); // Chuyển hướng sang trang đăng nhập
   };
 
-  const handleCommentSubmit = (comment) => {
-    console.log("New Comment:", comment);
-    // Thêm xử lý lưu bình luận nếu cần
-  };
   const handleOpenCommentModal = () => {
     if (!state.user && !state.loading) {
       setShowLoginModal(true);
@@ -89,8 +96,8 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
               >
                 {/* Hình ảnh */}
                 <img
-                  src={item.image}
-                  alt={item.name}
+                  src={restaurant.image}
+                  alt={restaurant.name}
                   className="img-fluid"
                   style={{
                     width: "100%", // Chiều rộng chiếm toàn bộ container
@@ -115,7 +122,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                       backgroundColor: "#e0f7e1",
                     }}
                   >
-                    7.4
+                    {restaurant.averageRate}
                   </p>
                   <p
                     style={{
@@ -124,7 +131,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                       fontWeight: "bold",
                     }}
                   >
-                    {item.name}
+                    {restaurant.name}
                   </p>
                   <p
                     style={{
@@ -133,7 +140,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                       fontWeight: "normal",
                     }}
                   >
-                    {item.address}
+                    {restaurant.address}
                   </p>
                 </div>
                 {/* Nút Viết bình luận */}
@@ -153,7 +160,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                 </button>
 
                 <h6 className="mt-2 text-center">
-                  {item.commentCount} Bình luận
+                  {restaurant.commentCount} Bình luận
                 </h6>
                 <div className="mb-3">
                   <div
@@ -248,8 +255,9 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                   {/* Comments */}
                   {activeTab === "latest" && (
                     <div className="mt-3">
-                      {item?.comments && item?.comments.length > 0 ? (
-                        item.comments.map((comment, index) => (
+                      {restaurant?.comments &&
+                      restaurant?.comments.length > 0 ? (
+                        restaurant.comments.map((comment, index) => (
                           <div
                             key={index}
                             className="p-3 mb-3"
@@ -488,12 +496,13 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
         onLogin={handleLogin}
       />
       <CommentModal
+        myComments={myComments}
+        setMyComments={setMyComments}
         currentItems={currentItems}
         setCurrentItems={setCurrentItems}
-        restaurant={item}
+        restaurant={restaurant}
         show={showCommentModal}
         onClose={() => setShowCommentModal(false)}
-        onSubmit={handleCommentSubmit}
       />
     </div>
   );
