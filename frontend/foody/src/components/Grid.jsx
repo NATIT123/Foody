@@ -8,6 +8,8 @@ import ItemsEat from "./ItemsEat";
 import Comments from "./Comments.jsx";
 import Blogs from "./Blogs.jsx";
 import Modal from "./Modal.jsx";
+import { useNavigate } from "react-router-dom";
+import LoginModal from "./LoginModal.jsx";
 import { useData } from "../context/DataContext.js";
 const categoriesEat = ["Mới nhất", "Lượt xem", "Phổ biến", "Đã lưu"];
 
@@ -95,6 +97,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 };
 
 const Grid = ({ searchQuery }) => {
+  const navigate = useNavigate(); // Hook điều hướng
   const [itemsEat, setItemEat] = useState([]);
   const { state } = useData();
   const [activeCategoryEat, setActiveCategoryEat] = useState(categories[0]);
@@ -113,6 +116,11 @@ const Grid = ({ searchQuery }) => {
       setShowLoginModal(true);
       return;
     }
+  };
+
+  const handleLogin = () => {
+    setShowLoginModal(false);
+    navigate("/login");
   };
 
   // Fetch API lấy danh sách restaurant
@@ -262,7 +270,6 @@ const Grid = ({ searchQuery }) => {
         });
     } else if (categoriesEat[1] === activeCategoryEat) {
       setItemEat([]);
-
       fetch(
         `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByViews?page=${currentPage}`,
         {
@@ -450,6 +457,16 @@ const Grid = ({ searchQuery }) => {
           <>
             <Blogs />
           </>
+        )}
+
+        {showLoginModal && (
+          <LoginModal
+            show={showLoginModal}
+            onClose={() => {
+              setShowLoginModal(false);
+            }}
+            onLogin={handleLogin}
+          />
         )}
 
         {/* Modal */}

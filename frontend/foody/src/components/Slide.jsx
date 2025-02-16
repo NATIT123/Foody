@@ -7,6 +7,7 @@ import CommentsSection from "./CommentsSection";
 import { FaPlus } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useData } from "../context/DataContext";
+import LoginModal from "./LoginModal";
 const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
 
@@ -219,45 +220,11 @@ const Slide = ({
             ))}
           </ul>
         </div>
-        {showModalLogin && (
-          <div
-            className="modal show fade"
-            style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-            tabIndex="-1"
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">"Login"</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setShowModalLogin(false)}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <p>Đăng nhập để sử dụng tính năng này</p>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModalLogin(false)}
-                  >
-                    Close
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleLogin}
-                  >
-                    Login
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <LoginModal
+          show={showModalLogin}
+          onClose={() => setShowModalLogin(false)}
+          onLogin={handleLogin}
+        />
 
         {activeSection === "Trang chủ" && (
           <div className="col-md-9">

@@ -37,23 +37,25 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
       );
     }
   }, [item.comments, item.commentCount, state.user, state.loading, restaurant]);
-
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showCommentModal, setShowCommentModal] = useState(false);
   const [ratings, setRatings] = useState([]);
   const handleLogin = () => {
     setShowLoginModal(false);
-    setShowCommentModal(false);
     navigate("/login"); // Chuyển hướng sang trang đăng nhập
   };
 
-  const handleOpenCommentModal = () => {
-    if (!state.user && !state.loading) {
+  const handleShowModalLogin = () => {
+    if (!state.loading && !state.user) {
       setShowLoginModal(true);
-    } else if (state.user) {
-      setShowCommentModal(true);
     }
   };
+
+  useEffect(() => {
+    if (activeTab === tabs[1].id) {
+      handleShowModalLogin();
+    }
+  }, [activeTab, tabs]);
+
   useEffect(() => {
     setRatings([
       { category: "Vị trí", value: item.locationRate },
@@ -146,7 +148,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                 {/* Nút Viết bình luận */}
                 <button
                   className="btn btn-primary w-100"
-                  onClick={handleOpenCommentModal}
+                  onClick={handleShowModalLogin}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -495,15 +497,18 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
         onClose={() => setShowLoginModal(false)}
         onLogin={handleLogin}
       />
-      <CommentModal
-        myComments={myComments}
-        setMyComments={setMyComments}
-        currentItems={currentItems}
-        setCurrentItems={setCurrentItems}
-        restaurant={restaurant}
-        show={showCommentModal}
-        onClose={() => setShowCommentModal(false)}
-      />
+
+      {!showLoginModal && (
+        <CommentModal
+          myComments={myComments}
+          setMyComments={setMyComments}
+          currentItems={currentItems}
+          setCurrentItems={setCurrentItems}
+          restaurant={restaurant}
+          show={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+        />
+      )}
     </div>
   );
 };

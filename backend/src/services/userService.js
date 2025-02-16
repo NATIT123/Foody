@@ -29,6 +29,12 @@ class UserService {
   uploadPhoto() {
     return this.userRepo.uploadPhoto();
   }
+  getUsersDetail() {
+    return this.userRepo.getUserDetails();
+  }
+  getAllDetails() {
+    return this.userRepo.getAllDetails();
+  }
 }
 
 export default UserService;

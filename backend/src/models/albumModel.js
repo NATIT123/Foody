@@ -13,6 +13,11 @@ const AlbumDetailSchema = new Schema(
       ref: "restaurants",
       index: true,
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      index: true,
+    },
   },
   {
     timestamps: true,

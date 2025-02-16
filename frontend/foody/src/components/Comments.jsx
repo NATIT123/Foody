@@ -15,7 +15,6 @@ const Comments = () => {
       .then((data) => {
         if (data) {
           if (data.status !== "fail" && data.status !== "error") {
-            console.log(data.data.data);
             setComments(data.data.data);
           }
         }
@@ -50,20 +49,11 @@ const Comments = () => {
         >
           Bình luận mới
         </button>
-        <button
-          className={`btn btn-outline-primary ${
-            activeTab === "friends" ? "active" : ""
-          }`}
-          onClick={() => setActiveTab("friends")}
-        >
-          Bình luận từ bạn bè
-        </button>
       </div>
 
       {/* Comments */}
       <div className="comment-list">
-        {currentComments &&
-          currentComments.length > 0 &&
+        {currentComments && currentComments.length > 0 ? (
           currentComments.map((comment, index) => (
             <div className="card mb-4" key={index}>
               <div className="card-body">
@@ -110,15 +100,6 @@ const Comments = () => {
 
                 <p className="mt-3">{comment.description}</p>
 
-                {/* Tags */}
-                {/* <div className="mb-3">
-                  {comment.tags.map((tag, i) => (
-                    <span key={i} className="badge bg-light text-dark me-1">
-                      {tag}
-                    </span>
-                  ))}
-                </div> */}
-
                 {/* Images */}
                 <div className="d-flex">
                   {comment.restaurant?.albums &&
@@ -136,47 +117,40 @@ const Comments = () => {
                       />
                     ))}
                 </div>
-
-                {/* Actions */}
-                <div className="mt-3 d-flex align-items-center">
-                  <button
-                    className="btn btn-outline-danger me-2"
-                    style={{ fontWeight: "bold" }}
-                  >
-                    Gọi món
-                  </button>
-                  <button
-                    className="btn btn-outline-secondary me-2"
-                    style={{ fontWeight: "bold" }}
-                  >
-                    Lưu lại
-                  </button>
-                </div>
               </div>
             </div>
-          ))}
+          ))
+        ) : (
+          <div className="text-center">
+            <h5 className="text-muted mt-3">
+              Hiện tại không có bình luận nào.
+            </h5>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
-      <div className="d-flex justify-content-center align-items-center mt-4">
-        <button
-          className="btn btn-outline-primary mx-2"
-          onClick={handlePrev}
-          disabled={currentPage === 1}
-        >
-          &laquo; Trước
-        </button>
-        <span className="mx-3 text-muted">
-          Trang {currentPage} / {totalPages}
-        </span>
-        <button
-          className="btn btn-outline-primary mx-2"
-          onClick={handleNext}
-          disabled={currentPage === totalPages}
-        >
-          Sau &raquo;
-        </button>
-      </div>
+      {comments && comments.length > 0 && (
+        <div className="d-flex justify-content-center align-items-center mt-4">
+          <button
+            className="btn btn-outline-primary mx-2"
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+          >
+            &laquo; Trước
+          </button>
+          <span className="mx-3 text-muted">
+            Trang {currentPage} / {totalPages}
+          </span>
+          <button
+            className="btn btn-outline-primary mx-2"
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+          >
+            Sau &raquo;
+          </button>
+        </div>
+      )}
     </div>
   );
 };

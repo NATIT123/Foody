@@ -1,12 +1,52 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import LoginModal from "./LoginModal";
 const CommentsSection = ({ currentComments }) => {
   const { state } = useData();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("latest"); // State for active tab
   const [myComments, setMyComments] = useState([]);
-  const [tabs, setTabs] = useState([]);
+  const [tabs, setTabs] = useState([
+    { name: "Mới nhất", count: currentComments.length || 0, id: "latest" },
+    { name: "Của tôi", count: 0, id: "mine" },
+  ]);
+  useEffect(() => {
+    if (!state.loading && state.user) {
+      const filteredComments = currentComments.filter(
+        (el) => el.user._id === state.user._id
+      );
+      setMyComments(filteredComments);
+      setTabs((prevTabs) =>
+        prevTabs.map((el) =>
+          el.id === "latest"
+            ? { ...el, count: currentComments.length || 0 }
+            : { ...el, count: filteredComments.length || 0 }
+        )
+      );
+    }
+  }, [currentComments, state.user, state.loading]);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === tabs[1].id) {
+      handleShowModalLogin();
+    }
+  }, [activeTab, tabs]);
+
+  const handleShowModalLogin = () => {
+    if (!state.loading && !state.user) {
+      setShowLoginModal(true);
+      return;
+    }
+  };
+
+  const handleLogin = () => {
+    setShowLoginModal(false);
+    navigate("/login");
+  };
+
   useEffect(() => {
     if (state.user) {
       setMyComments(
@@ -18,6 +58,12 @@ const CommentsSection = ({ currentComments }) => {
       { name: "Của tôi", count: myComments.length || 0, id: "mine" },
     ]);
   }, [currentComments, state, myComments.length]);
+
+  useEffect(() => {
+    if (activeTab === tabs[1].id) {
+      if (!state.loading && !state.user) handleShowModalLogin();
+    }
+  }, [activeTab]);
 
   return (
     <div className="col-md-9">
@@ -241,6 +287,15 @@ const CommentsSection = ({ currentComments }) => {
             </p>
           )}
         </div>
+      )}
+      {showLoginModal && (
+        <LoginModal
+          show={showLoginModal}
+          onClose={() => {
+            setShowLoginModal(false);
+          }}
+          onLogin={handleLogin}
+        />
       )}
     </div>
   );

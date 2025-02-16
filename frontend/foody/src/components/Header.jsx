@@ -88,30 +88,32 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
   };
   useEffect(() => {
     if (!state.loading && !state.user) return;
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/notification/getAllNotifications`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          if (
-            data.status !== "fail" &&
-            data.status !== "error" &&
-            data.status !== 400
-          ) {
-            setNotifications(data.data.data);
-          }
+    if (state.user) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/notification/getAllNotifications/${state.user._id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${state.accessToken}`,
+          },
         }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            if (
+              data.status !== "fail" &&
+              data.status !== "error" &&
+              data.status !== 400
+            ) {
+              setNotifications(data.data.data);
+            }
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   }, [state, showNotifications]);
 
   useEffect(() => {
