@@ -58,5 +58,32 @@ class NotificationRepository {
       }
     });
   }
+
+  getNotificationByUserId() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const { userId } = req.params;
+        if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
+          return next(
+            new AppError(
+              customResourceResponse.notValidId.message,
+              customResourceResponse.notValidId.statusCode
+            )
+          );
+        }
+        const notifications = await this.notificationModel.find({ userId });
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          data: {
+            data: notifications,
+          },
+        });
+      } catch (err) {
+        console.log(err);
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
 }
 export default NotificationRepository;

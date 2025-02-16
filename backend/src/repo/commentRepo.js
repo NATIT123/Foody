@@ -16,7 +16,44 @@ class CommentRepository {
   }
 
   addComment() {
-    return createOne(this.commentModel);
+    return catchAsync(async (req, res, next) => {
+      try {
+        const { userId, restaurantId } = req.params;
+        const { title, description, rate, time } = req.body;
+        // Kiểm tra tính hợp lệ của cityId
+        if (
+          !userId.match(/^[0-9a-fA-F]{24}$/) ||
+          !restaurantId.match(/^[0-9a-fA-F]{24}$/)
+        ) {
+          return next(
+            new AppError(
+              customResourceResponse.notValidId.message,
+              customResourceResponse.notValidId.statusCode
+            )
+          );
+        }
+        const newComment = {
+          title,
+          description,
+          time,
+          rate,
+          userId,
+          restaurantId,
+        };
+        const savedComment = await this.commentModel.create(newComment);
+        console.log(savedComment);
+        res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          data: {
+            data: savedComment._id.toString(),
+          },
+        });
+      } catch (err) {
+        console.log(err);
+        return next(new AppError("Server Error", 500));
+      }
+    });
   }
 
   getAllComments() {
@@ -80,6 +117,7 @@ class CommentRepository {
           },
           {
             $project: {
+              "user._id": 1,
               "user.fullname": 1,
               "user.photo": 1,
               "restaurant.name": 1,

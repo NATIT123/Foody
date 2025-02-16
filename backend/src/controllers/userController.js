@@ -1,4 +1,4 @@
-import UserRepository from "../repo/userrepo.js";
+import UserRepository from "../repo/userRepo.js";
 import UserService from "../services/userService.js";
 
 import UserModel from "../models/userModel.js";
@@ -17,3 +17,7 @@ export const updateUserById = userService.updateUserById();
 export const deleteUserById = userService.deleteUserById();
 
 export const uploadPhoto = userService.uploadPhoto();
+
+export const getUserDetails = userService.getUsersDetail();
+
+export const getAllDetails = userService.getAllDetails();

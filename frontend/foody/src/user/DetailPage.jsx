@@ -13,9 +13,9 @@ const DetailPage = () => {
   const [totalRate, setTotalRate] = useState(0);
   const [searchQuery, setSearchQuery] = useState(""); // State lưu từ khóa tìm kiếm
   const [currentRestaurant, setCurrentRestaurant] = useState([]); // Dữ liệu sau khi lọc
-  const [currentFoods, setCurrentFoods] = useState([]); // Dữ liệu sau khi lọc
-  const [currentComments, setCurrentComments] = useState([]); // Dữ liệu sau khi lọc
-  const [currentAlbums, setCurrentAlbums] = useState([]); // Dữ liệu sau khi lọc
+  const [currentFood, setCurrentFood] = useState([]); // Dữ liệu sau khi lọc
+  const [currentComment, setCurrentComment] = useState([]); // Dữ liệu sau khi lọc
+  const [currentAlbum, setCurrentAlbum] = useState([]); // Dữ liệu sau khi lọc
   const [suggestRestaurants, setSuggestRestaurants] = useState([]); // Dữ liệu sau khi lọc
 
   // Fetch API lấy detail restaurant
@@ -47,7 +47,7 @@ const DetailPage = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.data?.data) {
-          setCurrentFoods(data.data.data); // Lưu danh sách restaurant vào state
+          setCurrentFood(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
       .catch((error) => {
@@ -64,7 +64,7 @@ const DetailPage = () => {
       .then((data) => {
         if (data.data?.data) {
           console.log(data.data.data);
-          setCurrentComments(data.data.data); // Lưu danh sách restaurant vào state
+          setCurrentComment(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
       .catch((error) => {
@@ -78,7 +78,7 @@ const DetailPage = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.data?.data) {
-          setCurrentAlbums(data.data.data); // Lưu danh sách restaurant vào state
+          setCurrentAlbum(data.data.data); // Lưu danh sách restaurant vào state
         }
       })
       .catch((error) => {
@@ -238,10 +238,11 @@ const DetailPage = () => {
         </div>
       </div>
       <Slide
-        currentRestaurants={currentRestaurant}
-        currentFoods={currentFoods}
-        currentComments={currentComments}
-        currentAlbums={currentAlbums}
+        setCurrentComment={setCurrentComment}
+        currentRestaurant={currentRestaurant}
+        currentFood={currentFood}
+        currentComment={currentComment}
+        currentAlbum={currentAlbum}
       />
       <ProductSuggestion suggestRestaurants={suggestRestaurants} />
       <Footer />

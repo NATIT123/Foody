@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "../css/Slide.css";
 import ImageGallery from "./images";
-import Comments from "./Comments";
 import { useNavigate } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import CommentsSection from "./CommentsSection";
 import { FaPlus } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useData } from "../context/DataContext";
-const MapModal = ({ currentRestaurants, isVisible, onClose }) => {
+import LoginModal from "./LoginModal";
+const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
 
   return (
@@ -23,7 +23,7 @@ const MapModal = ({ currentRestaurants, isVisible, onClose }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title" id="mapModalLabel">
-              Bản đồ - {currentRestaurants.name}
+              Bản đồ - {currentRestaurant.name}
             </h5>
             <button
               type="button"
@@ -36,7 +36,7 @@ const MapModal = ({ currentRestaurants, isVisible, onClose }) => {
             <div style={{ height: "400px" }}>
               <iframe
                 title="Google Map"
-                src={currentRestaurants?.coordinateId.iframe}
+                src={currentRestaurant?.coordinateId.iframe}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
@@ -53,31 +53,110 @@ const MapModal = ({ currentRestaurants, isVisible, onClose }) => {
   );
 };
 const Slide = ({
-  currentFoods,
-  currentComments,
-  currentAlbums,
-  currentRestaurants,
+  setCurrentComment,
+  currentFood,
+  currentComment,
+  currentAlbum,
+  currentRestaurant,
 }) => {
+  useEffect(() => {
+    console.log(currentComment);
+  }, [currentComment]);
   const { state } = useData();
   const [activeSection, setActiveSection] = useState("Trang chủ");
   const [isMapVisible, setIsMapVisible] = useState(false);
   const navigate = useNavigate(); // Hook điều hướng
-  const [totalRate, setTotalRate] = useState(0);
   const [showModalLogin, setShowModalLogin] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [rate, setRate] = useState(1); // Default rate as 1
+  const [showModalComment, setShowModalComment] = useState(false);
+  const [totalRate, setTotalRate] = useState(0);
+  useEffect(() => {
+    let total =
+      currentRestaurant.qualityRate +
+      currentRestaurant.serviceRate +
+      currentRestaurant.locationRate +
+      currentRestaurant.priceRate +
+      currentRestaurant.spaceRate;
+    total /= 5;
+    setTitle(currentRestaurant.name);
+    setTotalRate(Math.floor(total));
+  }, [currentRestaurant]);
+  const handleSubmit = () => {
+    const formatDate = () => {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0"); // Tháng tính từ 0-11
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    };
+
+    if (!title || !description || !rate) {
+      console.log("Please input ");
+      return;
+    }
+
+    const commentData = {
+      title,
+      time: formatDate(),
+      description,
+      rate,
+    };
+    if (!state.loading && !state.user) return;
+    if (!currentRestaurant) return;
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/comment/addComment/user/${state.user._id}/restaurant/${currentRestaurant._id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(commentData),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.data) {
+          if (
+            data.data.status !== "fail" &&
+            data.data.status !== "error" &&
+            data.data.status !== 400
+          ) {
+            setCurrentComment([
+              {
+                ...commentData,
+                type: "Via Web",
+                _id: data.data.data,
+                user: [
+                  {
+                    fullname: state.user.fullname,
+                    photo: state.user.photo,
+                  },
+                ],
+                userId: state.user._id,
+              },
+              ...currentComment,
+            ]);
+            console.log("Success");
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching restaurants:", error);
+      });
+
+    setDescription(""); // Reset description
+    setRate(1); // Reset rate to default
+    setShowModalComment(false);
+  };
   const handleLogin = () => {
     setShowModalLogin(false);
     navigate("/login");
   };
-  useEffect(() => {
-    let total =
-      currentRestaurants.qualityRate +
-      currentRestaurants.serviceRate +
-      currentRestaurants.locationRate +
-      currentRestaurants.priceRate +
-      currentRestaurants.spaceRate;
-    total /= 5;
-    setTotalRate(total);
-  }, [currentRestaurants]);
 
   useEffect(() => {
     if (activeSection === "Bản đồ") {
@@ -95,9 +174,9 @@ const Slide = ({
     {
       name: "Ảnh & Video",
       active: false,
-      count: currentAlbums.length || 0,
+      count: currentAlbum.length || 0,
     },
-    { name: "Bình luận", active: false, count: currentComments.length || 0 },
+    { name: "Bình luận", active: false, count: currentComment.length || 0 },
     { name: "Bản đồ", active: false },
   ];
   const handleMenuClick = (name) => {
@@ -105,8 +184,10 @@ const Slide = ({
   };
 
   const handleComment = () => {
-    if (!state.user && !state.loading) {
+    if (!state.loading && !state.user) {
       setShowModalLogin(true);
+    } else if (!state.loading && state.user) {
+      setShowModalComment(true);
     }
   };
 
@@ -139,45 +220,11 @@ const Slide = ({
             ))}
           </ul>
         </div>
-        {showModalLogin && (
-          <div
-            className="modal show fade"
-            style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-            tabIndex="-1"
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">"Login"</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setShowModalLogin(false)}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <p>Đăng nhập để sử dụng tính năng này</p>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModalLogin(false)}
-                  >
-                    Close
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleLogin}
-                  >
-                    Login
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <LoginModal
+          show={showModalLogin}
+          onClose={() => setShowModalLogin(false)}
+          onLogin={handleLogin}
+        />
 
         {activeSection === "Trang chủ" && (
           <div className="col-md-9">
@@ -193,8 +240,8 @@ const Slide = ({
             >
               <h4 className="mb-3">Đặt món & Giao tận nơi</h4>
               <div className="row">
-                {currentFoods &&
-                  currentFoods.map((item, index) => (
+                {currentFood &&
+                  currentFood.map((item, index) => (
                     <div
                       key={index}
                       className="col-12 col-md-6 d-flex align-items-center mb-3"
@@ -278,8 +325,8 @@ const Slide = ({
             >
               <h4>Hình món ăn từ cộng đồng</h4>
               <div className="row">
-                {currentAlbums && currentAlbums.length > 0 ? (
-                  currentAlbums.map((image, index) => (
+                {currentAlbum && currentAlbum.length > 0 ? (
+                  currentAlbum.map((image, index) => (
                     <div key={index} className="col-6 col-md-3 mb-3">
                       <img
                         src={image.image}
@@ -325,8 +372,8 @@ const Slide = ({
               <div className="col-md-8">
                 <div className="mt-5">
                   <h4>Bình luận</h4>
-                  {currentComments && currentComments.length > 0 ? (
-                    currentComments.map((review, index) => (
+                  {currentComment && currentComment.length > 0 ? (
+                    currentComment.map((review, index) => (
                       <div
                         key={index}
                         className="p-3 mb-3"
@@ -436,7 +483,7 @@ const Slide = ({
                     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                   }}
                 >
-                  <h6>{currentComments.length || 0} bình luận đã chia sẻ</h6>
+                  <h6>{currentComment.length || 0} bình luận đã chia sẻ</h6>
                   <ul className="list-unstyled mb-3"></ul>
 
                   <h6>Tiêu chí</h6>
@@ -451,10 +498,10 @@ const Slide = ({
                           className="progress-bar"
                           role="progressbar"
                           style={{
-                            width: `${currentRestaurants.locationRate * 10}%`,
+                            width: `${currentRestaurant.locationRate * 10}%`,
                             backgroundColor: "#6200ea",
                           }}
-                          aria-valuenow={currentRestaurants.locationRate}
+                          aria-valuenow={currentRestaurant.locationRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -463,7 +510,7 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        {currentRestaurants.locationRate}
+                        {currentRestaurant.locationRate}
                       </span>
                     </li>
                     <li className="d-flex justify-content-between align-items-center mb-2">
@@ -476,10 +523,10 @@ const Slide = ({
                           className="progress-bar"
                           role="progressbar"
                           style={{
-                            width: `${currentRestaurants.priceRate * 10}%`,
+                            width: `${currentRestaurant.priceRate * 10}%`,
                             backgroundColor: "#388e3c",
                           }}
-                          aria-valuenow={currentRestaurants.priceRate}
+                          aria-valuenow={currentRestaurant.priceRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -488,7 +535,7 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        {currentRestaurants.priceRate}
+                        {currentRestaurant.priceRate}
                       </span>
                     </li>
                     <li className="d-flex justify-content-between align-items-center mb-2">
@@ -501,10 +548,10 @@ const Slide = ({
                           className="progress-bar"
                           role="progressbar"
                           style={{
-                            width: `${currentRestaurants.qualityRate * 10}%`,
+                            width: `${currentRestaurant.qualityRate * 10}%`,
                             backgroundColor: "#fbc02d",
                           }}
-                          aria-valuenow={currentRestaurants.qualityRate}
+                          aria-valuenow={currentRestaurant.qualityRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -513,7 +560,7 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        {currentRestaurants.qualityRate}
+                        {currentRestaurant.qualityRate}
                       </span>
                     </li>
                     <li className="d-flex justify-content-between align-items-center mb-2">
@@ -526,10 +573,10 @@ const Slide = ({
                           className="progress-bar"
                           role="progressbar"
                           style={{
-                            width: `${currentRestaurants.serviceRate * 10}%`,
+                            width: `${currentRestaurant.serviceRate * 10}%`,
                             backgroundColor: "#d32f2f",
                           }}
-                          aria-valuenow={currentRestaurants.serviceRate}
+                          aria-valuenow={currentRestaurant.serviceRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -538,7 +585,7 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        {currentRestaurants.serviceRate}
+                        {currentRestaurant.serviceRate}
                       </span>
                     </li>
                     <li className="d-flex justify-content-between align-items-center mb-2">
@@ -551,10 +598,10 @@ const Slide = ({
                           className="progress-bar"
                           role="progressbar"
                           style={{
-                            width: `${currentRestaurants.spaceRate * 10}%`,
+                            width: `${currentRestaurant.spaceRate * 10}%`,
                             backgroundColor: "#03a9f4",
                           }}
-                          aria-valuenow={currentRestaurants.spaceRate}
+                          aria-valuenow={currentRestaurant.spaceRate}
                           aria-valuemin="0"
                           aria-valuemax="10"
                         ></div>
@@ -563,14 +610,14 @@ const Slide = ({
                         className="ms-2"
                         style={{ flex: "0.5", textAlign: "right" }}
                       >
-                        {currentRestaurants.spaceRate}
+                        {currentRestaurant.spaceRate}
                       </span>
                     </li>
                   </ul>
 
                   <div className="text-center mt-3">
                     <h4 className="text-success">
-                      {Math.floor(totalRate)} điểm - Khá tốt
+                      {Math.floor(totalRate || 0)} điểm - Khá tốt
                     </h4>
                     <button
                       className="btn btn-primary w-100 mt-3"
@@ -609,10 +656,10 @@ const Slide = ({
                     <iframe
                       title="Google Map"
                       src={
-                        currentRestaurants.coordinateId?.iframe ===
+                        currentRestaurant.coordinateId?.iframe ===
                         "Không tìm thấy nút Chia sẻ"
                           ? "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3920.033019962903!2d106.69676687486857!3d10.73193666001315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317528b2747a81a3%3A0x33c1813055acb613!2zxJDhuqFpIGjhu41jIFTDtG4gxJDhu6ljIFRo4bqvbmc!5e0!3m2!1svi!2s!4v1739377005781!5m2!1svi!2s"
-                          : currentRestaurants.coordinateId?.iframe
+                          : currentRestaurant.coordinateId?.iframe
                       }
                       width="100%"
                       height="100%"
@@ -767,20 +814,103 @@ const Slide = ({
                 </div>
               </div>
             </div>
+            {showModalComment && (
+              <div
+                className="modal fade show d-block"
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.5)", // Background opacity
+                  zIndex: 1051,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <div
+                  className="modal-dialog"
+                  style={{
+                    marginTop: "100px", // Spacing from the top
+                    transform: "translateY(20px)", // Adjust the modal position
+                  }}
+                >
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title">Thêm bình luận</h5>
+                      <button
+                        className="btn-close"
+                        onClick={() => setShowModalComment(false)}
+                      ></button>
+                    </div>
+                    <div className="modal-body">
+                      <div className="form-group mb-3">
+                        <label htmlFor="title">Tiêu đề</label>
+                        <input
+                          id="title"
+                          className="form-control"
+                          type="text"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder="Nhập tiêu đề..."
+                        />
+                      </div>
+
+                      <div className="form-group mb-3">
+                        <label htmlFor="description">Mô tả</label>
+                        <textarea
+                          id="description"
+                          className="form-control"
+                          rows="4"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Nhập mô tả..."
+                        />
+                      </div>
+
+                      <div className="form-group mb-3">
+                        <label htmlFor="rate">Đánh giá</label>
+                        <input
+                          id="rate"
+                          className="form-control"
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={rate}
+                          onChange={(e) => setRate(Number(e.target.value))}
+                          placeholder="Đánh giá từ 1 đến 10"
+                        />
+                      </div>
+                    </div>
+                    <div className="modal-footer">
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => setShowModalComment(false)}
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        className="btn btn-primary"
+                        onClick={handleSubmit}
+                      >
+                        Gửi
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
         {activeSection === "Ảnh & Video" && (
-          <ImageGallery currentAlbums={currentAlbums} />
+          <ImageGallery currentAlbums={currentAlbum} />
         )}
         {activeSection === "Bình luận" && (
-          <CommentsSection currentComments={currentComments} />
+          <CommentsSection currentComments={currentComment} />
         )}
 
         {activeSection === "Bản đồ" && (
           <MapModal
             isVisible={isMapVisible}
             onClose={handleCloseModal}
-            currentRestaurants={currentRestaurants}
+            currentRestaurants={currentRestaurant}
           />
         )}
       </div>

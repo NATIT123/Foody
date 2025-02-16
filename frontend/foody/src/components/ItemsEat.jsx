@@ -166,7 +166,7 @@ const ItemsEat = ({
                   {/* Interactions */}
                   {item.comments.length > 0 ? (
                     <div className="d-flex justify-content-between align-items-center">
-                      <a href="/member">
+                      <a href={`/member/${item.comments[0]?.user._id}`}>
                         <img
                           src={
                             item.comments[0]?.user.photo === "default.jpg"
