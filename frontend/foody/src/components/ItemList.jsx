@@ -16,9 +16,6 @@ const ItemList = ({ currentItems, handleShowModal }) => {
     setShowLoginModal(false);
     navigate("/login");
   };
-  useEffect(() => {
-    console.log(currentItems);
-  }, [currentItems]);
   const handleOpenSaveModal = () => {
     if (!state.loading && !state.user) {
       setShowLoginModal(true);

@@ -538,99 +538,94 @@ class RestaurantRepository {
 
   getRestaurantByFields() {
     return catchAsync(async (req, res, next) => {
-      const cityId = req.params.cityId;
-      const search = req.query.search || "";
-      console.log(search);
-      // Kiểm tra tính hợp lệ của cityId
-      if (!cityId.match(/^[0-9a-fA-F]{24}$/)) {
-        return next(
-          new AppError(
-            customResourceResponse.notValidId.message,
-            customResourceResponse.notValidId.statusCode
-          )
-        );
-      }
+      try {
+        const { searchQuery } = req.query;
+        console.log(searchQuery);
+        const {
+          subCategory,
+          cuisines,
+          district,
+          selectedCity,
+          selectedCategory,
+        } = req.body;
+        let matchConditions = {};
 
-      // Tạo query với aggregation
-      const features = new APIFeatures(
-        this.restaurantModel.aggregate([
+        if (mongoose.Types.ObjectId.isValid(subCategory)) {
+          matchConditions["subCategoryId"] = new mongoose.Types.ObjectId(
+            subCategory
+          );
+        }
+        if (mongoose.Types.ObjectId.isValid(district)) {
+          matchConditions["districtId"] = new mongoose.Types.ObjectId(district);
+        }
+        if (mongoose.Types.ObjectId.isValid(cuisines)) {
+          matchConditions["cuisinesId"] = new mongoose.Types.ObjectId(cuisines);
+        }
+        if (mongoose.Types.ObjectId.isValid(selectedCategory)) {
+          matchConditions["subCategoryDetails.categoryId"] =
+            new mongoose.Types.ObjectId(selectedCategory);
+        }
+
+        if (mongoose.Types.ObjectId.isValid(selectedCity)) {
+          matchConditions["districtDetails.cityId"] =
+            new mongoose.Types.ObjectId(selectedCity);
+        }
+
+        if (searchQuery && searchQuery.trim() !== "") {
+          matchConditions["$or"] = [
+            { name: { $regex: searchQuery, $options: "i" } },
+            { address: { $regex: searchQuery, $options: "i" } },
+          ];
+        }
+
+        const restaurants = await this.restaurantModel.aggregate([
           {
-            $addFields: {
-              averageSales: {
-                $avg: [
-                  "$qualityRate",
-                  "$serviceRate",
-                  "$locationRate",
-                  "$priceRate",
-                  "$serviceRate",
-                ],
-              },
+            $match: { active: true },
+          },
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $lookup: {
+              from: "subcategories",
+              localField: "subCategoryId",
+              foreignField: "_id",
+              as: "subCategoryDetails",
             },
           },
           {
             $lookup: {
-              from: "districts", // Tên collection district
-              localField: "districtId", // Trường trong collection restaurant
-              foreignField: "_id", // Trường trong collection district
-              as: "district", // Kết quả join sẽ có trường "district"
+              from: "districts",
+              localField: "districtId",
+              foreignField: "_id",
+              as: "districtDetails",
             },
           },
+          ...(Object.keys(matchConditions).length > 0
+            ? [{ $match: matchConditions }]
+            : []),
+
           {
-            $lookup: {
-              from: "subcategories", // Tên collection subcategory
-              localField: "subCategoryId", // Trường trong collection restaurant
-              foreignField: "_id", // Trường trong collection subcategory
-              as: "subcategory", // Kết quả join sẽ có trường "subcategory"
+            $project: {
+              name: 1,
+              address: 1,
+              image: 1,
             },
           },
-          {
-            $sort: { averageSales: -1, createdAt: -1 }, // Sắp xếp theo averageSales và createdAt
-          },
-          {
-            $match: { "district.cityId": new mongoose.Types.ObjectId(cityId) },
-          },
+        ]);
 
-          {
-            $limit: 10, // Lấy 10 bản ghi đầu tiên
-          },
-          {
-            $match: {
-              $or: [
-                { name: { $regex: search, $options: "i" } },
-                {
-                  address: { $regex: search, $options: "i" },
-                },
-                {
-                  cuisines: { $regex: search, $options: "i" },
-                },
-              ],
-            },
-          },
-        ]),
-        req.query
-      ).limitFields();
+        const docs = restaurants;
 
-      // Thực hiện truy vấn
-      const doc = await features.query;
-
-      if (!doc || doc.length === 0) {
-        return next(
-          new AppError(
-            customResourceResponse.recordNotFound.message,
-            customResourceResponse.recordNotFound.statusCode
-          )
-        );
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: docs.length,
+          data: { data: docs },
+        });
+      } catch (error) {
+        console.error("Error fetching restaurants", error);
+        return next(new AppError("Server error", 500));
       }
-
-      // Gửi phản hồi
-      res.status(customResourceResponse.success.statusCode).json({
-        message: customResourceResponse.success.message,
-        status: "success",
-        results: doc.length,
-        data: {
-          data: doc,
-        },
-      });
     });
   }
   getRestaurantByRecommendation() {

@@ -179,7 +179,7 @@ const Member = () => {
                             <img
                               key={imgIndex}
                               src={src}
-                              alt={`Image ${imgIndex + 1}`}
+                              alt={``}
                               className="thumbnail"
                             />
                           ))}

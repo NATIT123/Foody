@@ -9,20 +9,50 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import React, { useState, useEffect, useRef } from "react";
 import { useData } from "../context/DataContext";
 
-function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
+function Header({
+  setSelectedDistricts,
+  selectedDistricts,
+  selectedCuisines,
+  setSelectedCuisines,
+}) {
   const { state, logout, setSelectedCity, setSelectedCategory } = useData();
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
+  const [showDropdown, setShowDropdown] = useState(true);
   const dropdownRef = useRef(null);
-  // Xử lý toggle chọn/bỏ chọn quận/huyện
-
-  // Call this function when the user submits the search
-  const searchHandler = () => {
-    if (onSearch) {
-      onSearch(searchQuery); // Pass the search query to the parent component
-    }
+  const [restaurantSearch, setRestaurantSearch] = useState([]);
+  useEffect(() => {
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByFields?searchQuery=${searchQuery}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          selectedCity: state.selectedCity?._id || "",
+          selectedCategory: state.selectedCategory?._id || "",
+          // subCategory: filtersState[0],
+          // cuisines: filtersState[1],
+          // district: filtersState[2],
+        }),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setRestaurantSearch(data.data.data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching restaurants:", error);
+      });
+  }, [searchQuery]);
+  const handleSelectRestaurant = (restaurant) => {
+    setSearchQuery(restaurant.name); // Gán tên nhà hàng vào ô tìm kiếm
+    setShowDropdown(false); // Đóng dropdown sau khi chọn
   };
 
   // Xử lý toggle chọn/bỏ chọn quận/huyện
@@ -31,6 +61,14 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
       prev.includes(districtId)
         ? prev.filter((id) => id !== districtId)
         : [...prev, districtId]
+    );
+  };
+
+  const toggleCuisines = (cuisinesId) => {
+    setSelectedCuisines((prev) =>
+      prev.includes(cuisinesId)
+        ? prev.filter((id) => id !== cuisinesId)
+        : [...prev, cuisinesId]
     );
   };
 
@@ -54,7 +92,6 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
 
     const apiUrl = `${process.env.REACT_APP_BASE_URL}/notification/makeAll/${state.user._id}`;
 
-    // Chỉ gọi API khi đóng thông báo và có thông báo chưa đọc
     if (showNotifications && unreadExists) {
       fetch(apiUrl, {
         method: "GET",
@@ -279,7 +316,7 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Địa điểm, món ăn, loại hình..."
+                placeholder="Địa điểm, tên nhà hàng ..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
@@ -288,6 +325,75 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                 }}
               />
+              {showDropdown && (
+                <div
+                  className="dropdown-menu show p-3"
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: "0",
+                    right: "0",
+                    maxWidth: "100%",
+                    maxHeight: "400px",
+                    overflowY: "auto",
+                    zIndex: 1050,
+                    border: "1px solid #ddd",
+                    borderRadius: "12px",
+                    backgroundColor: "#ffffff",
+                    boxShadow: "0 8px 16px rgba(0, 0, 0, 0.15)",
+                    marginTop: "8px",
+                  }}
+                >
+                  {/* Nội dung dropdown */}
+                  <div>
+                    <p className="mb-2 fw-bold">🔍 Gợi ý nhà hàng:</p>
+                    <ul className="list-unstyled">
+                      {restaurantSearch.map((restaurant, index) => (
+                        <li
+                          key={restaurant._id}
+                          className="d-flex align-items-center p-2 border-bottom"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => handleSelectRestaurant(restaurant)}
+                        >
+                          {/* Hình ảnh nhà hàng */}
+                          <img
+                            src={restaurant.image}
+                            alt={restaurant.name}
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              borderRadius: "8px",
+                              marginRight: "12px",
+                              objectFit: "cover",
+                            }}
+                          />
+                          {/* Thông tin nhà hàng */}
+                          <div>
+                            <a
+                              href={`/details/${restaurant._id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {" "}
+                              <p className="mb-1 fw-semibold">
+                                {restaurant.name}
+                              </p>
+                            </a>
+
+                            <p
+                              className="mb-0 text-muted"
+                              style={{ fontSize: "12px" }}
+                            >
+                              📍 {restaurant.address}
+                            </p>
+                          </div>
+                          <div style={{ marginLeft: "auto" }}>dsadas</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
 
               {/* Nút Bộ lọc */}
               <button
@@ -434,6 +540,11 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                                     type="checkbox"
                                     className="form-check-input"
                                     id={`food-${index}`}
+                                    checked={
+                                      selectedCuisines &&
+                                      selectedCuisines.includes(food._id)
+                                    }
+                                    onChange={() => toggleCuisines(food._id)}
                                     style={{ accentColor: "#28a745" }}
                                   />
                                   <label
@@ -539,7 +650,10 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                         boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                         transition: "all 0.3s ease",
                       }}
-                      onClick={() => setSelectedDistricts([])}
+                      onClick={() => {
+                        setSelectedDistricts([]);
+                        setSelectedCuisines([]);
+                      }}
                       onMouseOver={(e) =>
                         (e.target.style.backgroundColor = "#e2e6ea")
                       }
@@ -552,20 +666,6 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                   </div>
                 </div>
               )}
-
-              {/* Nút Tìm kiếm */}
-              <button
-                className="btn btn-outline-secondary search-button"
-                onClick={searchHandler}
-                style={{
-                  marginLeft: "8px",
-                  padding: "6px 12px",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <FaSearch />
-              </button>
             </div>
           </div>
 

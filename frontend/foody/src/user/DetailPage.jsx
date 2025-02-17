@@ -238,6 +238,7 @@ const DetailPage = () => {
         </div>
       </div>
       <Slide
+        setCurrentAlbum={setCurrentAlbum}
         setCurrentComment={setCurrentComment}
         currentRestaurant={currentRestaurant}
         currentFood={currentFood}

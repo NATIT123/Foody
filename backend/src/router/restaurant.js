@@ -30,7 +30,7 @@ router.get("/getRestaurantByCity/city/:cityId", getRestaurantByCity);
 
 router.post("/getRestaurantTopDeals", getRestaurantTopDeals);
 
-router.get("/getRestaurantByFileds/city/:cityId", getRestaurantByFields);
+router.post("/getRestaurantByFields", getRestaurantByFields);
 
 router.get(
   "/getRestaurantByRecommendation/:restaurantId",

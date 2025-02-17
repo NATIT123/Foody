@@ -3,7 +3,10 @@ import mongoose, { Schema, model } from "mongoose";
 const AlbumDetailSchema = new Schema(
   {
     image: { type: String, required: [true, "Please tell us your image"] },
-    type: { type: String, required: [true, "Please tell us your type"] },
+    type: {
+      type: String,
+      default: "image",
+    },
     active: {
       type: Boolean,
       default: true,

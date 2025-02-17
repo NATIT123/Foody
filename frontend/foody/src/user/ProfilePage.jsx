@@ -23,7 +23,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!state.user && !state.loading) {
+      if (!state.loading && !state.user) {
         navigate("/");
       } else if (state.user) {
         const currentUser = state.user;

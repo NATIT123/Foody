@@ -35,7 +35,7 @@ class RestaurantService {
     return this.restaurantRepo.getTopDeals();
   }
 
-  getRestaurantByFileds() {
+  getRestaurantByFields() {
     return this.restaurantRepo.getRestaurantByFields();
   }
 

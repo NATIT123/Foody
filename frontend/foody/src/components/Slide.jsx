@@ -8,6 +8,7 @@ import { FaPlus } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useData } from "../context/DataContext";
 import LoginModal from "./LoginModal";
+import ImageModal from "./ImageModal";
 const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
 
@@ -53,15 +54,13 @@ const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
   );
 };
 const Slide = ({
+  setCurrentAlbum,
   setCurrentComment,
   currentFood,
   currentComment,
   currentAlbum,
   currentRestaurant,
 }) => {
-  useEffect(() => {
-    console.log(currentComment);
-  }, [currentComment]);
   const { state } = useData();
   const [activeSection, setActiveSection] = useState("Trang chủ");
   const [isMapVisible, setIsMapVisible] = useState(false);
@@ -70,6 +69,7 @@ const Slide = ({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [rate, setRate] = useState(1); // Default rate as 1
+  const [showModalImage, setShowModalImage] = useState(false);
   const [showModalComment, setShowModalComment] = useState(false);
   const [totalRate, setTotalRate] = useState(0);
   useEffect(() => {
@@ -181,6 +181,14 @@ const Slide = ({
   ];
   const handleMenuClick = (name) => {
     setActiveSection(name); // Update active section based on the clicked menu item
+  };
+
+  const handleImage = () => {
+    if (!state.loading && !state.user) {
+      setShowModalLogin(true);
+    } else if (!state.loading && state.user) {
+      setShowModalImage(true);
+    }
   };
 
   const handleComment = () => {
@@ -346,7 +354,7 @@ const Slide = ({
                     Hiện tại không có hình ảnh nào
                   </p>
                 )}
-                <div className="col-6 col-md-3 mb-3">
+                <div className="col-6 col-md-3 mb-3" onClick={handleImage}>
                   <div
                     className="d-flex align-items-center justify-content-center"
                     style={{
@@ -898,6 +906,14 @@ const Slide = ({
               </div>
             )}
           </div>
+        )}
+        {showModalImage && (
+          <ImageModal
+            setItem={setCurrentAlbum}
+            restaurant={currentRestaurant}
+            item={currentAlbum}
+            onClose={() => setShowModalImage(false)}
+          />
         )}
         {activeSection === "Ảnh & Video" && (
           <ImageGallery currentAlbums={currentAlbum} />

@@ -252,12 +252,12 @@ class UserRepository {
           },
         ]);
 
-        res.status(200).json({
-          message: "Request has been processed successfully",
+        res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
           status: "success",
           results: allUsers.length,
           data: {
-            users: allUsers,
+            data: allUsers,
           },
         });
       } catch (error) {

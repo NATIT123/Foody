@@ -96,7 +96,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   );
 };
 
-const Grid = ({ searchQuery }) => {
+const Grid = () => {
   const navigate = useNavigate(); // Hook điều hướng
   const [itemsEat, setItemEat] = useState([]);
   const { state } = useData();
@@ -317,19 +317,6 @@ const Grid = ({ searchQuery }) => {
       }
     }
   }, [currentPage, activeCategoryEat, state, filtersState]);
-
-  // Lọc dữ liệu khi searchQuery thay đổi
-  useEffect(() => {
-    if (searchQuery) {
-      const results = currentItems.filter((item) =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setCurrentItems(results);
-      setCurrentPage(1); // Reset về trang đầu
-    } else {
-      setCurrentItems(currentItems); // Hiển thị tất cả nếu không có từ khóa
-    }
-  }, [currentItems, searchQuery]);
 
   const handleShowModal = (item) => {
     setSelectedItem(item);

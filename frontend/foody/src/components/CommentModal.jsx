@@ -5,7 +5,6 @@ const CommentModal = ({
   onClose,
   restaurant,
   setMyComments,
-  currentItems,
   setCurrentItems,
   myComments,
 }) => {

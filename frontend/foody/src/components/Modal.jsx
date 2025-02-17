@@ -38,6 +38,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
     }
   }, [item.comments, item.commentCount, state.user, state.loading, restaurant]);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCommentModal, setShowCommentModal] = useState(false);
   const [ratings, setRatings] = useState([]);
   const handleLogin = () => {
     setShowLoginModal(false);
@@ -47,7 +48,16 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
   const handleShowModalLogin = () => {
     if (!state.loading && !state.user) {
       setShowLoginModal(true);
+      return;
     }
+  };
+
+  const handleShowModalComment = () => {
+    if (!state.loading && !state.user) {
+      setShowLoginModal(true);
+      return;
+    }
+    setShowCommentModal(true);
   };
 
   useEffect(() => {
@@ -148,7 +158,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                 {/* Nút Viết bình luận */}
                 <button
                   className="btn btn-primary w-100"
-                  onClick={handleShowModalLogin}
+                  onClick={handleShowModalComment}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -498,15 +508,15 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
         onLogin={handleLogin}
       />
 
-      {!showLoginModal && (
+      {showCommentModal && (
         <CommentModal
           myComments={myComments}
           setMyComments={setMyComments}
           currentItems={currentItems}
           setCurrentItems={setCurrentItems}
           restaurant={restaurant}
-          show={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
+          show={showCommentModal}
+          onClose={() => setShowCommentModal(false)}
         />
       )}
     </div>
