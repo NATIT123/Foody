@@ -29,12 +29,6 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
               placeholder="Search..."
               style={{ maxWidth: "300px" }}
             />
-            <button
-              className="btn btn-outline-primary rounded-pill ms-2"
-              type="submit"
-            >
-              <i className="bi bi-search"></i>
-            </button>
           </form>
 
           {/* Thông báo */}

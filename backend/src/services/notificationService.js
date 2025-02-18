@@ -25,6 +25,9 @@ class NotificationService {
   makeAllIsRead() {
     return this.notificationRepo.makeAllIsRead();
   }
+  getNotificationsByUserId() {
+    return this.notificationRepo.getNotificationsByUserId();
+  }
 }
 
 export default NotificationService;

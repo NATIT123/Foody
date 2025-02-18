@@ -35,7 +35,7 @@ class RestaurantService {
     return this.restaurantRepo.getTopDeals();
   }
 
-  getRestaurantByFileds() {
+  getRestaurantByFields() {
     return this.restaurantRepo.getRestaurantByFields();
   }
 
@@ -49,6 +49,9 @@ class RestaurantService {
 
   getRestaurantByViews() {
     return this.restaurantRepo.getRestaurantByViews();
+  }
+  findRestaurantsByFields() {
+    return this.restaurantRepo.findRestaurantsByFields();
   }
 }
 

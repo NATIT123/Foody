@@ -15,7 +15,7 @@ const CommentsSection = ({ currentComments }) => {
   useEffect(() => {
     if (!state.loading && state.user) {
       const filteredComments = currentComments.filter(
-        (el) => el.user._id === state.user._id
+        (el) => el.user[0]._id.toString() === state.user._id.toString()
       );
       setMyComments(filteredComments);
       setTabs((prevTabs) =>
@@ -50,7 +50,9 @@ const CommentsSection = ({ currentComments }) => {
   useEffect(() => {
     if (state.user) {
       setMyComments(
-        currentComments.filter((el) => el.user._id === state.user._id)
+        currentComments.filter(
+          (el) => el.user[0]._id.toString() === state.user._id.toString()
+        )
       );
     }
     setTabs([

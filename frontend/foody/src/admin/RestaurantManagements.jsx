@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // For navigation
 import { useData } from "../context/DataContext";
+import FoodModal from "./FoodModal";
 const RestaurantManagement = ({ searchQuery }) => {
   const [restaurants, setRestaurants] = useState([]);
   const navigate = useNavigate(); // For navigation to the home page
@@ -10,8 +11,18 @@ const RestaurantManagement = ({ searchQuery }) => {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModalDelete, setShowModalDelete] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const [foodData, setFoodData] = useState([]);
+  const handleUpdateFood = (updatedFood) => {
+    setFoodData((prev) => ({
+      ...prev,
+      foods: prev.foods.map((food) =>
+        food.id === updatedFood.id ? updatedFood : food
+      ),
+    }));
+  };
   const { state } = useData();
-  const [filteredRestaurants, setFilteredRestaurants] = useState([]);
   useEffect(() => {
     fetch(
       `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
@@ -38,28 +49,65 @@ const RestaurantManagement = ({ searchQuery }) => {
           navigate("/");
         }
       });
-  }, [currentPage]); // Dependency rỗng -> Chạy 1 lần khi component mount
+  }, [currentPage]);
 
   useEffect(() => {
-    if (!searchQuery) {
-      setFilteredRestaurants(restaurants);
-    } else {
-      setFilteredRestaurants(
-        restaurants.filter(
-          (restaurant) =>
-            restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            restaurant.address
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            restaurant.priceRange
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())
-        )
-      );
+    if (searchQuery) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsByFields?page=${currentPage}&searchQuery=${searchQuery}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${state.accessToken}` },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.data?.data) {
+            if (
+              data.status !== "fail" &&
+              data.status !== "error" &&
+              data.status !== 400
+            ) {
+              setTotalPages(data.totalPages);
+              setRestaurants(data.data.data);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching users:", error);
+        });
     }
-  }, [searchQuery, restaurants]);
+  }, [searchQuery]);
 
   const handleOpenModal = (mode, restaurant = null) => {
+    if (mode === "food") {
+      setShowModal(true);
+      if (restaurant) {
+        fetch(
+          `${process.env.REACT_APP_BASE_URL}/food/getFoodsByRestaurant/${restaurant._id}`,
+          {
+            method: "GET",
+          }
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data) {
+              if (
+                data.status !== "error" &&
+                data.status !== "fail" &&
+                data.status !== 400
+              ) {
+                console.log(data.data.data);
+                setFoodData(data.data.data);
+              }
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching restaurants:", error);
+          });
+      }
+      return;
+    }
     setModalMode(mode);
     setIsModalOpen(true);
     if (restaurant) {
@@ -219,8 +267,8 @@ const RestaurantManagement = ({ searchQuery }) => {
       </button>
 
       <div className="row">
-        {filteredRestaurants &&
-          filteredRestaurants.map((restaurant) => (
+        {restaurants &&
+          restaurants.map((restaurant) => (
             <div className="col-12" key={restaurant._id}>
               <div className="card mb-3 shadow-sm w-100">
                 <div className="row g-0">
@@ -264,6 +312,12 @@ const RestaurantManagement = ({ searchQuery }) => {
                         onClick={() => handleDeleteRestaurant(restaurant)}
                       >
                         Delete
+                      </button>
+                      <button
+                        className="btn btn-success btn-sm me-2"
+                        onClick={() => handleOpenModal("food", restaurant)}
+                      >
+                        Manage Food
                       </button>
                     </div>
                   </div>
@@ -314,7 +368,12 @@ const RestaurantManagement = ({ searchQuery }) => {
       )}
 
       {restaurants && restaurants.length > 0 && renderPagination()}
-
+      <FoodModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        food={foodData}
+        onUpdateFood={handleUpdateFood}
+      />
       {/* Modal */}
       {isModalOpen && (
         <div
@@ -384,14 +443,6 @@ const RestaurantManagement = ({ searchQuery }) => {
                   <form>
                     <div className="mb-3">
                       <label className="form-label">Restaurant Name</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                      />
                       <input
                         type="text"
                         className="form-control"

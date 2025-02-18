@@ -19,3 +19,5 @@ export const deleteNotificationById =
   notificationService.deleteNotificationById();
 
 export const makeAllIsRead = notificationService.makeAllIsRead();
+export const getNoitificationsByUserId =
+  notificationService.getNotificationsByUserId();

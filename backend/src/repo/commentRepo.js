@@ -225,6 +225,7 @@ class CommentRepository {
               title: 1,
               description: 1,
               type: 1,
+              "user._id": 1,
               "user.fullname": 1,
               "user.photo": 1,
             },

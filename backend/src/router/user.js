@@ -9,6 +9,7 @@ import {
   uploadPhoto,
   getUserDetails,
   getAllDetails,
+  findUsersByFields,
 } from "../controllers/userController.js";
 
 import {
@@ -51,6 +52,7 @@ router.post("/checkPassword/:token", checkPassword);
 router.patch("/resetPassword/:token", resetPassword);
 router.get("/getUserDetails/:userId", getUserDetails);
 router.get("/getAllDetails", getAllDetails);
+router.get("/findUsersByFields", findUsersByFields);
 // ///Protect all route
 router.use(protect);
 router.patch("/updatePassword", getMe, changePassword);

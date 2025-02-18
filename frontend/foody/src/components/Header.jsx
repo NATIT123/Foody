@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-import { FaBell, FaSearch, FaFilter } from "react-icons/fa";
+import { FaBell, FaFilter } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
 import { PiBowlFoodFill } from "react-icons/pi";
 import { BiCategoryAlt } from "react-icons/bi";
@@ -9,20 +9,67 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import React, { useState, useEffect, useRef } from "react";
 import { useData } from "../context/DataContext";
 
-function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
+function Header({
+  selectedSubCategories,
+  setSelectedSubCategories,
+  setSelectedDistricts,
+  selectedDistricts,
+  selectedCuisines,
+  setSelectedCuisines,
+}) {
   const { state, logout, setSelectedCity, setSelectedCategory } = useData();
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
+  const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
-  // Xử lý toggle chọn/bỏ chọn quận/huyện
+  const dropdownRefSearch = useRef(null);
+  const [restaurantSearch, setRestaurantSearch] = useState([]);
 
-  // Call this function when the user submits the search
-  const searchHandler = () => {
-    if (onSearch) {
-      onSearch(searchQuery); // Pass the search query to the parent component
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        dropdownRefSearch.current &&
+        !dropdownRefSearch.current.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
     }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByFields?searchQuery=${searchQuery}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          selectedCity: state.selectedCity?._id || "",
+          selectedCategory: state.selectedCategory?._id || "",
+          subCategory: selectedSubCategories,
+          cuisines: selectedCuisines,
+          district: selectedDistricts,
+        }),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setRestaurantSearch(data.data.data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching restaurants:", error);
+      });
+  }, [searchQuery, selectedCuisines, selectedDistricts, selectedSubCategories]);
+  const handleSelectRestaurant = (restaurant) => {
+    setSearchQuery(restaurant.name); // Gán tên nhà hàng vào ô tìm kiếm
+    setShowDropdown(false); // Đóng dropdown sau khi chọn
   };
 
   // Xử lý toggle chọn/bỏ chọn quận/huyện
@@ -31,6 +78,22 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
       prev.includes(districtId)
         ? prev.filter((id) => id !== districtId)
         : [...prev, districtId]
+    );
+  };
+
+  const toggleCuisines = (cuisinesId) => {
+    setSelectedCuisines((prev) =>
+      prev.includes(cuisinesId)
+        ? prev.filter((id) => id !== cuisinesId)
+        : [...prev, cuisinesId]
+    );
+  };
+
+  const toggleSubCategories = (subCategoryId) => {
+    setSelectedSubCategories((prev) =>
+      prev.includes(subCategoryId)
+        ? prev.filter((id) => id !== subCategoryId)
+        : [...prev, subCategoryId]
     );
   };
 
@@ -54,7 +117,6 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
 
     const apiUrl = `${process.env.REACT_APP_BASE_URL}/notification/makeAll/${state.user._id}`;
 
-    // Chỉ gọi API khi đóng thông báo và có thông báo chưa đọc
     if (showNotifications && unreadExists) {
       fetch(apiUrl, {
         method: "GET",
@@ -90,7 +152,7 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
     if (!state.loading && !state.user) return;
     if (state.user) {
       fetch(
-        `${process.env.REACT_APP_BASE_URL}/notification/getAllNotifications/${state.user._id}`,
+        `${process.env.REACT_APP_BASE_URL}/notification/getNotificationsByUserId/${state.user._id}`,
         {
           method: "GET",
           headers: {
@@ -144,37 +206,6 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
   };
   return (
     <>
-      {/* Navigation Bar */}
-      <nav
-        className="ps-4 bg-dark container-fluid d-flex justify-content-start border-bottom py-1  top-0"
-        style={{ zIndex: 1030 }}
-      >
-        <a
-          href="/"
-          className={`me-3 text-light text-decoration-none nav-link ${
-            window.location.pathname === "/" ? "active-custom" : ""
-          }`}
-        >
-          Khám Phá
-        </a>
-        <a
-          href="/"
-          className={`me-3 text-light text-decoration-none nav-link ${
-            window.location.pathname === "/dat-giao-hang" ? "active-custom" : ""
-          }`}
-        >
-          Đặt Giao Hàng
-        </a>
-        <a
-          href="/"
-          className={`text-light text-decoration-none nav-link ${
-            window.location.pathname === "/di-cho" ? "active-custom" : ""
-          }`}
-        >
-          Đi Chợ
-        </a>
-      </nav>
-
       {/* Header Section */}
       <header
         className=" position-sticky container-fluid header border-bottom bg-light position-sticky top-0"
@@ -272,6 +303,7 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
           {/* Center Section */}
           <div className="col-12 col-md-4 d-flex justify-content-center mb-2 mb-md-0">
             <div
+              ref={dropdownRefSearch}
               className="input-group position-relative"
               style={{ maxWidth: "450px", width: "100%" }}
             >
@@ -279,8 +311,9 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Địa điểm, món ăn, loại hình..."
+                placeholder="Địa điểm, tên nhà hàng ..."
                 value={searchQuery}
+                onFocus={() => setShowDropdown(true)}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   borderRadius: "8px 0 0 8px",
@@ -288,6 +321,75 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                 }}
               />
+              {showDropdown && (
+                <div
+                  className="dropdown-menu show p-3"
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: "0",
+                    right: "0",
+                    maxWidth: "100%",
+                    maxHeight: "400px",
+                    overflowY: "auto",
+                    zIndex: 1050,
+                    border: "1px solid #ddd",
+                    borderRadius: "12px",
+                    backgroundColor: "#ffffff",
+                    boxShadow: "0 8px 16px rgba(0, 0, 0, 0.15)",
+                    marginTop: "8px",
+                  }}
+                >
+                  {/* Nội dung dropdown */}
+                  <div>
+                    <p className="mb-2 fw-bold">🔍 Gợi ý nhà hàng:</p>
+                    <ul className="list-unstyled">
+                      {restaurantSearch.map((restaurant, index) => (
+                        <li
+                          key={restaurant._id}
+                          className="d-flex align-items-center p-2 border-bottom"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => handleSelectRestaurant(restaurant)}
+                        >
+                          {/* Hình ảnh nhà hàng */}
+                          <img
+                            src={restaurant.image}
+                            alt={restaurant.name}
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              borderRadius: "8px",
+                              marginRight: "12px",
+                              objectFit: "cover",
+                            }}
+                          />
+                          {/* Thông tin nhà hàng */}
+                          <div>
+                            <a
+                              href={`/details/${restaurant._id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {" "}
+                              <p className="mb-1 fw-semibold">
+                                {restaurant.name}
+                              </p>
+                            </a>
+
+                            <p
+                              className="mb-0 text-muted"
+                              style={{ fontSize: "12px" }}
+                            >
+                              📍 {restaurant.address}
+                            </p>
+                          </div>
+                          <div style={{ marginLeft: "auto" }}>dsadas</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
 
               {/* Nút Bộ lọc */}
               <button
@@ -434,6 +536,11 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                                     type="checkbox"
                                     className="form-check-input"
                                     id={`food-${index}`}
+                                    checked={
+                                      selectedCuisines &&
+                                      selectedCuisines.includes(food._id)
+                                    }
+                                    onChange={() => toggleCuisines(food._id)}
                                     style={{ accentColor: "#28a745" }}
                                   />
                                   <label
@@ -457,7 +564,7 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                           {state.subCategories &&
                             state.subCategories.map((subCategory, index) => (
                               <div
-                                key={index}
+                                key={subCategory._id}
                                 className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
                               >
                                 <div className="form-check">
@@ -466,6 +573,15 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                                     className="form-check-input"
                                     id={`category-${subCategory._id}`}
                                     style={{ accentColor: "#ffc107" }}
+                                    checked={
+                                      selectedSubCategories &&
+                                      selectedSubCategories.includes(
+                                        subCategory._id
+                                      )
+                                    }
+                                    onChange={() =>
+                                      toggleSubCategories(subCategory._id)
+                                    }
                                   />
                                   <label
                                     className="form-check-label"
@@ -499,34 +615,6 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                     }}
                   >
                     <button
-                      className="btn btn-primary me-1"
-                      style={{
-                        padding: "10px 20px",
-                        borderRadius: "8px",
-                        fontWeight: "600",
-                        fontSize: "14px",
-                        backgroundColor: "#007bff",
-                        border: "none",
-                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                        transition: "all 0.3s ease",
-                      }}
-                      onClick={() =>
-                        alert(
-                          `Lọc theo quận: ${
-                            selectedDistricts && selectedDistricts.join(", ")
-                          }`
-                        )
-                      }
-                      onMouseOver={(e) =>
-                        (e.target.style.backgroundColor = "#0056b3")
-                      }
-                      onMouseOut={(e) =>
-                        (e.target.style.backgroundColor = "#007bff")
-                      }
-                    >
-                      Tìm kiếm
-                    </button>
-                    <button
                       className="btn btn-secondary ms-0"
                       style={{
                         padding: "10px 20px",
@@ -539,9 +627,13 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                         boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                         transition: "all 0.3s ease",
                       }}
-                      onClick={() => setSelectedDistricts([])}
+                      onClick={() => {
+                        setSelectedDistricts([]);
+                        setSelectedCuisines([]);
+                        setSelectedSubCategories([]);
+                      }}
                       onMouseOver={(e) =>
-                        (e.target.style.backgroundColor = "#e2e6ea")
+                        (e.target.style.backgroundColor = "red")
                       }
                       onMouseOut={(e) =>
                         (e.target.style.backgroundColor = "#f8f9fa")
@@ -552,20 +644,6 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                   </div>
                 </div>
               )}
-
-              {/* Nút Tìm kiếm */}
-              <button
-                className="btn btn-outline-secondary search-button"
-                onClick={searchHandler}
-                style={{
-                  marginLeft: "8px",
-                  padding: "6px 12px",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <FaSearch />
-              </button>
             </div>
           </div>
 
@@ -611,6 +689,18 @@ function Header({ onSearch, setSelectedDistricts, selectedDistricts }) {
                       className="text-decoration-none text-dark"
                     >
                       Cập nhật tài khoản
+                    </a>
+                  </li>
+                  <li className="d-flex align-items-center px-3 py-2">
+                    <i
+                      className="bi bi-person-video3 text-success me-2"
+                      style={{ fontSize: "16px" }}
+                    ></i>
+                    <a
+                      href={`/member/${state.user._id}`}
+                      className="text-decoration-none text-dark"
+                    >
+                      Hoạt động cá nhân
                     </a>
                   </li>
                   <li className="d-flex align-items-center px-3 py-2">

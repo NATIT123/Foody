@@ -95,15 +95,11 @@ const Index = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerRow = 4; // Số lượng mục mỗi dòng
   const itemsPerPage = itemsPerRow * 2; // Hiển thị 2 dòng (8 mục)
-  const [searchQuery, setSearchQuery] = useState(""); // State lưu từ khóa tìm kiếm
   const [selectedProvince, setSelectedProvince] = useState([]); // Tỉnh được chọn với id và name
   const [selectedCategory, setSelectedCategory] = useState({}); // Category được chọn với id và name
-
-  const [selectedDistricts, setSelectedDistricts] = useState([]); // Quận/huyện được chọn
-
-  const handleSearch = (query) => {
-    setSearchQuery(query); // Cập nhật state từ khóa tìm kiếm
-  };
+  const [selectedCuisines, setSelectedCuisines] = useState([]);
+  const [selectedDistricts, setSelectedDistricts] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
 
   const nextSlide = () => {
     if (currentIndex + itemsPerPage < items.length) {
@@ -125,8 +121,11 @@ const Index = () => {
   return (
     <div>
       <Header
+        selectedSubCategories={selectedSubCategories}
+        setSelectedSubCategories={setSelectedSubCategories}
+        selectedCuisines={selectedCuisines}
+        setSelectedCuisines={setSelectedCuisines}
         selectedDistricts={selectedDistricts}
-        onSearch={handleSearch}
         selectedProvince={selectedProvince}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
@@ -282,7 +281,7 @@ const Index = () => {
         </div>
       </div>
 
-      <Grid searchQuery={searchQuery} />
+      <Grid />
       <ChatBox />
       <Footer />
     </div>

@@ -17,22 +17,36 @@ const UserManagement = ({ searchQuery }) => {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const { state } = useData();
-  const [filteredUsers, setFilteredUsers] = useState([]);
 
   useEffect(() => {
-    if (!searchQuery) {
-      setFilteredUsers(users);
-    } else {
-      setFilteredUsers(
-        users.filter(
-          (user) =>
-            user.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.phone.includes(searchQuery)
-        )
-      );
+    if (searchQuery) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/user/findUsersByFields?page=${currentPage}&searchQuery=${searchQuery}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${state.accessToken}` },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.data?.data) {
+            if (
+              data.status !== "fail" &&
+              data.status !== "error" &&
+              data.status !== 400
+            ) {
+              setTotalPages(data.totalPages);
+              setUsers(data.data.data);
+            }
+          } else if (data.status === 401 || data.status === 403) {
+            navigate("/"); // Chỉ navigate nếu lỗi xác thực
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching users:", error);
+        });
     }
-  }, [searchQuery, users]);
+  }, [searchQuery]);
   useEffect(() => {
     if (!state.accessToken) return;
 
@@ -71,7 +85,7 @@ const UserManagement = ({ searchQuery }) => {
     setAddress("");
     setPhone("");
     setRole("user");
-    setEditId("Add User");
+    setEditId("Add");
   };
 
   const handleDeleteUser = (id) => {
@@ -121,13 +135,13 @@ const UserManagement = ({ searchQuery }) => {
       setAddress(user.address);
       setEmail(user.email);
       setRole(user.role);
-      setEditId("Edit User");
+      setEditId("Edit");
       setShowModal(true);
     }
   };
 
   const handleSaveUser = () => {
-    if (editId === "Edit User") {
+    if (editId === "Edit") {
       // Update user
       if (!email || !address || !phone || !fullname || !role) {
         console.log("Please fill input");
@@ -215,7 +229,7 @@ const UserManagement = ({ searchQuery }) => {
     }
     setShowModal(false);
     setRole("user");
-    setEditId("Add User");
+    setEditId("Add");
   };
 
   const changePage = (page) => {
@@ -291,8 +305,8 @@ const UserManagement = ({ searchQuery }) => {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers &&
-                filteredUsers.map((user) => (
+              {users &&
+                users.map((user) => (
                   <tr key={user._id}>
                     <td className="d-flex align-items-center">
                       <img
@@ -353,7 +367,7 @@ const UserManagement = ({ searchQuery }) => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  {editId ? "Edit User" : "Add User"}
+                  {editId === "Edit" ? "Edit User" : "Add User"}
                 </h5>
                 <button
                   type="button"
@@ -369,7 +383,7 @@ const UserManagement = ({ searchQuery }) => {
                     className="form-control"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={editId === "Edit User" ? true : false}
+                    disabled={editId === "Edit" ? true : false}
                   />
                 </div>
                 <div className="mb-3">
@@ -393,7 +407,7 @@ const UserManagement = ({ searchQuery }) => {
                 <div className="mb-3">
                   <label className="form-label">Phone</label>
                   <input
-                    disabled={editId === "Edit User" ? true : false}
+                    disabled={editId === "Edit" ? true : false}
                     type="text"
                     className="form-control"
                     value={phone}

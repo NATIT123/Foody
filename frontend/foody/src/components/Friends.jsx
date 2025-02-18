@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 
 const Friends = ({ items }) => {
   return (
     <div className="container ">
-      {/* Friends List */}
       <div className="row">
-        {items &&
-          items.length > 0 &&
+        {items && items.length > 0 ? (
           items.map((item, index) => (
             <div className="col-md-6 mb-3" key={index}>
               <div className="d-flex align-items-center border rounded p-3">
@@ -28,14 +26,23 @@ const Friends = ({ items }) => {
                 </a>
 
                 <div className="flex-grow-1">
-                  <h6 className="mb-1">{item.fullname}</h6>
+                  <a href={`/member/${item._id}`}>
+                    {" "}
+                    <h6 className="mb-1">{item.fullname}</h6>
+                  </a>
+
                   <p className="mb-1 text-muted">
                     {item.totalComments} Bình luận {item.totalAlbums} hình ảnh
                   </p>
                 </div>
               </div>
             </div>
-          ))}
+          ))
+        ) : (
+          <p className="text-center text-muted">
+            Hiện tại không có người dùng nào.
+          </p>
+        )}
       </div>
     </div>
   );

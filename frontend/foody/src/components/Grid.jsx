@@ -96,7 +96,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   );
 };
 
-const Grid = ({ searchQuery }) => {
+const Grid = () => {
   const navigate = useNavigate(); // Hook điều hướng
   const [itemsEat, setItemEat] = useState([]);
   const { state } = useData();
@@ -146,6 +146,7 @@ const Grid = ({ searchQuery }) => {
         .then((response) => response.json())
         .then((data) => {
           if (data) {
+            console.log(data.data.data);
             setTotalPages(data.totalPages);
             setCurrentItems(data.data.data);
           }
@@ -159,11 +160,23 @@ const Grid = ({ searchQuery }) => {
       if (showLoginModal) return;
       if (state.user && state.user._id) {
         fetch(
-          `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`
+          `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-type": "application/json",
+            },
+            body: JSON.stringify({
+              subCategory: filtersState[0],
+              cuisines: filtersState[1],
+              district: filtersState[2],
+            }),
+          }
         )
           .then((response) => response.json())
           .then((data) => {
             if (data?.data) {
+              console.log(data.data.data);
               setTotalPages(data.totalPages); // Lưu tổng số trang
               setCurrentItems(data.data.data); // Lưu danh sách restaurant vào state
             }
@@ -317,19 +330,6 @@ const Grid = ({ searchQuery }) => {
       }
     }
   }, [currentPage, activeCategoryEat, state, filtersState]);
-
-  // Lọc dữ liệu khi searchQuery thay đổi
-  useEffect(() => {
-    if (searchQuery) {
-      const results = currentItems.filter((item) =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setCurrentItems(results);
-      setCurrentPage(1); // Reset về trang đầu
-    } else {
-      setCurrentItems(currentItems); // Hiển thị tất cả nếu không có từ khóa
-    }
-  }, [currentItems, searchQuery]);
 
   const handleShowModal = (item) => {
     setSelectedItem(item);

@@ -27,6 +27,7 @@ const Member = () => {
             data.status !== "error" &&
             data.status !== 400
           ) {
+            console.log(data.data.data);
             setComments(data.data.data);
           }
         }
@@ -48,7 +49,6 @@ const Member = () => {
             data.status !== "error" &&
             data.status !== 400
           ) {
-            console.log(data.data.data);
             setItems(data.data.data);
           }
         }
@@ -67,7 +67,11 @@ const Member = () => {
             <div className="sidebar-card">
               <div className="profile-section">
                 <img
-                  src={comments.photo}
+                  src={
+                    comments.photo === "default.jpg"
+                      ? "/images/default.jpg"
+                      : comments.photo
+                  }
                   alt="Profile"
                   className="profile-img"
                 />
@@ -179,7 +183,7 @@ const Member = () => {
                             <img
                               key={imgIndex}
                               src={src}
-                              alt={`Image ${imgIndex + 1}`}
+                              alt={``}
                               className="thumbnail"
                             />
                           ))}
