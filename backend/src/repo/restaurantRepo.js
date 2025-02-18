@@ -540,7 +540,6 @@ class RestaurantRepository {
     return catchAsync(async (req, res, next) => {
       try {
         const { searchQuery } = req.query;
-        console.log(searchQuery);
         const {
           subCategory,
           cuisines,
@@ -550,17 +549,24 @@ class RestaurantRepository {
         } = req.body;
         let matchConditions = {};
 
-        if (mongoose.Types.ObjectId.isValid(subCategory)) {
-          matchConditions["subCategoryId"] = new mongoose.Types.ObjectId(
-            subCategory
-          );
+        if (Array.isArray(subCategory) && subCategory.length > 0) {
+          matchConditions["subCategoryId"] = {
+            $in: subCategory.map((id) => new mongoose.Types.ObjectId(id)),
+          };
         }
-        if (mongoose.Types.ObjectId.isValid(district)) {
-          matchConditions["districtId"] = new mongoose.Types.ObjectId(district);
+
+        if (Array.isArray(district) && district.length > 0) {
+          matchConditions["districtId"] = {
+            $in: district.map((id) => new mongoose.Types.ObjectId(id)),
+          };
         }
-        if (mongoose.Types.ObjectId.isValid(cuisines)) {
-          matchConditions["cuisinesId"] = new mongoose.Types.ObjectId(cuisines);
+
+        if (Array.isArray(cuisines) && cuisines.length > 0) {
+          matchConditions["cuisinesId"] = {
+            $in: cuisines.map((id) => new mongoose.Types.ObjectId(id)),
+          };
         }
+
         if (mongoose.Types.ObjectId.isValid(selectedCategory)) {
           matchConditions["subCategoryDetails.categoryId"] =
             new mongoose.Types.ObjectId(selectedCategory);

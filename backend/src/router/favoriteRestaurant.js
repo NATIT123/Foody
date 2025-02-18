@@ -7,6 +7,7 @@ import {
   getFavoriteRestaurantById,
   deleteFavoriteRestaurantById,
   getFavoriteRestaurantByUserId,
+  getSavedRestaunrantByUserId,
 } from "../controllers/favoriteRestaurantController.js";
 
 router.get("/getAllFavoriteRestaurant", getAllFavoriteRestaurants);
@@ -18,5 +19,7 @@ router.get(
   "/getFavoriteRestaurantByUserId/:userId",
   getFavoriteRestaurantByUserId
 );
+
+router.get("/getSavedRestaurantByUserId/:userId", getSavedRestaunrantByUserId);
 
 export default router;

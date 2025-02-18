@@ -26,6 +26,10 @@ class FavoriteRestaurantService {
   getFavoriteRestaurantsByUserId() {
     return this.favoriteRestaurantRepo.getFavoriteRestaurantByUserId();
   }
+
+  getSavedRestaunrantByUserId() {
+    return this.favoriteRestaurantRepo.getSavedRestaunrantByUserId();
+  }
 }
 
 export default FavoriteRestaurantService;

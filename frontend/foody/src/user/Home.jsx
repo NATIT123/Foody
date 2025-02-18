@@ -97,8 +97,9 @@ const Index = () => {
   const itemsPerPage = itemsPerRow * 2; // Hiển thị 2 dòng (8 mục)
   const [selectedProvince, setSelectedProvince] = useState([]); // Tỉnh được chọn với id và name
   const [selectedCategory, setSelectedCategory] = useState({}); // Category được chọn với id và name
-  const [selectedCuisines, setSelectedCuisines] = useState({});
-  const [selectedDistricts, setSelectedDistricts] = useState({}); // Quận/huyện được chọn
+  const [selectedCuisines, setSelectedCuisines] = useState([]);
+  const [selectedDistricts, setSelectedDistricts] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
 
   const nextSlide = () => {
     if (currentIndex + itemsPerPage < items.length) {
@@ -120,6 +121,8 @@ const Index = () => {
   return (
     <div>
       <Header
+        selectedSubCategories={selectedSubCategories}
+        setSelectedSubCategories={setSelectedSubCategories}
         selectedCuisines={selectedCuisines}
         setSelectedCuisines={setSelectedCuisines}
         selectedDistricts={selectedDistricts}

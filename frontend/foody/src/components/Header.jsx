@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-import { FaBell, FaSearch, FaFilter } from "react-icons/fa";
+import { FaBell, FaFilter } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
 import { PiBowlFoodFill } from "react-icons/pi";
 import { BiCategoryAlt } from "react-icons/bi";
@@ -10,6 +10,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useData } from "../context/DataContext";
 
 function Header({
+  selectedSubCategories,
+  setSelectedSubCategories,
   setSelectedDistricts,
   selectedDistricts,
   selectedCuisines,
@@ -20,9 +22,24 @@ function Header({
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
-  const [showDropdown, setShowDropdown] = useState(true);
+  const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const dropdownRefSearch = useRef(null);
   const [restaurantSearch, setRestaurantSearch] = useState([]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        dropdownRefSearch.current &&
+        !dropdownRefSearch.current.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   useEffect(() => {
     fetch(
       `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByFields?searchQuery=${searchQuery}`,
@@ -34,9 +51,9 @@ function Header({
         body: JSON.stringify({
           selectedCity: state.selectedCity?._id || "",
           selectedCategory: state.selectedCategory?._id || "",
-          // subCategory: filtersState[0],
-          // cuisines: filtersState[1],
-          // district: filtersState[2],
+          subCategory: selectedSubCategories,
+          cuisines: selectedCuisines,
+          district: selectedDistricts,
         }),
       }
     )
@@ -49,7 +66,7 @@ function Header({
       .catch((error) => {
         console.error("Error fetching restaurants:", error);
       });
-  }, [searchQuery]);
+  }, [searchQuery, selectedCuisines, selectedDistricts, selectedSubCategories]);
   const handleSelectRestaurant = (restaurant) => {
     setSearchQuery(restaurant.name); // Gán tên nhà hàng vào ô tìm kiếm
     setShowDropdown(false); // Đóng dropdown sau khi chọn
@@ -69,6 +86,14 @@ function Header({
       prev.includes(cuisinesId)
         ? prev.filter((id) => id !== cuisinesId)
         : [...prev, cuisinesId]
+    );
+  };
+
+  const toggleSubCategories = (subCategoryId) => {
+    setSelectedSubCategories((prev) =>
+      prev.includes(subCategoryId)
+        ? prev.filter((id) => id !== subCategoryId)
+        : [...prev, subCategoryId]
     );
   };
 
@@ -309,6 +334,7 @@ function Header({
           {/* Center Section */}
           <div className="col-12 col-md-4 d-flex justify-content-center mb-2 mb-md-0">
             <div
+              ref={dropdownRefSearch}
               className="input-group position-relative"
               style={{ maxWidth: "450px", width: "100%" }}
             >
@@ -318,6 +344,7 @@ function Header({
                 className="form-control"
                 placeholder="Địa điểm, tên nhà hàng ..."
                 value={searchQuery}
+                onFocus={() => setShowDropdown(true)}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   borderRadius: "8px 0 0 8px",
@@ -568,7 +595,7 @@ function Header({
                           {state.subCategories &&
                             state.subCategories.map((subCategory, index) => (
                               <div
-                                key={index}
+                                key={subCategory._id}
                                 className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
                               >
                                 <div className="form-check">
@@ -577,6 +604,15 @@ function Header({
                                     className="form-check-input"
                                     id={`category-${subCategory._id}`}
                                     style={{ accentColor: "#ffc107" }}
+                                    checked={
+                                      selectedSubCategories &&
+                                      selectedSubCategories.includes(
+                                        subCategory._id
+                                      )
+                                    }
+                                    onChange={() =>
+                                      toggleSubCategories(subCategory._id)
+                                    }
                                   />
                                   <label
                                     className="form-check-label"
@@ -610,34 +646,6 @@ function Header({
                     }}
                   >
                     <button
-                      className="btn btn-primary me-1"
-                      style={{
-                        padding: "10px 20px",
-                        borderRadius: "8px",
-                        fontWeight: "600",
-                        fontSize: "14px",
-                        backgroundColor: "#007bff",
-                        border: "none",
-                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                        transition: "all 0.3s ease",
-                      }}
-                      onClick={() =>
-                        alert(
-                          `Lọc theo quận: ${
-                            selectedDistricts && selectedDistricts.join(", ")
-                          }`
-                        )
-                      }
-                      onMouseOver={(e) =>
-                        (e.target.style.backgroundColor = "#0056b3")
-                      }
-                      onMouseOut={(e) =>
-                        (e.target.style.backgroundColor = "#007bff")
-                      }
-                    >
-                      Tìm kiếm
-                    </button>
-                    <button
                       className="btn btn-secondary ms-0"
                       style={{
                         padding: "10px 20px",
@@ -653,9 +661,10 @@ function Header({
                       onClick={() => {
                         setSelectedDistricts([]);
                         setSelectedCuisines([]);
+                        setSelectedSubCategories([]);
                       }}
                       onMouseOver={(e) =>
-                        (e.target.style.backgroundColor = "#e2e6ea")
+                        (e.target.style.backgroundColor = "red")
                       }
                       onMouseOut={(e) =>
                         (e.target.style.backgroundColor = "#f8f9fa")

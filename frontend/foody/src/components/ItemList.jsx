@@ -12,14 +12,68 @@ const ItemList = ({ currentItems, handleShowModal }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedItem, setItem] = useState([]);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [savedRestaurant, setSavedRestaunrant] = useState([]);
+
+  useEffect(() => {
+    if (!state.loading || !state.user) return;
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/favorite/getSavedRestaurantByUserId/${state.user._id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          if (
+            data.status !== "error" &&
+            data.status !== "fail" &&
+            data.status !== 400
+          ) {
+            setSavedRestaunrant(data.data.data);
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching restaurants:", error);
+      });
+  }, [state]);
   const handleLogin = () => {
     setShowLoginModal(false);
     navigate("/login");
   };
-  const handleOpenSaveModal = () => {
+  const handleOpenSaveModal = (id) => {
     if (!state.loading && !state.user) {
       setShowLoginModal(true);
+      return;
     }
+    fetch(`${process.env.REACT_APP_BASE_URL}/favorite/addFavoriteRestaurant`, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: state.user._id,
+        restaurantId: id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (
+          data.status !== "error" &&
+          data.status !== "fail" &&
+          data.status !== 400
+        ) {
+          setSavedRestaunrant(data.data.data, ...savedRestaurant);
+          console.log("Success");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching restaurants:", error);
+      });
   };
   return (
     <div className="row">
@@ -144,10 +198,13 @@ const ItemList = ({ currentItems, handleShowModal }) => {
 
                   <div
                     style={{ backgroundColor: "#f5f5f5" }}
-                    onClick={handleOpenSaveModal}
+                    onClick={() => {
+                      handleOpenSaveModal(item._id);
+                    }}
                   >
                     <span className="text-muted d-flex align-items-center">
-                      <FaBookmark /> {"Lưu"}
+                      <FaBookmark />{" "}
+                      {savedRestaurant.includes(item._id) ? "Đã Lưu" : "Lưu"}
                     </span>
                   </div>
                 </div>

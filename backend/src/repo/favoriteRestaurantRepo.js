@@ -16,7 +16,54 @@ class FavoriteRestaurantRepository {
   }
 
   addFavoriteRestaurant() {
-    return createOne(this.favoriteRestaurantModel);
+    return catchAsync(async (req, res, next) => {
+      try {
+        const { userId, restaurantId } = req.body;
+        if (
+          !userId.match(/^[0-9a-fA-F]{24}$/) ||
+          !restaurantId.match(/^[0-9a-fA-F]{24}$/)
+        ) {
+          return next(
+            new AppError(
+              customResourceResponse.notValidId.message,
+              customResourceResponse.notValidId.statusCode
+            )
+          );
+        }
+        const restaurant = await this.favoriteRestaurantModel.aggregate([
+          {
+            $match: {
+              userId: new mongoose.Types.ObjectId(userId),
+              restaurantId: new mongoose.Types.ObjectId(restaurantId),
+            },
+          },
+          {
+            $sort: { createdAt: -1 },
+          },
+        ]);
+        if (restaurant) {
+          await this.favoriteRestaurantModel.updateOne(
+            { userId: userId, restaurantId: restaurantId },
+            { $set: { active: !restaurant.active } }
+          );
+        } else {
+          await this.favoriteRestaurantModel.create({
+            userId: userId,
+            restaurantId: restaurantId,
+          });
+        }
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          data: {
+            data: restaurantId,
+          },
+        });
+      } catch (error) {
+        console.error("Error fetching restaurant", error);
+        return next(new AppError("Server error", 500));
+      }
+    });
   }
 
   getAll() {
@@ -109,6 +156,50 @@ class FavoriteRestaurantRepository {
           currentPage: page,
           data: {
             data: docs,
+          },
+        });
+      } catch (error) {
+        console.error("Error fetching comments", error);
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
+  getSavedRestaurantByUserId() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const userId = new mongoose.Types.ObjectId(req.params.userId);
+
+        const restaurants = await this.favoriteRestaurantModel.aggregate([
+          {
+            $match: { active: true, userId: userId },
+          },
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $lookup: {
+              from: "restaurants",
+              localField: "restaurantId",
+              foreignField: "_id",
+              as: "restaurant",
+            },
+          },
+          {
+            $unwind: { path: "$restaurant", preserveNullAndEmptyArrays: true },
+          },
+          {
+            $project: {
+              "restaurant._id": 1,
+            },
+          },
+        ]);
+
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: restaurants.length,
+          data: {
+            data: restaurants,
           },
         });
       } catch (error) {
