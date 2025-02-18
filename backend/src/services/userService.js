@@ -35,6 +35,9 @@ class UserService {
   getAllDetails() {
     return this.userRepo.getAllDetails();
   }
+  findUsersByFields() {
+    return this.userRepo.findUsersByFields();
+  }
 }
 
 export default UserService;

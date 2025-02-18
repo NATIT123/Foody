@@ -24,10 +24,12 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
 
   useEffect(() => {
     if (!state.loading && state.user) {
+      console.log("My", restaurant.comments);
       const filteredComments = restaurant.comments.filter(
-        (el) => el.user._id === state.user._id
+        (el) => el.user._id.toString() === state.user._id.toString()
       );
       setMyComments(filteredComments);
+
       setTabs((prevTabs) =>
         prevTabs.map((el) =>
           el.id === "latest"

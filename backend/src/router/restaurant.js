@@ -13,6 +13,7 @@ import {
   getRestaurantByRecommendation,
   getNearestRestaurants,
   getRestaurantByViews,
+  findRestaurantsByFields,
 } from "../controllers/restaurantController.js";
 
 router.post("/getAllRestaurants", getAllRestaurants);
@@ -39,5 +40,5 @@ router.get(
 
 router.post("/getNearestRestaurants", getNearestRestaurants);
 router.post("/getRestaurantByViews", getRestaurantByViews);
-
+router.get("/findRestaurantsByFields", findRestaurantsByFields);
 export default router;

@@ -83,8 +83,36 @@ class UserRepository {
           {
             $lookup: {
               from: "albums",
-              localField: "_id",
-              foreignField: "userId",
+              let: { userId: "$_id" },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$userId", "$$userId"] },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "restaurants",
+                    localField: "restaurantId",
+                    foreignField: "_id",
+                    as: "restaurant",
+                  },
+                },
+                {
+                  $unwind: {
+                    path: "$restaurant",
+                    preserveNullAndEmptyArrays: true,
+                  },
+                },
+                {
+                  $project: {
+                    _id: 1,
+                    image: 1,
+                    createdAt: 1,
+                    restaurantName: "$restaurant.name",
+                  },
+                },
+              ],
               as: "albums",
             },
           },
@@ -262,6 +290,69 @@ class UserRepository {
         });
       } catch (error) {
         console.log(error);
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
+  findUsersByFields() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const { searchQuery } = req.query;
+        const page = Math.max(req.query.page * 1 || 1, 1); // Ensure page is a positive integer
+        const limit = Math.max(req.query?.limit * 1 || 100, 1); // Ensure limit is a positive integer
+        const skip = (page - 1) * limit;
+        let matchConditions = {};
+        if (searchQuery && searchQuery.trim() !== "") {
+          matchConditions["$or"] = [
+            { fullname: { $regex: searchQuery, $options: "i" } },
+            { address: { $regex: searchQuery, $options: "i" } },
+            { phone: { $regex: searchQuery, $options: "i" } },
+            { email: { $regex: searchQuery, $options: "i" } },
+          ];
+        }
+        const users = await this.userModel.aggregate([
+          {
+            $match: { active: true },
+          },
+          {
+            $sort: { createdAt: -1 },
+          },
+          ...(Object.keys(matchConditions).length > 0
+            ? [{ $match: matchConditions }]
+            : []),
+
+          {
+            $project: {
+              _id: 1,
+              phone: 1,
+              fullname: 1,
+              address: 1,
+              photo: 1,
+              role: 1,
+              email: 1,
+            },
+          },
+          {
+            $facet: {
+              metadata: [{ $count: "total" }],
+              data: [{ $skip: skip }, { $limit: limit }], // Paging
+            },
+          },
+        ]);
+        const total = users[0].metadata[0]?.total || 0;
+        const totalPages = Math.ceil(total / limit);
+        const docs = users[0].data;
+
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: docs.length,
+          totalPages: totalPages,
+          currentPage: page,
+          data: { data: docs },
+        });
+      } catch (err) {
+        console.error("Error fetching users", err);
         return next(new AppError("Server error", 500));
       }
     });

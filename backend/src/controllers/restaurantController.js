@@ -31,3 +31,6 @@ export const getRestaurantByRecommendation =
 export const getNearestRestaurants = restaurantService.getNearestRestaurants();
 
 export const getRestaurantByViews = restaurantService.getRestaurantByViews();
+
+export const findRestaurantsByFields =
+  restaurantService.findRestaurantsByFields();

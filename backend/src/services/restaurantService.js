@@ -50,6 +50,9 @@ class RestaurantService {
   getRestaurantByViews() {
     return this.restaurantRepo.getRestaurantByViews();
   }
+  findRestaurantsByFields() {
+    return this.restaurantRepo.findRestaurantsByFields();
+  }
 }
 
 export default RestaurantService;

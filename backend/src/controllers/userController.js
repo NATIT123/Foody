@@ -21,3 +21,5 @@ export const uploadPhoto = userService.uploadPhoto();
 export const getUserDetails = userService.getUsersDetail();
 
 export const getAllDetails = userService.getAllDetails();
+
+export const findUsersByFields = userService.findUsersByFields();

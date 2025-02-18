@@ -173,8 +173,21 @@ class FavoriteRestaurantRepository {
           {
             $lookup: {
               from: "albums",
-              localField: "restaurant._id",
-              foreignField: "restaurantId",
+              let: { restaurantId: "$restaurant._id" },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $match: {
+                    image: { $not: { $regex: "^data:image/png;base64," } },
+                  },
+                },
+                { $sort: { createdAt: -1 } },
+                { $project: { _id: 1, image: 1 } },
+              ],
               as: "albums",
             },
           },
@@ -212,6 +225,13 @@ class FavoriteRestaurantRepository {
               name: "$restaurant.name",
               address: "$restaurant.address",
               image: "$restaurant.image",
+              timeOpen: "$restaurant.timeOpen",
+              priceRange: "$restaurant.priceRange",
+              serviceRate: "$restaurant.serviceRate",
+              locationRate: "$restaurant.locationRate",
+              priceRate: "$restaurant.priceRate",
+              spaceRate: "$restaurant.spaceRate",
+              qualityRate: "$restaurant.qualityRate",
               comments: 1,
               commentCount: 1,
               albumCount: 1,

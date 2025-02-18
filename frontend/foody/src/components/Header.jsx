@@ -206,37 +206,6 @@ function Header({
   };
   return (
     <>
-      {/* Navigation Bar */}
-      <nav
-        className="ps-4 bg-dark container-fluid d-flex justify-content-start border-bottom py-1  top-0"
-        style={{ zIndex: 1030 }}
-      >
-        <a
-          href="/"
-          className={`me-3 text-light text-decoration-none nav-link ${
-            window.location.pathname === "/" ? "active-custom" : ""
-          }`}
-        >
-          Khám Phá
-        </a>
-        <a
-          href="/"
-          className={`me-3 text-light text-decoration-none nav-link ${
-            window.location.pathname === "/dat-giao-hang" ? "active-custom" : ""
-          }`}
-        >
-          Đặt Giao Hàng
-        </a>
-        <a
-          href="/"
-          className={`text-light text-decoration-none nav-link ${
-            window.location.pathname === "/di-cho" ? "active-custom" : ""
-          }`}
-        >
-          Đi Chợ
-        </a>
-      </nav>
-
       {/* Header Section */}
       <header
         className=" position-sticky container-fluid header border-bottom bg-light position-sticky top-0"
@@ -720,6 +689,18 @@ function Header({
                       className="text-decoration-none text-dark"
                     >
                       Cập nhật tài khoản
+                    </a>
+                  </li>
+                  <li className="d-flex align-items-center px-3 py-2">
+                    <i
+                      className="bi bi-person-video3 text-success me-2"
+                      style={{ fontSize: "16px" }}
+                    ></i>
+                    <a
+                      href={`/member/${state.user._id}`}
+                      className="text-decoration-none text-dark"
+                    >
+                      Hoạt động cá nhân
                     </a>
                   </li>
                   <li className="d-flex align-items-center px-3 py-2">
