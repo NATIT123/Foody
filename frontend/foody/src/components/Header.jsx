@@ -152,7 +152,7 @@ function Header({
     if (!state.loading && !state.user) return;
     if (state.user) {
       fetch(
-        `${process.env.REACT_APP_BASE_URL}/notification/getAllNotifications/${state.user._id}`,
+        `${process.env.REACT_APP_BASE_URL}/notification/getNotificationsByUserId/${state.user._id}`,
         {
           method: "GET",
           headers: {

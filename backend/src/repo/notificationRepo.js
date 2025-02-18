@@ -59,7 +59,7 @@ class NotificationRepository {
     });
   }
 
-  getNotificationByUserId() {
+  getNotificationsByUserId() {
     return catchAsync(async (req, res, next) => {
       try {
         const { userId } = req.params;

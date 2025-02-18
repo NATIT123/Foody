@@ -15,31 +15,33 @@ const ItemList = ({ currentItems, handleShowModal }) => {
   const [savedRestaurant, setSavedRestaunrant] = useState([]);
 
   useEffect(() => {
-    if (!state.loading || !state.user) return;
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/favorite/getSavedRestaurantByUserId/${state.user._id}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-type": "application/json",
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          if (
-            data.status !== "error" &&
-            data.status !== "fail" &&
-            data.status !== 400
-          ) {
-            setSavedRestaunrant(data.data.data);
-          }
+    if (!state.loading && !state.user) return;
+    if (state.user) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/favorite/getSavedRestaurantByUserId/${state.user?._id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json",
+          },
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching restaurants:", error);
-      });
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            if (
+              data.status !== "error" &&
+              data.status !== "fail" &&
+              data.status !== 400
+            ) {
+              setSavedRestaunrant(data.data.data);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+        });
+    }
   }, [state]);
   const handleLogin = () => {
     setShowLoginModal(false);
@@ -50,30 +52,44 @@ const ItemList = ({ currentItems, handleShowModal }) => {
       setShowLoginModal(true);
       return;
     }
-    fetch(`${process.env.REACT_APP_BASE_URL}/favorite/addFavoriteRestaurant`, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: state.user._id,
-        restaurantId: id,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (
-          data.status !== "error" &&
-          data.status !== "fail" &&
-          data.status !== 400
-        ) {
-          setSavedRestaunrant(data.data.data, ...savedRestaurant);
-          console.log("Success");
+    if (state.user) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/favorite/addFavoriteRestaurant`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: state.user._id,
+            restaurantId: id,
+          }),
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching restaurants:", error);
-      });
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (
+            data.status !== "error" &&
+            data.status !== "fail" &&
+            data.status !== 400
+          ) {
+            console.log(data.data.data);
+            console.log(data.data.active);
+            if (data.data.active) {
+              setSavedRestaunrant([data.data.data, ...savedRestaurant]);
+            } else {
+              setSavedRestaunrant(
+                savedRestaurant.filter((id) => id !== data.data.data)
+              );
+            }
+
+            console.log("Success");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+        });
+    }
   };
   return (
     <div className="row">
@@ -124,9 +140,9 @@ const ItemList = ({ currentItems, handleShowModal }) => {
                     {item?.comments[0]?.user?.photo && (
                       <img
                         src={
-                          item?.comments[0].user.photo === "default.jpg"
+                          item?.comments[0]?.user.photo === "default.jpg"
                             ? "/images/default.jpg"
-                            : item?.comments[0].user.photo
+                            : item?.comments[0]?.user.photo
                         }
                         alt="User Avatar"
                         style={{
@@ -150,16 +166,16 @@ const ItemList = ({ currentItems, handleShowModal }) => {
                         textOverflow: "ellipsis",
                       }}
                     >
-                      {item.comments[0]?.user?.fullname
-                        ? item.comments[0]?.user?.fullname.substring(0, 5)
+                      {item?.comments[0]?.user?.fullname
+                        ? item?.comments[0]?.user?.fullname.substring(0, 5)
                         : "Ẩn danh"}{" "}
                     </span>
                     <span
                       className="d-flex align-items-center ms-2 text-muted text-truncate"
                       style={{ color: "#444" }}
                     >
-                      {item.comments[0]?.description
-                        ? item.comments[0].description.substring(0, 15)
+                      {item?.comments[0]?.description
+                        ? item?.comments[0]?.description.substring(0, 15)
                         : "Không có tiêu đề"}
                     </span>
                   </h6>
@@ -204,7 +220,9 @@ const ItemList = ({ currentItems, handleShowModal }) => {
                   >
                     <span className="text-muted d-flex align-items-center">
                       <FaBookmark />{" "}
-                      {savedRestaurant.includes(item._id) ? "Đã Lưu" : "Lưu"}
+                      {savedRestaurant.includes(item._id.toString())
+                        ? "Đã Lưu"
+                        : "Lưu"}
                     </span>
                   </div>
                 </div>

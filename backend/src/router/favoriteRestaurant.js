@@ -15,7 +15,7 @@ router.post("/addFavoriteRestaurant", addFavoriteRestaurant);
 router.delete("/deleteFavoriteRestaurant/:id", deleteFavoriteRestaurantById);
 router.patch("/updateFavoriteRestaurant/:id", updateFavoriteRestaurantById);
 router.get("/getFavoriteRestaurant/:id", getFavoriteRestaurantById);
-router.get(
+router.post(
   "/getFavoriteRestaurantByUserId/:userId",
   getFavoriteRestaurantByUserId
 );

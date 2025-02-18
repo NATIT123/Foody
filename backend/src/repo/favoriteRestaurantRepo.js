@@ -30,21 +30,19 @@ class FavoriteRestaurantRepository {
             )
           );
         }
-        const restaurant = await this.favoriteRestaurantModel.aggregate([
-          {
-            $match: {
-              userId: new mongoose.Types.ObjectId(userId),
-              restaurantId: new mongoose.Types.ObjectId(restaurantId),
-            },
-          },
-          {
-            $sort: { createdAt: -1 },
-          },
-        ]);
+        const restaurant = await this.favoriteRestaurantModel
+          .findOne({
+            userId: new mongoose.Types.ObjectId(userId),
+            restaurantId: new mongoose.Types.ObjectId(restaurantId),
+          })
+          .sort({ createdAt: -1 });
+
+        let active = true;
         if (restaurant) {
+          active = !restaurant.active;
           await this.favoriteRestaurantModel.updateOne(
             { userId: userId, restaurantId: restaurantId },
-            { $set: { active: !restaurant.active } }
+            { $set: { active } }
           );
         } else {
           await this.favoriteRestaurantModel.create({
@@ -56,6 +54,7 @@ class FavoriteRestaurantRepository {
           message: customResourceResponse.success.message,
           status: "success",
           data: {
+            active,
             data: restaurantId,
           },
         });
@@ -85,30 +84,31 @@ class FavoriteRestaurantRepository {
   getFavoriteRestaurantByUserId() {
     return catchAsync(async (req, res, next) => {
       try {
-        const page = req.query.page * 1 || 1;
-        const limit = req.query?.limit * 1 || 100;
+        const { subCategory, cuisines, district } = req.body;
+        console.log(req.body);
+        const page = Math.max(req.query.page * 1 || 1, 1);
+        const limit = Math.max(req.query?.limit * 1 || 100, 1);
         const skip = (page - 1) * limit;
-
         const userId = new mongoose.Types.ObjectId(req.params.userId);
+        let matchConditions = {};
 
-        const comments = await this.favoriteRestaurantModel.aggregate([
-          {
-            $match: { active: true, userId: userId },
-          },
-          {
-            $sort: { createdAt: -1 },
-          },
-          {
-            $lookup: {
-              from: "users",
-              localField: "userId",
-              foreignField: "_id",
-              as: "user",
-            },
-          },
-          {
-            $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
-          },
+        // Apply match conditions based on incoming filters
+        // if (mongoose.Types.ObjectId.isValid(subCategory)) {
+        //   matchConditions["restaurant.subCategoryId"] =
+        //     new mongoose.Types.ObjectId(subCategory);
+        // }
+        // if (mongoose.Types.ObjectId.isValid(district)) {
+        //   matchConditions["restaurant.districtId"] =
+        //     new mongoose.Types.ObjectId(district);
+        // }
+        // if (mongoose.Types.ObjectId.isValid(cuisines)) {
+        //   matchConditions["restaurant.cuisinesId"] =
+        //     new mongoose.Types.ObjectId(cuisines);
+        // }
+
+        const favorites = await this.favoriteRestaurantModel.aggregate([
+          { $match: { active: true, userId: userId } },
+          { $sort: { createdAt: -1 } },
           {
             $lookup: {
               from: "restaurants",
@@ -117,23 +117,107 @@ class FavoriteRestaurantRepository {
               as: "restaurant",
             },
           },
+          { $unwind: "$restaurant" },
           {
-            $unwind: { path: "$restaurant", preserveNullAndEmptyArrays: true },
+            $lookup: {
+              from: "subcategories",
+              localField: "restaurant.subCategoryId",
+              foreignField: "_id",
+              as: "subCategoryDetails",
+            },
+          },
+          {
+            $lookup: {
+              from: "districts",
+              localField: "restaurant.districtId",
+              foreignField: "_id",
+              as: "districtDetails",
+            },
+          },
+          {
+            $lookup: {
+              from: "comments",
+              let: { restaurantId: "$restaurant._id" },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user",
+                  },
+                },
+                {
+                  $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+                },
+                { $sort: { createdAt: -1 } },
+                {
+                  $project: {
+                    rate: 1,
+                    type: 1,
+                    description: 1,
+                    "user.fullname": 1,
+                    "user.photo": 1,
+                    "user._id": 1,
+                  },
+                },
+              ],
+              as: "comments",
+            },
+          },
+          {
+            $lookup: {
+              from: "albums",
+              localField: "restaurant._id",
+              foreignField: "restaurantId",
+              as: "albums",
+            },
+          },
+          ...(Object.keys(matchConditions).length > 0
+            ? [{ $match: matchConditions }]
+            : []),
+          {
+            $addFields: {
+              commentCount: { $size: "$comments" },
+              albumCount: { $size: "$albums" },
+              averageRate: {
+                $round: [
+                  {
+                    $divide: [
+                      {
+                        $add: [
+                          { $ifNull: ["$restaurant.qualityRate", 0] },
+                          { $ifNull: ["$restaurant.serviceRate", 0] },
+                          { $ifNull: ["$restaurant.locationRate", 0] },
+                          { $ifNull: ["$restaurant.priceRate", 0] },
+                          { $ifNull: ["$restaurant.spaceRate", 0] },
+                        ],
+                      },
+                      5,
+                    ],
+                  },
+                  1,
+                ],
+              },
+            },
           },
           {
             $project: {
-              "user.fullname": 1,
-              "user.photo": 1,
-              "restaurant.name": 1,
-              "restaurant.address": 1,
-              "restaurant.image": 1,
-              "restaurant.albums": 1,
-              "restaurant._id": 1,
-              rate: 1,
-              description: 1,
-              time: 1,
-              title: 1,
-              type: 1,
+              _id: "$restaurant._id",
+              name: "$restaurant.name",
+              address: "$restaurant.address",
+              image: "$restaurant.image",
+              comments: 1,
+              commentCount: 1,
+              albumCount: 1,
+              averageRate: 1,
+              albums: 1,
+              subCategory: { $arrayElemAt: ["$subCategoryDetails.name", 0] },
             },
           },
           {
@@ -144,26 +228,24 @@ class FavoriteRestaurantRepository {
           },
         ]);
 
-        const total = comments[0]?.metadata[0]?.total || 0;
+        const total = favorites[0]?.metadata[0]?.total || 0;
         const totalPages = Math.ceil(total / limit);
-        const docs = comments[0]?.data || [];
-
+        const docs = favorites[0]?.data || [];
         return res.status(customResourceResponse.success.statusCode).json({
           message: customResourceResponse.success.message,
           status: "success",
           results: docs.length,
           totalPages: totalPages,
           currentPage: page,
-          data: {
-            data: docs,
-          },
+          data: { data: docs },
         });
       } catch (error) {
-        console.error("Error fetching comments", error);
+        console.error("Error fetching favorite restaurants", error);
         return next(new AppError("Server error", 500));
       }
     });
   }
+
   getSavedRestaurantByUserId() {
     return catchAsync(async (req, res, next) => {
       try {
@@ -177,29 +259,23 @@ class FavoriteRestaurantRepository {
             $sort: { createdAt: -1 },
           },
           {
-            $lookup: {
-              from: "restaurants",
-              localField: "restaurantId",
-              foreignField: "_id",
-              as: "restaurant",
-            },
-          },
-          {
-            $unwind: { path: "$restaurant", preserveNullAndEmptyArrays: true },
-          },
-          {
             $project: {
-              "restaurant._id": 1,
+              _id: 0,
+              restaurantId: 1,
             },
           },
         ]);
 
+        const restaurantIdArray = restaurants.map((r) =>
+          r.restaurantId.toString()
+        );
+
         return res.status(customResourceResponse.success.statusCode).json({
           message: customResourceResponse.success.message,
           status: "success",
-          results: restaurants.length,
+          results: restaurantIdArray.length,
           data: {
-            data: restaurants,
+            data: restaurantIdArray,
           },
         });
       } catch (error) {
