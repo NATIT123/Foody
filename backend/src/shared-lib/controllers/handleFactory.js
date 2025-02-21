@@ -103,10 +103,9 @@ export const createOne = (Model) =>
       res.status(customResourceResponse.created.statusCode).json({
         status: "success",
         message: customResourceResponse.created.message,
-        data: { data: document._id, createdAt: document.createdAt },
+        data: { data: document._id },
       });
     } catch (err) {
-      console.log(err);
       return next(
         new AppError(err.message, customResourceResponse.serverError.statusCode)
       );

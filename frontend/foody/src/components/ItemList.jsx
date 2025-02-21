@@ -8,7 +8,7 @@ import { useData } from "../context/DataContext";
 
 const ItemList = ({ currentItems, handleShowModal }) => {
   const navigate = useNavigate(); // Hook điều hướng
-  const { state } = useData();
+  const { state, addNotification } = useData();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedItem, setItem] = useState([]);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
@@ -47,7 +47,7 @@ const ItemList = ({ currentItems, handleShowModal }) => {
     setShowLoginModal(false);
     navigate("/login");
   };
-  const handleOpenSaveModal = (id) => {
+  const handleOpenSaveModal = (id, name) => {
     if (!state.loading && !state.user) {
       setShowLoginModal(true);
       return;
@@ -73,16 +73,15 @@ const ItemList = ({ currentItems, handleShowModal }) => {
             data.status !== "fail" &&
             data.status !== 400
           ) {
-            console.log(data.data.data);
-            console.log(data.data.active);
             if (data.data.active) {
               setSavedRestaunrant([data.data.data, ...savedRestaurant]);
+              addNotification(`Đã lưu nhà hàng ${name} thành công`);
             } else {
               setSavedRestaunrant(
                 savedRestaurant.filter((id) => id !== data.data.data)
               );
+              addNotification(`Đã bỏ lưu nhà hàng ${name} thành công`);
             }
-
             console.log("Success");
           }
         })
@@ -108,6 +107,8 @@ const ItemList = ({ currentItems, handleShowModal }) => {
               />
               <div className="card-body">
                 <Link
+                  target="_blank"
+                  rel="noopener noreferrer"
                   to={`/details/${item._id}`}
                   style={{ textDecoration: "none" }}
                 >
@@ -215,7 +216,7 @@ const ItemList = ({ currentItems, handleShowModal }) => {
                   <div
                     style={{ backgroundColor: "#f5f5f5" }}
                     onClick={() => {
-                      handleOpenSaveModal(item._id);
+                      handleOpenSaveModal(item._id, item.name);
                     }}
                   >
                     <span className="text-muted d-flex align-items-center">

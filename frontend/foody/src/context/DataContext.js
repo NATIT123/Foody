@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
 
 // Tạo Context
@@ -16,6 +17,13 @@ const dataReducer = (state, action) => {
       return { ...state, user: action.payload, loading: false, error: null };
     case "SET_CITIES":
       return { ...state, cities: action.payload, loading: false };
+    case "SET_NOTIFICATIONS":
+      return { ...state, notifications: action.payload, loading: false };
+    case "MARK_ALL_NOTIFICATIONS_READ":
+      return {
+        ...state,
+        notifications: state.notifications.map((n) => ({ ...n, isRead: true })),
+      };
     case "SET_CATEGORIES":
       return { ...state, categories: action.payload, loading: false };
     case "SET_CUISINES":
@@ -24,6 +32,11 @@ const dataReducer = (state, action) => {
       return { ...state, districts: action.payload, loading: false };
     case "SET_SUB_CATEGORIES":
       return { ...state, subCategories: action.payload, loading: false };
+    case "ADD_NOTIFICATION":
+      return {
+        ...state,
+        notifications: [action.payload, ...state.notifications],
+      };
     case "SET_SELECTED_CITY":
       return { ...state, selectedCity: action.payload };
     case "SET_SELECTED_CATEGORY":
@@ -61,6 +74,100 @@ export const DataProvider = ({ children }) => {
     loading: false,
     error: null,
   });
+
+  useEffect(() => {
+    if (state.user) {
+      dispatch({ type: "LOADING" });
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/notification/getNotificationsByUserId/${state.user._id}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${state.accessToken}` },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (
+            data.status !== "fail" &&
+            data.status !== "error" &&
+            data.status !== 400
+          ) {
+            dispatch({ type: "SET_NOTIFICATIONS", payload: data.data.data });
+          }
+        })
+        .catch((error) =>
+          console.error("Error fetching notifications:", error)
+        );
+    }
+  }, [state.user, state.accessToken]);
+
+  const addNotification = useCallback(
+    (message) => {
+      if (!state.user) return;
+
+      const notification = { description: message, userId: state.user._id };
+
+      fetch(`${process.env.REACT_APP_BASE_URL}/notification/addNotification`, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${state.accessToken}`,
+        },
+        body: JSON.stringify(notification),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data?.status !== "error" && data?.status !== "fail") {
+            console.log(state.notifications);
+            const newData = {
+              active: false,
+              _id: data.data.data._id,
+              description: message,
+              isRead: false,
+              userId: state.user._id,
+              createdAt: data.data.createdAt,
+            };
+            dispatch({ type: "ADD_NOTIFICATION", payload: newData });
+          }
+        })
+        .catch((error) => {
+          dispatch({ type: "ERROR", payload: error.message });
+          console.error("Error adding notification:", error);
+        });
+    },
+    [state.user, state.accessToken]
+  );
+
+  const unreadExists = useMemo(() => {
+    if (state.notifications) {
+      return state.notifications.some((n) => !n.isRead);
+    }
+  }, [state.notifications]);
+
+  const markAllNotificationsRead = async () => {
+    if (!state.user) return;
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/notification/makeAll/${state.user._id}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${state.accessToken}` },
+        }
+      );
+      const data = await response.json();
+
+      if (
+        data?.status !== "fail" &&
+        data?.status !== "error" &&
+        data?.status !== 400
+      ) {
+        dispatch({ type: "MARK_ALL_NOTIFICATIONS_READ" });
+      }
+    } catch (error) {
+      console.error("Lỗi khi đánh dấu tất cả thông báo là đã đọc:", error);
+    }
+  };
 
   // Fetch User khi có accessToken
   useEffect(() => {
@@ -192,14 +299,15 @@ export const DataProvider = ({ children }) => {
       );
       const data = await response.json();
       if (data.status !== "fail" && data.status !== "error") {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("city");
-        localStorage.removeItem("category");
-        localStorage.removeItem("cuisines");
-        localStorage.removeItem("categories");
-        localStorage.removeItem("ctities");
+        [
+          "access_token",
+          "city",
+          "category",
+          "cuisines",
+          "categories",
+          "cities",
+        ].forEach(localStorage.removeItem);
         dispatch({ type: "LOGOUT" });
-        window.location.reload();
       }
     } catch (error) {
       console.error("Error logout:", error);
@@ -210,6 +318,9 @@ export const DataProvider = ({ children }) => {
     <DataContext.Provider
       value={{
         state,
+        markAllNotificationsRead,
+        unreadExists,
+        addNotification,
         setAccessToken,
         setSelectedCity,
         setSelectedCategory,

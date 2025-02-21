@@ -83,8 +83,10 @@ const ItemsEat = ({
                 <div className="p-3">
                   {/* Title */}
                   <Link
+                    target="_blank"
+                    rel="noopener noreferrer"
                     to={`/details/${item._id}`}
-                    className="text-decoration-none text-dark mb-2 d-block"
+                    className="text-decoration-none text-primary mb-2 d-block"
                   >
                     <h5
                       className="card-title text-truncate"

@@ -6,7 +6,7 @@ import { PiBowlFoodFill } from "react-icons/pi";
 import { BiCategoryAlt } from "react-icons/bi";
 import "../css/Header.css"; // Import file CSS tùy chỉnh
 import "bootstrap-icons/font/bootstrap-icons.css";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useData } from "../context/DataContext";
 
 function Header({
@@ -17,7 +17,14 @@ function Header({
   selectedCuisines,
   setSelectedCuisines,
 }) {
-  const { state, logout, setSelectedCity, setSelectedCategory } = useData();
+  const {
+    unreadExists,
+    state,
+    logout,
+    setSelectedCity,
+    setSelectedCategory,
+    markAllNotificationsRead,
+  } = useData();
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
@@ -96,14 +103,7 @@ function Header({
         : [...prev, subCategoryId]
     );
   };
-
-  const [notifications, setNotifications] = useState([]);
-  const [unreadExists, setUnreadExists] = useState(false);
-  useEffect(() => {
-    // Cập nhật unreadExists mỗi khi notifications thay đổi
-    setUnreadExists(notifications.some((n) => !n.isRead));
-  }, [notifications]);
-
+  const { notifications } = state;
   const handleToggleNotifications = () => {
     if (!state.loading && !state.user) {
       console.log("Không có user, fetch không chạy.");
@@ -114,69 +114,13 @@ function Header({
       console.log("User ID không hợp lệ.");
       return;
     }
-
-    const apiUrl = `${process.env.REACT_APP_BASE_URL}/notification/makeAll/${state.user._id}`;
-
     if (showNotifications && unreadExists) {
-      fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (
-            data &&
-            data.status !== "fail" &&
-            data.status !== "error" &&
-            data.status !== 400
-          ) {
-            console.log("Tất cả thông báo đã được đánh dấu là đọc.");
-            setNotifications(
-              (prev) => prev.map((n) => ({ ...n, isRead: true })) // Cập nhật UI ngay
-            );
-          } else {
-            console.log("Lỗi từ server:", data);
-          }
-        })
-        .catch((error) => {
-          console.error("Lỗi khi fetch dữ liệu:", error);
-        });
+      markAllNotificationsRead();
     }
 
     // Đảo trạng thái show/hide thông báo
     setShowNotifications(!showNotifications);
   };
-  useEffect(() => {
-    if (!state.loading && !state.user) return;
-    if (state.user) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/notification/getNotificationsByUserId/${state.user._id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${state.accessToken}`,
-          },
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              setNotifications(data.data.data);
-            }
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
-  }, [state, showNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -746,7 +690,7 @@ function Header({
               />
 
               {/* Badge hiển thị số thông báo chưa đọc */}
-              {notifications?.filter((n) => !n.isRead).length > 0 && (
+              {unreadExists && (
                 <span
                   style={{
                     position: "absolute",

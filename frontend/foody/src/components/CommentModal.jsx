@@ -11,8 +11,8 @@ const CommentModal = ({
   const [title, setTitle] = useState(restaurant.name);
   const [description, setDescription] = useState("");
   const [rate, setRate] = useState(1); // Default rate as 1
-  const { state } = useData();
-  const handleSubmit = () => {
+  const { state, addNotification } = useData();
+  const handleSubmit = (name) => {
     const formatDate = () => {
       const now = new Date();
       const day = String(now.getDate()).padStart(2, "0");
@@ -94,6 +94,7 @@ const CommentModal = ({
                   : el
               )
             );
+            addNotification(`Đã lưu bình luận về nhà hàng ${name} thành công`);
 
             console.log("Success");
           }
@@ -176,7 +177,10 @@ const CommentModal = ({
             <button className="btn btn-secondary" onClick={onClose}>
               Hủy
             </button>
-            <button className="btn btn-primary" onClick={handleSubmit}>
+            <button
+              className="btn btn-primary"
+              onClick={() => handleSubmit(restaurant.name)}
+            >
               Gửi
             </button>
           </div>

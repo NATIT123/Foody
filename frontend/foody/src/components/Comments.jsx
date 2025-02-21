@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import { Link } from "react-router-dom";
 const Comments = () => {
   const [activeTab, setActiveTab] = useState("new"); // State for active tab
   const [currentPage, setCurrentPage] = useState(1); // Current page state
@@ -75,13 +75,15 @@ const Comments = () => {
                     <h6 className="mb-1" style={{ fontWeight: "bold" }}>
                       {comment.user.fullname}
                     </h6>
-                    <a
+                    <Link
+                      target="_blank"
+                      rel="noopener noreferrer"
                       style={{ fontWeight: "bold" }}
-                      href={`/details/${comment.restaurant._id}`}
-                      className="text-primary"
+                      to={`/details/${comment.restaurant._id}`}
+                      className="text-decoration-none text-dark mb-2 d-block"
                     >
                       {comment.restaurant.name}
-                    </a>{" "}
+                    </Link>{" "}
                     <p
                       className="text-muted mb-0"
                       style={{ fontSize: "0.9rem", fontWeight: "bold" }}

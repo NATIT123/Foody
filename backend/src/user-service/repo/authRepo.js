@@ -2,10 +2,10 @@ import {
   filterObj,
   createSendToken,
   updateUserToken,
-} from "../controllers/handleFactory.js";
-import catchAsync from "../utils/catchAsync.js";
-import customResourceResponse from "../utils/constant.js";
-import AppError from "../utils/appError.js";
+} from "..//../shared-lib/controllers/handleFactory.js";
+import catchAsync from "../../shared-lib/utils/catchAsync.js";
+import customResourceResponse from "..//../shared-lib/utils/constant.js";
+import AppError from "..//../shared-lib/utils/appError.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { promisify } from "util";
@@ -20,6 +20,7 @@ class AuthRepository {
   signUp = () =>
     catchAsync(async (req, res, next) => {
       const newUser = await this.userModel.create(req.body);
+      console.log(newUser);
       const url = `${req.protocol}://localhost:3001/`;
       await new Email(newUser, url).sendWelcome();
       createSendToken(this.userModel, newUser, 201, res);
