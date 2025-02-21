@@ -34,11 +34,15 @@ const Dashboard = () => {
   const { state, logout } = useData();
   const navigate = useNavigate(); // For navigation to the home page
   useEffect(() => {
-    if (!state.loading && state.user) {
-      if (state.user?.role !== "admin" && state.user?.role !== "owner")
+    if (!state.loading) {
+      if (
+        !state.user ||
+        (state.user.role !== "admin" && state.user.role !== "owner")
+      ) {
         navigate("/");
+      }
     }
-  }, [navigate, state.user, state.loading]);
+  }, [state.loading, state.user, navigate]);
 
   const [activeTab, setActiveTab] = useState("dashboard");
 
