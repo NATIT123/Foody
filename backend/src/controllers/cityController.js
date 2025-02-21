@@ -2,7 +2,6 @@ import CityRepo from "../repo/cityRepo.js";
 import CityService from "../services/cityService.js";
 
 import CityModel from "../models/cityModel.js";
-
 const cityRepo = new CityRepo(CityModel);
 const cityService = new CityService(cityRepo);
 

@@ -20,7 +20,6 @@ class AuthRepository {
   signUp = () =>
     catchAsync(async (req, res, next) => {
       const newUser = await this.userModel.create(req.body);
-      console.log(newUser);
       const url = `${req.protocol}://localhost:3001/`;
       await new Email(newUser, url).sendWelcome();
       createSendToken(this.userModel, newUser, 201, res);

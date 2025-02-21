@@ -12,12 +12,17 @@ const RestaurantDetailSchema = new Schema(
       type: Number,
       default: 0,
     },
+    status: {
+      type: String,
+      default: "pending",
+    },
     image: { type: String, required: [true, "Please tell us your image"] },
     address: { type: String, required: [true, "Please tell us your address"] },
     active: {
       type: Boolean,
       default: true,
     },
+    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
     districtId: { type: mongoose.Schema.Types.ObjectId, ref: "districts" },
     coordinateId: { type: mongoose.Schema.Types.ObjectId, ref: "coordinates" },
     cuisinesId: { type: mongoose.Schema.Types.ObjectId, ref: "cuisines" },

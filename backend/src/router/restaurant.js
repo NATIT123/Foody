@@ -14,6 +14,8 @@ import {
   getNearestRestaurants,
   getRestaurantByViews,
   findRestaurantsByFields,
+  getRestaunrantsPending,
+  updateStatus,
 } from "../controllers/restaurantController.js";
 
 router.post("/getAllRestaurants", getAllRestaurants);
@@ -33,12 +35,14 @@ router.post("/getRestaurantTopDeals", getRestaurantTopDeals);
 
 router.post("/getRestaurantByFields", getRestaurantByFields);
 
-router.get(
-  "/getRestaurantByRecommendation/:restaurantId",
+router.post(
+  "/getRestaurantByRecommendation/:restaurantId/:userId",
   getRestaurantByRecommendation
 );
 
 router.post("/getNearestRestaurants", getNearestRestaurants);
 router.post("/getRestaurantByViews", getRestaurantByViews);
 router.get("/findRestaurantsByFields", findRestaurantsByFields);
+router.get("/getRestaunrantsPending", getRestaunrantsPending);
+router.patch("/updateStatus/:restaurantId", updateStatus);
 export default router;

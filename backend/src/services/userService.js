@@ -38,6 +38,10 @@ class UserService {
   findUsersByFields() {
     return this.userRepo.findUsersByFields();
   }
+
+  getChatBotResponse() {
+    return this.userRepo.getChatBotResponse();
+  }
 }
 
 export default UserService;

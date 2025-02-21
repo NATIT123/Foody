@@ -61,7 +61,7 @@ const Slide = ({
   currentAlbum,
   currentRestaurant,
 }) => {
-  const { state } = useData();
+  const { state, addNotification } = useData();
   const [activeSection, setActiveSection] = useState("Trang chủ");
   const [isMapVisible, setIsMapVisible] = useState(false);
   const navigate = useNavigate(); // Hook điều hướng
@@ -141,6 +141,9 @@ const Slide = ({
               },
               ...currentComment,
             ]);
+            addNotification(
+              `Đã lưu bình luận về nhà hàng ${currentRestaurant.name} thành công`
+            );
             console.log("Success");
           }
         }

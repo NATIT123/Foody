@@ -8,12 +8,11 @@ import {
 import mongoose from "mongoose";
 import fetch from "node-fetch";
 // Import the required modules and clients
-import { GetRecommendationsCommand } from "@aws-sdk/client-personalize-runtime";
-import { personalizeRuntimeClient } from "../libs/personalizeClients.js"; // Ensure this is correctly implemented
 import catchAsync from "../utils/catchAsync.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
 import AppError from "../utils/appError.js";
+import axios from "axios";
 
 class RestaurantRepository {
   constructor(restaurantModel, coordinateModel) {
@@ -636,52 +635,55 @@ class RestaurantRepository {
   }
   getRestaurantByRecommendation() {
     return catchAsync(async (req, res, next) => {
-      const restaurantId = req.params.restaurantId;
-      if (!restaurantId.match(/^[0-9a-fA-F]{24}$/)) {
-        return next(
-          new AppError(
-            customResourceResponse.notValidId.message,
-            customResourceResponse.notValidId.statusCode
-          )
-        );
-      }
-      const params = {
-        campaignArn:
-          "arn:aws:personalize:ap-southeast-1:390403892573:campaign/SIMS-campaign",
-        itemId: restaurantId, // Dynamic restaurantId
-        numResults: 5, // Optional parameter
-      };
-
       try {
-        const response = await personalizeRuntimeClient.send(
-          new GetRecommendationsCommand(params)
-        );
-        if (!response?.itemList || response?.itemList === 0) {
+        const { restaurantId, userId } = req.params;
+        const { top, userLat, userLon } = req.body;
+
+        // Kiểm tra định dạng ID hợp lệ
+        if (
+          !/^[0-9a-fA-F]{24}$/.test(restaurantId) ||
+          !/^[0-9a-fA-F]{24}$/.test(userId)
+        ) {
           return next(
             new AppError(
-              customResourceResponse.recordNotFound.message,
-              customResourceResponse.recordNotFound.statusCode
+              customResourceResponse.notValidId.message,
+              customResourceResponse.notValidId.statusCode
             )
           );
         }
-        const results = await Promise.all(
-          response.itemList.map(({ itemId }) => getOneFetch(itemId))
+
+        // Gọi API lấy danh sách nhà hàng được đề xuất
+        const response = await axios.get(
+          "http://127.0.0.1:8001/recommendations",
+          {
+            params: {
+              user_id: userId,
+              current_restaurant_id: restaurantId,
+              top_n: top,
+              user_lat: userLat,
+              user_lon: userLon,
+            },
+          }
         );
 
-        // Gửi phản hồi
+        if (!response.data || !Array.isArray(response.data)) {
+          return next(
+            new AppError("Invalid response from recommendation API", 500)
+          );
+        }
+
+        // Trả về phản hồi
         res.status(customResourceResponse.success.statusCode).json({
           message: customResourceResponse.success.message,
           status: "success",
-          results: results.length,
-          data: {
-            data: results,
-          },
+          results: response.data.length,
+          data: { data: response.data },
         });
-        return response;
-      } catch (err) {
+      } catch (error) {
+        console.error("Error fetching recommended restaurants:", error);
         return next(
           new AppError(
-            err.message,
+            customResourceResponse.serverError.message,
             customResourceResponse.serverError.statusCode
           )
         );
@@ -1228,12 +1230,206 @@ class RestaurantRepository {
       }
     });
   }
-}
-async function getOneFetch(itemId) {
-  const response = await fetch(
-    `http://localhost:3000/api/v1/restaurant/getRestaurant/${itemId}`
-  );
-  const data = await response.json();
-  return data.data.data;
+
+  getRestaunrantsPending() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const page = Math.max(req.query.page * 1 || 1, 1); // Ensure page is a positive integer
+        const limit = Math.max(req.query?.limit * 1 || 100, 1); // Ensure limit is a positive integer
+        const skip = (page - 1) * limit;
+
+        const restaurants = await this.restaurantModel.aggregate([
+          {
+            $match: { active: true, status: "pending" },
+          },
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $lookup: {
+              from: "subcategories",
+              localField: "subCategoryId",
+              foreignField: "_id",
+              as: "subCategoryDetails",
+            },
+          },
+          {
+            $lookup: {
+              from: "districts",
+              localField: "districtId",
+              foreignField: "_id",
+              as: "districtDetails",
+            },
+          },
+          {
+            $lookup: {
+              from: "comments",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user",
+                  },
+                },
+                {
+                  $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+                },
+                { $sort: { createdAt: -1 } },
+                {
+                  $project: {
+                    rate: 1,
+                    type: 1,
+                    description: 1,
+                    "user.fullname": 1,
+                    "user.photo": 1,
+                    "user._id": 1,
+                  },
+                },
+              ],
+              as: "comments",
+            },
+          },
+
+          {
+            $lookup: {
+              from: "albums",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $match: {
+                    image: { $not: { $regex: "^data:image/png;base64," } },
+                  },
+                },
+                { $sort: { createdAt: -1 } },
+                { $project: { _id: 1, image: 1 } },
+              ],
+              as: "albums",
+            },
+          },
+
+          {
+            $addFields: {
+              commentCount: { $size: "$comments" },
+              albumCount: { $size: "$albums" },
+              averageRate: {
+                $round: [
+                  {
+                    $divide: [
+                      {
+                        $add: [
+                          { $ifNull: ["$qualityRate", 0] },
+                          { $ifNull: ["$serviceRate", 0] },
+                          { $ifNull: ["$locationRate", 0] },
+                          { $ifNull: ["$priceRate", 0] },
+                          { $ifNull: ["$spaceRate", 0] },
+                        ],
+                      },
+                      5,
+                    ],
+                  },
+                  1,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              averageRate: 1,
+              subCategory: { $arrayElemAt: ["$subCategoryDetails.name", 0] }, // Get the first element of the subCategoryDetails array
+              timeOpen: 1,
+              priceRange: 1,
+              serviceRate: 1,
+              locationRate: 1,
+              priceRate: 1,
+              spaceRate: 1,
+              qualityRate: 1,
+              name: 1,
+              address: 1,
+              image: 1,
+              commentCount: 1,
+              albumCount: 1,
+              comments: 1,
+              albums: 1,
+            },
+          },
+          {
+            $facet: {
+              metadata: [{ $count: "total" }],
+              data: [{ $skip: skip }, { $limit: limit }], // Paging
+            },
+          },
+        ]);
+
+        const total = restaurants[0].metadata[0]?.total || 0;
+        const totalPages = Math.ceil(total / limit);
+        const docs = restaurants[0].data;
+
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: docs.length,
+          totalPages: totalPages,
+          currentPage: page,
+          data: { data: docs },
+        });
+      } catch (error) {
+        console.error("Error fetching restaurants", error);
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
+  updateStatus() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const { restaurantId } = req.params;
+        const { status } = req.body;
+
+        if (!restaurantId.match(/^[0-9a-fA-F]{24}$/)) {
+          return next(
+            new AppError(
+              customResourceResponse.notValidId.message,
+              customResourceResponse.notValidId.statusCode
+            )
+          );
+        }
+
+        if (!["approved", "rejected"].includes(status)) {
+          return next(new AppError("Invalid status value", 400));
+        }
+
+        const updatedRestaurant = await this.restaurantModel.findByIdAndUpdate(
+          restaurantId,
+          { status },
+          { new: true, runValidators: true }
+        );
+
+        if (!updatedRestaurant) {
+          return next(new AppError("Restaurant not found", 404));
+        }
+
+        return res.status(200).json({
+          message: "Status updated successfully",
+          status: "success",
+          data: updatedRestaurant,
+        });
+      } catch (error) {
+        console.error("Error updating restaurant status", error);
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
 }
 export default RestaurantRepository;

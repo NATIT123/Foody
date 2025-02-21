@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
+import AdminRestaurantApproval from "./AdminApproval";
 import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -33,10 +34,15 @@ const Dashboard = () => {
   const { state, logout } = useData();
   const navigate = useNavigate(); // For navigation to the home page
   useEffect(() => {
-    if (state.user && !state.loading) {
-      if (state.user?.role !== "admin") navigate("/");
+    if (!state.loading) {
+      if (
+        !state.user ||
+        (state.user.role !== "admin" && state.user.role !== "owner")
+      ) {
+        navigate("/");
+      }
     }
-  }, [navigate, state.user, state.loading]);
+  }, [state.loading, state.user, navigate]);
 
   const [activeTab, setActiveTab] = useState("dashboard");
 
@@ -181,6 +187,11 @@ const Dashboard = () => {
           {activeTab === "Quản lí nhà hàng" && (
             <div>
               <RestaurantManagement searchQuery={searchQuery} />
+            </div>
+          )}
+          {activeTab === "Xét duyệt nhà hàng" && (
+            <div>
+              <AdminRestaurantApproval />
             </div>
           )}
         </div>

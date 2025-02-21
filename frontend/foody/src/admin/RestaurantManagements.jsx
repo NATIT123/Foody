@@ -12,15 +12,12 @@ const RestaurantManagement = ({ searchQuery }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [showModal, setShowModal] = useState(false);
-
   const [foodData, setFoodData] = useState([]);
+  const [restaurant, setRestaurant] = useState({});
   const handleUpdateFood = (updatedFood) => {
-    setFoodData((prev) => ({
-      ...prev,
-      foods: prev.foods.map((food) =>
-        food.id === updatedFood.id ? updatedFood : food
-      ),
-    }));
+    setFoodData((prev) =>
+      prev.map((food) => (food._id === updatedFood._id ? updatedFood : food))
+    );
   };
   const { state } = useData();
   useEffect(() => {
@@ -97,7 +94,7 @@ const RestaurantManagement = ({ searchQuery }) => {
                 data.status !== "fail" &&
                 data.status !== 400
               ) {
-                console.log(data.data.data);
+                setRestaurant(restaurant);
                 setFoodData(data.data.data);
               }
             }
@@ -369,9 +366,10 @@ const RestaurantManagement = ({ searchQuery }) => {
 
       {restaurants && restaurants.length > 0 && renderPagination()}
       <FoodModal
+        restaurant={restaurant}
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        food={foodData}
+        foods={foodData}
         onUpdateFood={handleUpdateFood}
       />
       {/* Modal */}
