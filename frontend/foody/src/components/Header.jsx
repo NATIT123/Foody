@@ -6,7 +6,7 @@ import { PiBowlFoodFill } from "react-icons/pi";
 import { BiCategoryAlt } from "react-icons/bi";
 import "../css/Header.css"; // Import file CSS tùy chỉnh
 import "bootstrap-icons/font/bootstrap-icons.css";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useData } from "../context/DataContext";
 
 function Header({

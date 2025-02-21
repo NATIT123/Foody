@@ -163,9 +163,6 @@ const ProfilePage = () => {
               <button className="list-group-item list-group-item-action active">
                 <i className="bi bi-person-fill me-2"></i>Cập nhật tài khoản
               </button>
-              <button className="list-group-item list-group-item-action">
-                <i className="bi bi-basket-fill me-2"></i>Thông tin đơn hàng
-              </button>
             </div>
           </div>
 

@@ -53,6 +53,12 @@ class RestaurantService {
   findRestaurantsByFields() {
     return this.restaurantRepo.findRestaurantsByFields();
   }
+  getRestaunrantsPending() {
+    return this.restaurantRepo.getRestaunrantsPending();
+  }
+  updateStatus() {
+    return this.restaurantRepo.updateStatus();
+  }
 }
 
 export default RestaurantService;

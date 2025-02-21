@@ -191,10 +191,11 @@ export const getOne = (Model, popOptions, multipleOptions) =>
     });
   });
 
-export const getAll = (Model, options) =>
+export const getAll = (Model, options, moreOptions) =>
   catchAsync(async (req, res, next) => {
     // To allow for nested GET reviews on tour (hack)
     let filter = { active: true };
+    if (moreOptions) filter = { ...filter, ...moreOptions };
     const totalCount = await Model.countDocuments(filter);
     const totalPages = Math.ceil(totalCount / 100);
     const features = new APIFeatures(Model.find(filter), req.query)

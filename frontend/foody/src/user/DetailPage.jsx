@@ -7,9 +7,11 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { IoIosPricetag } from "react-icons/io";
 import { IoMapSharp } from "react-icons/io5";
+import { useData } from "../context/DataContext";
 
 const DetailPage = () => {
   const { id } = useParams();
+  const { state } = useData();
   const [totalRate, setTotalRate] = useState(0);
   const [searchQuery, setSearchQuery] = useState(""); // State lưu từ khóa tìm kiếm
   const [currentRestaurant, setCurrentRestaurant] = useState([]); // Dữ liệu sau khi lọc
@@ -47,9 +49,12 @@ const DetailPage = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.data?.data) {
-          setCurrentFood(data.data.data); // Lưu danh sách restaurant vào state
+          if (data.status === "success") {
+            setCurrentFood(data.data.data); // Lưu danh sách restaurant vào state
+          }
         }
       })
+
       .catch((error) => {
         console.error("Error fetching provinces:", error);
       });
@@ -63,8 +68,9 @@ const DetailPage = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.data?.data) {
-          console.log(data.data.data);
-          setCurrentComment(data.data.data); // Lưu danh sách restaurant vào state
+          if (data.status === "success") {
+            setCurrentComment(data.data.data); // Lưu danh sách restaurant vào state
+          }
         }
       })
       .catch((error) => {
@@ -78,7 +84,9 @@ const DetailPage = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.data?.data) {
-          setCurrentAlbum(data.data.data); // Lưu danh sách restaurant vào state
+          if (data.status === "success") {
+            setCurrentAlbum(data.data.data); // Lưu danh sách restaurant vào state
+          }
         }
       })
       .catch((error) => {
@@ -87,20 +95,46 @@ const DetailPage = () => {
   }, [id]);
 
   // Fetch API lấy detail restaurant
-  // useEffect(() => {
-  //   fetch(
-  //     `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByRecommendation/${id}`
-  //   )
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       if (data.data.data) {
-  //         setSuggestRestaurants(data.data.data); // Lưu danh sách restaurant vào state
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching restaurants:", error);
-  //     });
-  // }, [id]);
+  useEffect(() => {
+    if (!state.user) return;
+
+    // Lấy tọa độ của người dùng từ trình duyệt
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        fetch(
+          `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByRecommendation/${id}/${state.user._id}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${state.accessToken}`,
+            },
+            body: JSON.stringify({
+              top: 5,
+              userLat: latitude,
+              userLon: longitude,
+            }),
+          }
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.data.data) {
+              if (data.status === "success") {
+                setSuggestRestaurants(data.data.data); // Lưu danh sách restaurant vào state
+              }
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching restaurants:", error);
+          });
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+      }
+    );
+  }, [id]);
 
   const handleSearch = (query) => {
     setSearchQuery(query); // Cập nhật state từ khóa tìm kiếm

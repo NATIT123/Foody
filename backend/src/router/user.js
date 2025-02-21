@@ -10,6 +10,7 @@ import {
   getUserDetails,
   getAllDetails,
   findUsersByFields,
+  getChatBotResponse,
 } from "../controllers/userController.js";
 
 import {
@@ -75,5 +76,6 @@ router.post("/addUser", addUser);
 router.delete("/deleteUser/:id", deleteUserById);
 router.patch("/updateUser/:id", updateUserById);
 router.get("/getUser/:id", getUserById);
+router.get("/getChatResponse", getChatBotResponse);
 
 export default router;

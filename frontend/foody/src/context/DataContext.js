@@ -298,15 +298,13 @@ export const DataProvider = ({ children }) => {
         }
       );
       const data = await response.json();
-      if (data.status !== "fail" && data.status !== "error") {
-        [
-          "access_token",
-          "city",
-          "category",
-          "cuisines",
-          "categories",
-          "cities",
-        ].forEach(localStorage.removeItem);
+      if (
+        data.status !== "fail" &&
+        data.status !== "error" &&
+        data.status !== 400
+      ) {
+        ["access_token"].forEach((key) => localStorage.removeItem(key));
+        window.location.reload();
         dispatch({ type: "LOGOUT" });
       }
     } catch (error) {

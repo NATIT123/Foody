@@ -138,9 +138,6 @@ importData(CommentModel, "comments");
 ///Album
 app.use("/api/v1/album", albumRoute);
 importData(AlbumModel, "albums");
-//Country
-app.use("/api/v1/country", countryRoute);
-importData(CountryModel, "country");
 
 //City
 app.use("/api/v1/city", cityRoute);
@@ -169,6 +166,10 @@ importData(CoordinateModel, "coordinates");
 //FavoriteRestaurant
 app.use("/api/v1/favorite", favoriteRestaurantRoute);
 importData(FavoriteRestaurantModel, "favoriteRestaurants");
+
+//Country
+app.use("/api/v1/country", countryRoute);
+importData(CountryModel, "country");
 
 //Notification
 app.use("/api/v1/notification", notificationRoute);

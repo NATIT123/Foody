@@ -1,31 +1,100 @@
 import React, { useState } from "react";
 import { Modal, Button, Card, Form } from "react-bootstrap";
 
-const FoodModal = ({ isOpen, onClose, food, name }) => {
-  const [editFood, setEditFood] = useState(null);
+const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
+  const [image, setImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
+
+  const [priceDiscount, setPirceDiscount] = useState(0);
+  const [priceOriginal, setPriceOriginal] = useState(0);
+  const [name, setName] = useState("");
+  const [id, setId] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
   const handleEditClick = (food) => {
-    setEditFood({ ...food }); // Copy thông tin món ăn để chỉnh sửa
+    setShowEditModal(true);
+    setId(food._id);
+    setName(food.name);
+    setPriceOriginal(food.priceOriginal.replace("đ", ""));
+    setPirceDiscount(
+      food.priceDiscount !== "empty" ? food.priceDiscount.replace("đ", "") : 0
+    );
+
+    // Nếu có ảnh, lưu vào previewImage
+    setPreviewImage(food.image || "");
+    setImage(null); // Đặt lại file ảnh
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreviewImage(URL.createObjectURL(file)); // Hiển thị ảnh xem trước
+    }
   };
 
   // Xử lý cập nhật giá trị input
   const handleChange = (e) => {
-    setEditFood({ ...editFood, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "originalPrice") {
+      setPriceOriginal(value);
+    } else if (name === "discountPrice") {
+      setPirceDiscount(value);
+    } else {
+      setName(value);
+    }
   };
 
   // Xử lý lưu chỉnh sửa
   const handleSave = () => {
-    setEditFood(null); // Đóng form edit
+    if (!id) return;
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("priceOriginal", `${priceOriginal}đ`);
+    formData.append("priceDiscount", `${priceDiscount}đ`);
+
+    if (image) {
+      formData.append("image", image); // Chỉ gửi ảnh nếu người dùng chọn mới
+    }
+
+    fetch(`${process.env.REACT_APP_BASE_URL}/food/updateFood/${id}`, {
+      method: "PATCH",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (
+          data &&
+          data.status !== "fail" &&
+          data.status !== "error" &&
+          data.status !== 400
+        ) {
+          const updatedFood = {
+            _id: data.data.food._id,
+            restaurantId: restaurant._id,
+            name,
+            priceOriginal: `${priceOriginal}đ`,
+            priceDiscount: `${priceDiscount}đ`,
+            image: data.data.food.image,
+          };
+          onUpdateFood(updatedFood); // Cập nhật món ăn trong danh sách
+          console.log("Update food successfully");
+        }
+      })
+      .catch((error) => console.error("Error updating food:", error));
+
+    setShowEditModal(false);
   };
   return (
     <Modal show={isOpen} onHide={onClose} size="lg" centered>
       <Modal.Header closeButton>
-        <Modal.Title>{food?.name} - Menu</Modal.Title>
+        <Modal.Title>{restaurant.name} - Menu</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div className="row">
-          {food && food.length > 0 ? (
-            food.map((food) => (
-              <div key={food.id} className="col-md-6 mb-3">
+          {foods && foods.length > 0 ? (
+            foods.map((food) => (
+              <div key={food._id} className="col-md-6 mb-3">
                 <Card>
                   <Card.Img
                     variant="top"
@@ -61,19 +130,40 @@ const FoodModal = ({ isOpen, onClose, food, name }) => {
       </Modal.Body>
 
       {/* Form Edit */}
-      {editFood && (
-        <Modal show={true} onHide={() => setEditFood(null)} centered>
+      {showEditModal && (
+        <Modal show={true} onHide={() => setShowEditModal(false)} centered>
           <Modal.Header closeButton>
             <Modal.Title>Chỉnh sửa món ăn</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form>
               <Form.Group className="mb-3">
+                <Form.Label>Hình ảnh</Form.Label>
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </Form.Group>
+              {previewImage && (
+                <div className="text-center mb-3">
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+              )}
+              <Form.Group className="mb-3">
                 <Form.Label>Tên món ăn</Form.Label>
                 <Form.Control
                   type="text"
                   name="name"
-                  value={editFood.name}
+                  value={name}
                   onChange={handleChange}
                 />
               </Form.Group>
@@ -82,7 +172,7 @@ const FoodModal = ({ isOpen, onClose, food, name }) => {
                 <Form.Control
                   type="number"
                   name="originalPrice"
-                  value={editFood.priceOriginal}
+                  value={priceOriginal}
                   onChange={handleChange}
                 />
               </Form.Group>
@@ -91,11 +181,11 @@ const FoodModal = ({ isOpen, onClose, food, name }) => {
                 <Form.Control
                   type="number"
                   name="discountPrice"
-                  value={editFood.priceDiscount}
+                  value={priceDiscount}
                   onChange={handleChange}
                 />
               </Form.Group>
-              <Button variant="success" onClick={handleSave}>
+              <Button variant="success" onClick={() => handleSave()}>
                 Lưu
               </Button>
             </Form>

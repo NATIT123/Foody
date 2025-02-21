@@ -24,30 +24,36 @@ const Sidebar = ({ setActiveTab }) => {
               <span>Dashboard</span>
             </button>
           </li>
-          <li>
+          <li className="nav-item">
             <button
               onClick={() => setActiveTab("Quản lí người dùng")}
               className="btn nav-link text-dark d-flex align-items-center w-100"
             >
-              <i className="bi bi-table me-2 text-secondary"></i>
+              <i className="bi bi-people-fill me-2 text-primary"></i>
               <span>Quản lí người dùng</span>
             </button>
           </li>
-          <li>
-  <button
-    onClick={() => setActiveTab("Quản lí nhà hàng")}
-    className="btn nav-link text-dark d-flex align-items-center w-100"
-  >
-    {/* Thay đổi icon ở đây */}
-    <i className="bi bi-shop me-2 text-secondary"></i>
-    <span>Quản lí nhà hàng</span>
-  </button>
-</li>
-
+          <li className="nav-item">
+            <button
+              onClick={() => setActiveTab("Quản lí nhà hàng")}
+              className="btn nav-link text-dark d-flex align-items-center w-100"
+            >
+              {/* Thay đổi icon ở đây */}
+              <i className="bi bi-shop me-2 text-success"></i>
+              <span>Quản lí nhà hàng</span>
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              onClick={() => setActiveTab("Xét duyệt nhà hàng")}
+              className="btn nav-link text-dark d-flex align-items-center w-100"
+            >
+              {/* Thay đổi icon ở đây */}
+              <i className="bi bi-check2-circle me-2 text-danger"></i>
+              <span>Xét duyệt nhà hàng</span>
+            </button>
+          </li>
         </ul>
-       
-
-       
       </div>
 
       {/* Sidebar cho màn hình nhỏ */}
@@ -107,9 +113,17 @@ const Sidebar = ({ setActiveTab }) => {
                   <span>Quản lí nhà hàng</span>
                 </button>
               </li>
+              <li className="nav-item">
+                <button
+                  onClick={() => setActiveTab("Xét duyệt nhà hàng")}
+                  className="btn nav-link text-dark d-flex align-items-center w-100"
+                >
+                  {/* Thay đổi icon ở đây */}
+                  <i className="bi bi-check2-circle me-2 text-danger"></i>
+                  <span>Xét duyệt nhà hàng</span>
+                </button>
+              </li>
             </ul>
-         
-         
           </div>
         </div>
       </div>

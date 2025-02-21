@@ -156,8 +156,8 @@ const Grid = () => {
   }, [currentPage, state, filtersState]);
 
   const fetchFavoriteRestaurants = useCallback(() => {
-    if (!state.user || !state.user._id) return;
     setCurrentItems([]);
+    if (!state.user || !state.user._id) return;
     fetch(
       `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`,
       {
@@ -227,6 +227,7 @@ const Grid = () => {
     if (activeCategory === categories[0]) {
       fetchRestaurants();
     } else if (activeCategory === categories[2]) {
+      handleShowModalLogin();
       fetchFavoriteRestaurants();
     } else if (activeCategory === categories[1]) {
       fetchNearestRestaurants();
@@ -322,8 +323,8 @@ const Grid = () => {
   }, [currentPageEat, state, filtersState]);
 
   const fetchFavoriteRestaurantsEat = useCallback(() => {
-    if (!state.user || !state.user._id) return;
     setItemEat([]);
+    if (!state.user || !state.user._id) return;
     fetch(
       `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPageEat}`,
       {
@@ -366,6 +367,7 @@ const Grid = () => {
     } else if (activeCategoryEat === categoriesEat[1]) {
       fetchMostViewed();
     } else if (activeCategoryEat === categoriesEat[3]) {
+      handleShowModalLogin();
       fetchFavoriteRestaurantsEat();
     }
   }, [

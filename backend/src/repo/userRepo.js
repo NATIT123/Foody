@@ -10,6 +10,7 @@ import catchAsync from "../utils/catchAsync.js";
 import { v2 as cloudinary } from "cloudinary";
 import AppError from "../utils/appError.js";
 import customResourceResponse from "../utils/constant.js";
+import axios from "axios";
 class UserRepository {
   constructor(userModel) {
     this.userModel = userModel;
@@ -354,6 +355,30 @@ class UserRepository {
       } catch (err) {
         console.error("Error fetching users", err);
         return next(new AppError("Server error", 500));
+      }
+    });
+  }
+
+  getChatBotResponse() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8005/chatbot", {
+          params: {
+            query: query,
+            user_lat: userLat,
+            user_lon: userLon,
+          },
+        });
+
+        console.log("Chatbot response:", response.data);
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          data: { data: response.data },
+        });
+      } catch (error) {
+        console.error("Error calling chatbot API:", error);
+        return new AppError("Không thể nhận dữ liệu từ chatbot.", 500);
       }
     });
   }

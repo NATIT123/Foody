@@ -34,3 +34,8 @@ export const getRestaurantByViews = restaurantService.getRestaurantByViews();
 
 export const findRestaurantsByFields =
   restaurantService.findRestaurantsByFields();
+
+export const getRestaunrantsPending =
+  restaurantService.getRestaunrantsPending();
+
+export const updateStatus = restaurantService.updateStatus();
