@@ -57,7 +57,11 @@ const LoginPage = () => {
               setAccessToken(data.access_token);
 
               setShowModal(false);
-              if (data.data.data.role === "admin") {
+              console.log(data);
+              if (
+                data.data.user.role === "admin" ||
+                data.data.user.role === "owner"
+              ) {
                 navigate("/dashboard");
               } else {
                 navigate("/");

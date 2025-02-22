@@ -8,7 +8,7 @@ import { useParams } from "react-router-dom";
 import { IoIosPricetag } from "react-icons/io";
 import { IoMapSharp } from "react-icons/io5";
 import { useData } from "../context/DataContext";
-
+import axios from "axios";
 const DetailPage = () => {
   const { id } = useParams();
   const { state } = useData();
@@ -98,43 +98,41 @@ const DetailPage = () => {
   useEffect(() => {
     if (!state.user) return;
 
-    // Lấy tọa độ của người dùng từ trình duyệt
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
 
-        fetch(
-          `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByRecommendation/${id}/${state.user._id}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${state.accessToken}`,
-            },
-            body: JSON.stringify({
-              top: 5,
-              userLat: latitude,
-              userLon: longitude,
-            }),
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.data.data) {
-              if (data.status === "success") {
-                setSuggestRestaurants(data.data.data); // Lưu danh sách restaurant vào state
-              }
+        try {
+          const response = await axios.get(
+            "http://127.0.0.1:8005/recommendations",
+            {
+              params: {
+                user_id: state.user._id,
+                current_restaurant_id: id,
+                top_n: 5,
+                user_lat: latitude,
+                user_lon: longitude,
+              },
             }
-          })
-          .catch((error) => {
-            console.error("Error fetching restaurants:", error);
-          });
+          );
+
+          console.log("API gợi ý nhà hàng:", response);
+
+          if (
+            response.data &&
+            response.data.recommended_restaurants.length > 0
+          ) {
+            setSuggestRestaurants(response.data.recommended_restaurants);
+          }
+        } catch (error) {
+          console.error("Lỗi khi gọi API gợi ý nhà hàng:", error);
+        }
       },
       (error) => {
-        console.error("Error getting location:", error);
+        console.error("Lỗi khi lấy vị trí:", error);
       }
     );
-  }, [id]);
+  }, [id, state.user]);
 
   const handleSearch = (query) => {
     setSearchQuery(query); // Cập nhật state từ khóa tìm kiếm

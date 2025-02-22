@@ -1,6 +1,7 @@
 import React from "react";
-
+import { useData } from "../context/DataContext";
 const Sidebar = ({ setActiveTab }) => {
+  const { state } = useData();
   return (
     <>
       {/* Sidebar cố định trên màn hình lớn */}
@@ -24,15 +25,17 @@ const Sidebar = ({ setActiveTab }) => {
               <span>Dashboard</span>
             </button>
           </li>
-          <li className="nav-item">
-            <button
-              onClick={() => setActiveTab("Quản lí người dùng")}
-              className="btn nav-link text-dark d-flex align-items-center w-100"
-            >
-              <i className="bi bi-people-fill me-2 text-primary"></i>
-              <span>Quản lí người dùng</span>
-            </button>
-          </li>
+          {state.user?.role === "admin" && (
+            <li className="nav-item">
+              <button
+                onClick={() => setActiveTab("Quản lí người dùng")}
+                className="btn nav-link text-dark d-flex align-items-center w-100"
+              >
+                <i className="bi bi-people-fill me-2 text-primary"></i>
+                <span>Quản lí người dùng</span>
+              </button>
+            </li>
+          )}
           <li className="nav-item">
             <button
               onClick={() => setActiveTab("Quản lí nhà hàng")}
@@ -43,16 +46,18 @@ const Sidebar = ({ setActiveTab }) => {
               <span>Quản lí nhà hàng</span>
             </button>
           </li>
-          <li className="nav-item">
-            <button
-              onClick={() => setActiveTab("Xét duyệt nhà hàng")}
-              className="btn nav-link text-dark d-flex align-items-center w-100"
-            >
-              {/* Thay đổi icon ở đây */}
-              <i className="bi bi-check2-circle me-2 text-danger"></i>
-              <span>Xét duyệt nhà hàng</span>
-            </button>
-          </li>
+          {state.user?.role === "admin" && (
+            <li className="nav-item">
+              <button
+                onClick={() => setActiveTab("Xét duyệt nhà hàng")}
+                className="btn nav-link text-dark d-flex align-items-center w-100"
+              >
+                {/* Thay đổi icon ở đây */}
+                <i className="bi bi-check2-circle me-2 text-danger"></i>
+                <span>Xét duyệt nhà hàng</span>
+              </button>
+            </li>
+          )}
         </ul>
       </div>
 

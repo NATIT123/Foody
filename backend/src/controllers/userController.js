@@ -25,3 +25,5 @@ export const getAllDetails = userService.getAllDetails();
 export const findUsersByFields = userService.findUsersByFields();
 
 export const getChatBotResponse = userService.getChatBotResponse();
+
+export const findUsersByRole = userService.findUsersByRole();

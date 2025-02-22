@@ -59,6 +59,12 @@ class RestaurantService {
   updateStatus() {
     return this.restaurantRepo.updateStatus();
   }
+  getOwnerRestaurants() {
+    return this.restaurantRepo.getOwnerRestaurants();
+  }
+  fetchRestaurantsByRate() {
+    return this.restaurantRepo.fetchRestaurantsByRate();
+  }
 }
 
 export default RestaurantService;

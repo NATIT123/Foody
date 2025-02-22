@@ -13,7 +13,7 @@ import LoginModal from "./LoginModal.jsx";
 import { useData } from "../context/DataContext.js";
 const categoriesEat = ["Mới nhất", "Lượt xem", "Phổ biến", "Đã lưu"];
 
-const categories = ["Mới nhất", "Gần tôi", "Đã lưu"];
+const categories = ["Mới nhất", "Gần tôi", "Đã lưu", "Đánh giá"];
 const filters = ["- Danh mục -", "- Ẩm thực -", "- Quận/Huyện -"];
 const itemsPerPage = 100;
 
@@ -213,6 +213,34 @@ const Grid = () => {
     );
   }, [currentPage]);
 
+  const fetchRateRestaurants = useCallback(() => {
+    setCurrentItems([]);
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/restaurant/fetchRestaurantsByRate?page=${currentPage}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          selectedCity: state.selectedCity?._id || "",
+          selectedCategory: state.selectedCategory?._id || "",
+          subCategory: filtersState[0],
+          cuisines: filtersState[1],
+          district: filtersState[2],
+        }),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.data) {
+          setTotalPages(data.totalPages);
+          setCurrentItems(data.data.data);
+        }
+      })
+      .catch((error) =>
+        console.error("Error fetching nearest restaurants:", error)
+      );
+  }, [currentPage, state, filtersState]);
+
   useEffect(() => {
     if (
       prevCategory.current === activeCategory &&
@@ -231,6 +259,8 @@ const Grid = () => {
       fetchFavoriteRestaurants();
     } else if (activeCategory === categories[1]) {
       fetchNearestRestaurants();
+    } else if (activeCategory === categories[3]) {
+      fetchRateRestaurants();
     }
   }, [
     activeCategory,

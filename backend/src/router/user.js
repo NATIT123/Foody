@@ -11,6 +11,7 @@ import {
   getAllDetails,
   findUsersByFields,
   getChatBotResponse,
+  findUsersByRole,
 } from "../controllers/userController.js";
 
 import {
@@ -54,6 +55,7 @@ router.patch("/resetPassword/:token", resetPassword);
 router.get("/getUserDetails/:userId", getUserDetails);
 router.get("/getAllDetails", getAllDetails);
 router.get("/findUsersByFields", findUsersByFields);
+router.get("/findUsersByRole", findUsersByRole);
 // ///Protect all route
 router.use(protect);
 router.patch("/updatePassword", getMe, changePassword);

@@ -44,6 +44,7 @@ import CuisinesModel from "./models/CuisinesModel.js";
 import CoordinateModel from "./models/coordinateModel.js";
 import FavoriteRestaurantModel from "./models/favoriteRestaurantModel.js";
 import NotificationModel from "./models/notificationModel.js";
+import { updateDatabase } from "./config/updateDb.js";
 ///Connect DB
 connectDb();
 
@@ -126,6 +127,7 @@ importData(UserModel, "user");
 //Restaurant
 app.use("/api/v1/restaurant", restaurantRoute);
 importData(RestaurantModel, "restaurants");
+// updateDatabase(RestaurantModel, `${__dirname}/data/sorted_restaurants.csv`);
 
 //Food
 app.use("/api/v1/food", foodRoute);
