@@ -35,32 +35,34 @@ const RestaurantDetailSchema = new Schema(
       type: String,
     },
     qualityRate: {
+      default: 0,
       type: Number,
-      required: [true, "Please tell us your qualityRate"],
     },
     serviceRate: {
+      default: 0,
       type: Number,
-      required: [true, "Please tell us your serviceRate"],
     },
     locationRate: {
+      default: 0,
       type: Number,
-      required: [true, "Please tell us your locationRate"],
     },
     priceRate: {
+      default: 0,
       type: Number,
-      required: [true, "Please tell us your priceRate"],
     },
     spaceRate: {
+      default: 0,
       type: Number,
-      required: [true, "Please tell us your spaceRate"],
     },
     timeOpen: {
       type: String,
-      required: [true, "Please tell us your timeOpen"],
     },
     priceRange: {
       type: String,
-      required: [true, "Please tell us your priceRange"],
+    },
+    averageScore: {
+      type: Number,
+      default: 0,
     },
   },
   {

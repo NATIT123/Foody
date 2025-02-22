@@ -26,6 +26,9 @@ class SubCategoryService {
   getSubCategoryByCategory() {
     return this.subCategoryRepo.getSubCategoryByCategory();
   }
+  getSubCategoryByCategorySpecific() {
+    return this.subCategoryRepo.getSubCategoryByCategorySpecific();
+  }
 }
 
 export default SubCategoryService;

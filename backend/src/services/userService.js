@@ -42,6 +42,9 @@ class UserService {
   getChatBotResponse() {
     return this.userRepo.getChatBotResponse();
   }
+  findUsersByRole() {
+    return this.userRepo.findUsersByRole();
+  }
 }
 
 export default UserService;

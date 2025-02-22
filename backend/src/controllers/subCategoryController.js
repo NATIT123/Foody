@@ -19,3 +19,6 @@ export const deleteSubCategoryById = subCategoryService.deleteSubCategoryById();
 
 export const getSubCategoryByCategory =
   subCategoryService.getSubCategoryByCategory();
+
+export const getSubCategoryByCategorySpecific =
+  subCategoryService.getSubCategoryByCategorySpecific();

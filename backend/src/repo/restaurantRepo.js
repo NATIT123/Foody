@@ -6,13 +6,13 @@ import {
   createOne,
 } from "../controllers/handleFactory.js";
 import mongoose from "mongoose";
-import fetch from "node-fetch";
 // Import the required modules and clients
 import catchAsync from "../utils/catchAsync.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
 import AppError from "../utils/appError.js";
 import axios from "axios";
+import { v2 as cloudinary } from "cloudinary";
 
 class RestaurantRepository {
   constructor(restaurantModel, coordinateModel) {
@@ -21,7 +21,279 @@ class RestaurantRepository {
   }
 
   addRestaurant() {
-    return createOne(this.restaurantModel);
+    return catchAsync(async (req, res, next) => {
+      try {
+        const {
+          name,
+          address,
+          timeOpen,
+          priceRange,
+          ownerId,
+          status,
+          cuisinesId,
+          subCategoryId,
+          districtId,
+        } = req.body;
+
+        if (
+          !cuisinesId.match(/^[0-9a-fA-F]{24}$/) ||
+          !subCategoryId.match(/^[0-9a-fA-F]{24}$/)
+        ) {
+          return next(new AppError("User ID không hợp lệ!", 400));
+        }
+
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY,
+          api_secret: process.env.CLOUDINARY_API_SECRET,
+        });
+
+        let imageUrl = "";
+        if (req.file) {
+          const uploadStream = () => {
+            return new Promise((resolve, reject) => {
+              const stream = cloudinary.uploader.upload_stream(
+                { folder: "restaurants" },
+                (error, result) => {
+                  if (error) return reject(new AppError("Upload failed!", 500));
+                  resolve(result.secure_url);
+                }
+              );
+              stream.end(req.file.buffer);
+            });
+          };
+
+          imageUrl = await uploadStream();
+        }
+        const newRestaurant = await this.restaurantModel.create({
+          name,
+          address,
+          timeOpen,
+          priceRange,
+          image: imageUrl,
+          ownerId,
+          status,
+          cuisinesId,
+          subCategoryId,
+          districtId,
+        });
+
+        res.status(201).json({
+          message: "Nhà hàng đã được thêm thành công!",
+          status: "success",
+          restaurant: newRestaurant,
+        });
+      } catch (err) {
+        console.log(err);
+        return next(new AppError("Something went wrong!", 500));
+      }
+    });
+  }
+
+  fetchRestaurantsByRate() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const {
+          subCategory,
+          cuisines,
+          district,
+          selectedCity,
+          selectedCategory,
+        } = req.body;
+        const page = Math.max(req.query.page * 1 || 1, 1); // Ensure page is a positive integer
+        const limit = Math.max(req.query?.limit * 1 || 100, 1); // Ensure limit is a positive integer
+        const skip = (page - 1) * limit;
+        let matchConditions = {};
+
+        // Apply match conditions based on incoming filters
+        if (mongoose.Types.ObjectId.isValid(subCategory)) {
+          matchConditions["subCategoryId"] = new mongoose.Types.ObjectId(
+            subCategory
+          );
+        }
+        if (mongoose.Types.ObjectId.isValid(district)) {
+          matchConditions["districtId"] = new mongoose.Types.ObjectId(district);
+        }
+        if (mongoose.Types.ObjectId.isValid(cuisines)) {
+          matchConditions["cuisinesId"] = new mongoose.Types.ObjectId(cuisines);
+        }
+        if (mongoose.Types.ObjectId.isValid(selectedCategory)) {
+          matchConditions["subCategoryDetails.categoryId"] =
+            new mongoose.Types.ObjectId(selectedCategory);
+        }
+
+        if (mongoose.Types.ObjectId.isValid(selectedCity)) {
+          matchConditions["districtDetails.cityId"] =
+            new mongoose.Types.ObjectId(selectedCity);
+        }
+
+        const restaurants = await this.restaurantModel.aggregate([
+          {
+            $match: { active: true, status: "approved" },
+          },
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $lookup: {
+              from: "subcategories",
+              localField: "subCategoryId",
+              foreignField: "_id",
+              as: "subCategoryDetails",
+            },
+          },
+          {
+            $lookup: {
+              from: "districts",
+              localField: "districtId",
+              foreignField: "_id",
+              as: "districtDetails",
+            },
+          },
+          {
+            $addFields: {
+              cityId: { $arrayElemAt: ["$districtDetails.cityId", 0] }, // Lấy cityId từ district
+            },
+          },
+          {
+            $lookup: {
+              from: "comments",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user",
+                  },
+                },
+                {
+                  $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+                },
+                { $sort: { createdAt: -1 } },
+                {
+                  $project: {
+                    rate: 1,
+                    type: 1,
+                    description: 1,
+                    "user.fullname": 1,
+                    "user.photo": 1,
+                    "user._id": 1,
+                  },
+                },
+              ],
+              as: "comments",
+            },
+          },
+          ...(Object.keys(matchConditions).length > 0
+            ? [{ $match: matchConditions }]
+            : []),
+          {
+            $lookup: {
+              from: "albums",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $match: {
+                    image: { $not: { $regex: "^data:image/png;base64," } },
+                  },
+                },
+                { $sort: { createdAt: -1 } },
+                { $project: { _id: 1, image: 1 } },
+              ],
+              as: "albums",
+            },
+          },
+
+          {
+            $addFields: {
+              commentCount: { $size: "$comments" },
+              albumCount: { $size: "$albums" },
+              averageRate: {
+                $round: [
+                  {
+                    $divide: [
+                      {
+                        $add: [
+                          { $ifNull: ["$qualityRate", 0] },
+                          { $ifNull: ["$serviceRate", 0] },
+                          { $ifNull: ["$locationRate", 0] },
+                          { $ifNull: ["$priceRate", 0] },
+                          { $ifNull: ["$spaceRate", 0] },
+                        ],
+                      },
+                      5,
+                    ],
+                  },
+                  1,
+                ],
+              },
+            },
+          },
+          {
+            $sort: { averageScore: -1 },
+          },
+          {
+            $project: {
+              cityId: 1,
+              districtId: 1,
+              cuisinesId: 1,
+              ownerId: 1,
+              subCategoryId: 1,
+              averageRate: 1,
+              subCategory: { $arrayElemAt: ["$subCategoryDetails.name", 0] }, // Get the first element of the subCategoryDetails array
+              timeOpen: 1,
+              priceRange: 1,
+              serviceRate: 1,
+              locationRate: 1,
+              priceRate: 1,
+              spaceRate: 1,
+              qualityRate: 1,
+              name: 1,
+              address: 1,
+              image: 1,
+              commentCount: 1,
+              albumCount: 1,
+              comments: 1,
+              albums: 1,
+            },
+          },
+          {
+            $facet: {
+              metadata: [{ $count: "total" }],
+              data: [{ $skip: skip }, { $limit: limit }], // Paging
+            },
+          },
+        ]);
+
+        const total = restaurants[0].metadata[0]?.total || 0;
+        const totalPages = Math.ceil(total / limit);
+        const docs = restaurants[0].data;
+
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: docs.length,
+          totalPages: totalPages,
+          currentPage: page,
+          data: { data: docs },
+        });
+      } catch (error) {
+        console.error("Error fetching restaurants", error);
+        return next(new AppError("Server error", 500));
+      }
+    });
   }
 
   getAllRestaurants() {
@@ -63,7 +335,7 @@ class RestaurantRepository {
 
         const restaurants = await this.restaurantModel.aggregate([
           {
-            $match: { active: true },
+            $match: { active: true, status: "approved" },
           },
           {
             $sort: { createdAt: -1 },
@@ -82,6 +354,11 @@ class RestaurantRepository {
               localField: "districtId",
               foreignField: "_id",
               as: "districtDetails",
+            },
+          },
+          {
+            $addFields: {
+              cityId: { $arrayElemAt: ["$districtDetails.cityId", 0] }, // Lấy cityId từ district
             },
           },
           {
@@ -172,6 +449,11 @@ class RestaurantRepository {
           },
           {
             $project: {
+              cityId: 1,
+              districtId: 1,
+              cuisinesId: 1,
+              ownerId: 1,
+              subCategoryId: 1,
               averageRate: 1,
               subCategory: { $arrayElemAt: ["$subCategoryDetails.name", 0] }, // Get the first element of the subCategoryDetails array
               timeOpen: 1,
@@ -216,6 +498,181 @@ class RestaurantRepository {
       }
     });
   }
+  getOwnerRestaurants() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const ownerId = req.params.ownerId;
+        if (!mongoose.Types.ObjectId.isValid(ownerId)) {
+          return next(new AppError("Invalid owner ID", 400));
+        }
+        const page = Math.max(req.query.page * 1 || 1, 1);
+        const limit = Math.max(req.query.limit * 1 || 100, 1);
+        const skip = (page - 1) * limit;
+
+        // Điều kiện chỉ lấy nhà hàng do chủ sở hữu hiện tại tạo
+        let matchConditions = { ownerId: new mongoose.Types.ObjectId(ownerId) };
+
+        const restaurants = await this.restaurantModel.aggregate([
+          {
+            $match: matchConditions,
+          },
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $lookup: {
+              from: "subcategories",
+              localField: "subCategoryId",
+              foreignField: "_id",
+              as: "subCategoryDetails",
+            },
+          },
+          {
+            $lookup: {
+              from: "districts",
+              localField: "districtId",
+              foreignField: "_id",
+              as: "districtDetails",
+            },
+          },
+          {
+            $addFields: {
+              cityId: { $arrayElemAt: ["$districtDetails.cityId", 0] },
+            },
+          },
+          {
+            $lookup: {
+              from: "comments",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user",
+                  },
+                },
+                {
+                  $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+                },
+                { $sort: { createdAt: -1 } },
+                {
+                  $project: {
+                    rate: 1,
+                    type: 1,
+                    description: 1,
+                    "user.fullname": 1,
+                    "user.photo": 1,
+                    "user._id": 1,
+                  },
+                },
+              ],
+              as: "comments",
+            },
+          },
+          {
+            $lookup: {
+              from: "albums",
+              let: { restaurantId: { $toObjectId: "$_id" } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$restaurantId", "$$restaurantId"] },
+                  },
+                },
+                {
+                  $match: {
+                    image: { $not: { $regex: "^data:image/png;base64," } },
+                  },
+                },
+                { $sort: { createdAt: -1 } },
+                { $project: { _id: 1, image: 1 } },
+              ],
+              as: "albums",
+            },
+          },
+          {
+            $addFields: {
+              commentCount: { $size: "$comments" },
+              albumCount: { $size: "$albums" },
+              averageRate: {
+                $round: [
+                  {
+                    $divide: [
+                      {
+                        $add: [
+                          { $ifNull: ["$qualityRate", 0] },
+                          { $ifNull: ["$serviceRate", 0] },
+                          { $ifNull: ["$locationRate", 0] },
+                          { $ifNull: ["$priceRate", 0] },
+                          { $ifNull: ["$spaceRate", 0] },
+                        ],
+                      },
+                      5,
+                    ],
+                  },
+                  1,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              cityId: 1,
+              districtId: 1,
+              cuisinesId: 1,
+              ownerId: 1,
+              subCategoryId: 1,
+              averageRate: 1,
+              subCategory: { $arrayElemAt: ["$subCategoryDetails.name", 0] },
+              timeOpen: 1,
+              priceRange: 1,
+              serviceRate: 1,
+              locationRate: 1,
+              priceRate: 1,
+              spaceRate: 1,
+              qualityRate: 1,
+              name: 1,
+              address: 1,
+              image: 1,
+              commentCount: 1,
+              albumCount: 1,
+              comments: 1,
+              albums: 1,
+            },
+          },
+          {
+            $facet: {
+              metadata: [{ $count: "total" }],
+              data: [{ $skip: skip }, { $limit: limit }],
+            },
+          },
+        ]);
+
+        const total = restaurants[0].metadata[0]?.total || 0;
+        const totalPages = Math.ceil(total / limit);
+        const docs = restaurants[0].data;
+
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: docs.length,
+          totalPages: totalPages,
+          currentPage: page,
+          data: { data: docs },
+        });
+      } catch (error) {
+        console.error("Error fetching owner's restaurants", error);
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
 
   getRestaurantById() {
     return getOne(this.restaurantModel, "districtId", [
@@ -225,7 +682,41 @@ class RestaurantRepository {
   }
 
   updateRestaurantById() {
-    return updateOne(this.restaurantModel);
+    return catchAsync(async (req, res, next) => {
+      try {
+        const { id } = req.params; // Lấy ID của nhà hàng từ URL
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+          return next(new AppError("Invalid restaurant ID", 400));
+        }
+
+        const updateFields = { ...req.body }; // Dữ liệu cập nhật từ request body
+
+        // Kiểm tra xem có hình ảnh mới được tải lên không
+        if (req.file) {
+          updateFields.image = req.file.path;
+        }
+
+        // Cập nhật nhà hàng trong DB
+        const updatedRestaurant = await this.restaurantModel.findByIdAndUpdate(
+          id,
+          updateFields,
+          { new: true, runValidators: true }
+        );
+
+        if (!updatedRestaurant) {
+          return next(new AppError("Restaurant not found", 404));
+        }
+
+        return res.status(200).json({
+          status: "success",
+          message: "Restaurant updated successfully",
+          data: updatedRestaurant,
+        });
+      } catch (error) {
+        console.error("Error updating restaurant:", error);
+        return next(new AppError("Server error", 500));
+      }
+    });
   }
 
   deleteRestaurantById() {

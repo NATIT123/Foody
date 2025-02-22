@@ -37,6 +37,7 @@ class DistrictRepository {
   getDistrictsByCity() {
     return catchAsync(async (req, res, next) => {
       const cityId = req.params.cityId;
+
       if (!cityId.match(/^[0-9a-fA-F]{24}$/)) {
         return next(
           new AppError(
@@ -45,6 +46,7 @@ class DistrictRepository {
           )
         );
       }
+      console.log(cityId);
       const features = new APIFeatures(this.districtModel.find(), req.query)
         .sort()
         .limitFields()
@@ -52,18 +54,8 @@ class DistrictRepository {
       const doc = await features.query;
 
       let results = doc.filter((item) => {
-        return item.cityId?._id.toString() === cityId;
+        return item.cityId?._id.toString() === cityId.toString();
       });
-
-      // SEND RESPONSE
-      if (!doc) {
-        return next(
-          new AppError(
-            customResourceResponse.recordNotFound.message,
-            customResourceResponse.recordNotFound.statusCode
-          )
-        );
-      }
       res.status(customResourceResponse.success.statusCode).json({
         message: customResourceResponse.success.message,
         status: "success",

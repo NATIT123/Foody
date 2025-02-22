@@ -382,5 +382,31 @@ class UserRepository {
       }
     });
   }
+  findUsersByRole() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const userDetails = await this.userModel.aggregate([
+          { $match: { role: "owner" } },
+          {
+            $project: {
+              _id: 1,
+              fullname: 1,
+              address: 1,
+            },
+          },
+        ]);
+
+        res.status(200).json({
+          message: "Request has been processed successfully",
+          status: "success",
+          results: userDetails.length,
+          data: userDetails,
+        });
+      } catch (error) {
+        console.log(error);
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
 }
 export default UserRepository;

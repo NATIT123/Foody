@@ -2,17 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useData } from "../context/DataContext";
 
 const AdminRestaurantApproval = () => {
-  const [pendingRestaurants, setPendingRestaurants] = useState([
-    {
-      _id: "2",
-      name: "Pending Restaurant 1",
-      address: "456 Elm St, City B",
-      timeOpen: "10:00 AM - 9:00 PM",
-      priceRange: "$$$",
-      image: "https://via.placeholder.com/200",
-    },
-  ]);
-  const { state } = useData();
+  const [pendingRestaurants, setPendingRestaurants] = useState([]);
+  const { state, addNotification } = useData();
 
   useEffect(() => {
     fetch(
@@ -48,6 +39,11 @@ const AdminRestaurantApproval = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "success") {
+          addNotification(
+            `Bạn đã ${
+              status === "approved" ? "chấp nhận" : "từ chối"
+            }  thành công`
+          );
           setPendingRestaurants(
             pendingRestaurants.filter((r) => r._id !== restaurantId)
           );

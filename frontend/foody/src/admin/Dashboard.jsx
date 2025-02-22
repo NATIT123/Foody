@@ -34,13 +34,17 @@ const Dashboard = () => {
   const { state, logout } = useData();
   const navigate = useNavigate(); // For navigation to the home page
   useEffect(() => {
-    if (!state.loading) {
-      if (
-        !state.user ||
-        (state.user.role !== "admin" && state.user.role !== "owner")
-      ) {
+    if (state.loading) return; // Chờ loading hoàn tất
+
+    if (
+      !state.user ||
+      (state.user.role !== "admin" && state.user.role !== "owner")
+    ) {
+      const timeout = setTimeout(() => {
         navigate("/");
-      }
+      }, 2000); // Trì hoãn 2 giây
+
+      return () => clearTimeout(timeout); // Xóa timeout nếu component unmount hoặc state thay đổi
     }
   }, [state.loading, state.user, navigate]);
 
@@ -115,7 +119,7 @@ const Dashboard = () => {
 
         {/* Content */}
         <div className="col-md-9 col-sm-12 p-4">
-          {activeTab === "dashboard" && (
+          {state.user?.role === "admin" && activeTab === "dashboard" && (
             <div>
               <h2 className="mb-4">Dashboard</h2>
 
@@ -189,11 +193,12 @@ const Dashboard = () => {
               <RestaurantManagement searchQuery={searchQuery} />
             </div>
           )}
-          {activeTab === "Xét duyệt nhà hàng" && (
-            <div>
-              <AdminRestaurantApproval />
-            </div>
-          )}
+          {state.user?.role === "admin" &&
+            activeTab === "Xét duyệt nhà hàng" && (
+              <div>
+                <AdminRestaurantApproval />
+              </div>
+            )}
         </div>
       </div>
     </div>

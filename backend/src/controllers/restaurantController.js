@@ -39,3 +39,8 @@ export const getRestaunrantsPending =
   restaurantService.getRestaunrantsPending();
 
 export const updateStatus = restaurantService.updateStatus();
+
+export const getOwnerRestaurants = restaurantService.getOwnerRestaurants();
+
+export const fetchRestaurantsByRate =
+  restaurantService.fetchRestaurantsByRate();

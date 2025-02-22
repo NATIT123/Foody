@@ -16,7 +16,7 @@ const UserManagement = ({ searchQuery }) => {
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const { state } = useData();
+  const { state, addNotification } = useData();
 
   useEffect(() => {
     if (searchQuery) {
@@ -49,7 +49,7 @@ const UserManagement = ({ searchQuery }) => {
   }, [searchQuery]);
   useEffect(() => {
     if (!state.accessToken) return;
-
+    if (state.user?.role !== "admin") return;
     fetch(
       `${process.env.REACT_APP_BASE_URL}/user/getAllUsers?page=${currentPage}`,
       {
@@ -115,6 +115,7 @@ const UserManagement = ({ searchQuery }) => {
             data.status !== 400
           ) {
             setUsers(users.filter((user) => user._id !== id));
+            addNotification(`Delete user successfully`);
             console.log("Delete Success");
           }
         }
@@ -177,6 +178,7 @@ const UserManagement = ({ searchQuery }) => {
               setUsers(
                 users.map((user) => (user._id === id ? { ...newUser } : user))
               );
+              addNotification(`Update user successfully`);
               console.log("Update Success");
             }
           }
@@ -219,6 +221,7 @@ const UserManagement = ({ searchQuery }) => {
             ) {
               newUser["_id"] = data.data.data;
               setUsers([newUser, ...users]);
+              addNotification(`Add user successfully`);
               console.log("Add Success");
             }
           }

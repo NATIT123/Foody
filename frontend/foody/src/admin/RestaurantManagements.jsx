@@ -14,38 +14,122 @@ const RestaurantManagement = ({ searchQuery }) => {
   const [showModal, setShowModal] = useState(false);
   const [foodData, setFoodData] = useState([]);
   const [restaurant, setRestaurant] = useState({});
+  const [owners, setOwners] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [cuisines, setCuisines] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
   const handleUpdateFood = (updatedFood) => {
     setFoodData((prev) =>
       prev.map((food) => (food._id === updatedFood._id ? updatedFood : food))
     );
   };
-  const { state } = useData();
   useEffect(() => {
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+    const fetchSubCategories = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BASE_URL}/subCategory/getSubCategoryByCategorySpecific`
+        );
+        const data = await response.json();
+        if (data.status === "success") {
+          setSubCategories(data.data.data);
+        }
+      } catch (error) {
+        console.error("Fetch owners error:", error);
       }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data && data.data && Array.isArray(data.data.data)) {
-          if (!["fail", "error", 400].includes(data.status)) {
-            setTotalPages(data.totalPages);
-            setRestaurants(data.data.data);
+    };
+
+    fetchSubCategories();
+  }, []);
+  useEffect(() => {
+    const fetchOwners = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BASE_URL}/user/findUsersByRole`
+        );
+        const data = await response.json();
+        if (data.status === "success") {
+          setOwners(data.data);
+        }
+      } catch (error) {
+        console.error("Fetch owners error:", error);
+      }
+    };
+
+    fetchOwners();
+  }, []);
+  useEffect(() => {
+    const fetchCuisines = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BASE_URL}/cuisines/getAllCuisines`
+        );
+        const data = await response.json();
+        if (data.status === "success") {
+          setCuisines(data.data.data);
+        }
+      } catch (error) {
+        console.error("Fetch owners error:", error);
+      }
+    };
+
+    fetchCuisines();
+  }, []);
+  const { state, addNotification } = useData();
+  useEffect(() => {
+    if (state.user.role === "admin") {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data && data.data && Array.isArray(data.data.data)) {
+            if (!["fail", "error", 400].includes(data.status)) {
+              setTotalPages(data.totalPages);
+              setRestaurants(data.data.data);
+            }
+          } else {
+            console.error("Invalid API response:", data);
+            navigate("/");
           }
-        } else {
-          console.error("Invalid API response:", data);
-          navigate("/");
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+          if (error.response && [401, 403].includes(error.response.status)) {
+            navigate("/");
+          }
+        });
+    } else if (state.user.role === "owner") {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getOwnerRestaurants/${state.user._id}?page=${currentPage}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching restaurants:", error);
-        if (error.response && [401, 403].includes(error.response.status)) {
-          navigate("/");
-        }
-      });
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data && data.data && Array.isArray(data.data.data)) {
+            if (!["fail", "error", 400].includes(data.status)) {
+              setTotalPages(data.totalPages);
+              setRestaurants(data.data.data);
+            }
+          } else {
+            console.error("Invalid API response:", data);
+            navigate("/");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching restaurants:", error);
+          if (error.response && [401, 403].includes(error.response.status)) {
+            navigate("/");
+          }
+        });
+    }
   }, [currentPage]);
 
   useEffect(() => {
@@ -75,6 +159,35 @@ const RestaurantManagement = ({ searchQuery }) => {
         });
     }
   }, [searchQuery]);
+
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_BASE_URL}/city/getAllCity`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "success") {
+          setCities(data.data.data);
+        }
+      })
+      .catch((error) => console.log("Fetch error: ", error));
+  }, []);
+
+  const fetchDistrictsByCity = (cityId) => {
+    if (!cityId) {
+      setDistricts([]);
+      return;
+    }
+
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/district/getDistrictsByCity/${cityId}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "success") {
+          setDistricts(data.data.data);
+        }
+      })
+      .catch((error) => console.log("Fetch error: ", error));
+  };
 
   const handleOpenModal = (mode, restaurant = null) => {
     if (mode === "food") {
@@ -108,7 +221,19 @@ const RestaurantManagement = ({ searchQuery }) => {
     setModalMode(mode);
     setIsModalOpen(true);
     if (restaurant) {
-      setFormData(restaurant);
+      setFormData({ ...restaurant, imagePreview: restaurant.image });
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageURL = URL.createObjectURL(file); // Tạo URL tạm để xem trước ảnh
+      setFormData({
+        ...formData,
+        image: file,
+        imagePreview: imageURL,
+      });
     }
   };
 
@@ -145,6 +270,7 @@ const RestaurantManagement = ({ searchQuery }) => {
                 (restaurant) => restaurant._id !== formData._id
               )
             );
+            addNotification(`Bạn đã xóa nhà hàng ${formData.name} thành công`);
             console.log("Delete Success");
           }
         }
@@ -163,11 +289,16 @@ const RestaurantManagement = ({ searchQuery }) => {
 
   const handleSave = () => {
     if (modalMode === "edit") {
-      const updateRestaurant = {
+      const updatedRestaurant = {
         name: formData.name,
         address: formData.address,
         timeOpen: formData.timeOpen,
         priceRange: formData.priceRange,
+        image: foodData.image,
+        ownerId: formData.ownerId,
+        cuisinesId: formData.cuisinesId,
+        subCategoryId: formData.subCategoryId,
+        districtId: formData.districtId,
       };
       if (!state.accessToken) return;
       fetch(
@@ -178,7 +309,7 @@ const RestaurantManagement = ({ searchQuery }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${state.accessToken}`,
           },
-          body: JSON.stringify(updateRestaurant),
+          body: JSON.stringify(updatedRestaurant),
         }
       )
         .then((response) => response.json())
@@ -191,8 +322,17 @@ const RestaurantManagement = ({ searchQuery }) => {
             ) {
               setRestaurants(
                 restaurants.map((restaurant) =>
-                  restaurant._id === formData._id ? formData : restaurant
+                  restaurant._id === formData._id
+                    ? {
+                        ...updatedRestaurant,
+                        _id: data.data._id.toString(),
+                        image: data.data.image,
+                      }
+                    : restaurant
                 )
+              );
+              addNotification(
+                `Bạn đã sửa nhà hàng ${formData.name} thành công`
               );
               console.log("Update Success");
             }
@@ -202,7 +342,67 @@ const RestaurantManagement = ({ searchQuery }) => {
           console.log(error);
         });
     } else if (modalMode === "add") {
-      setRestaurants([...restaurants, formData]);
+      let status = "approved";
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("address", formData.address);
+      formDataToSend.append("timeOpen", formData.timeOpen);
+      formDataToSend.append("priceRange", formData.priceRange);
+      formDataToSend.append("image", formData.image);
+      formDataToSend.append("ownerId", formData.ownerId);
+      formDataToSend.append("subCategoryId", formData.subCategoryId);
+      formDataToSend.append("cuisinesId", formData.cuisinesId);
+      formDataToSend.append("districtId", formData.districtId);
+      if (state.user.role === "owner") status = "pending";
+      formDataToSend.append("status", status);
+      const addRestaurant = {
+        name: formData.name,
+        address: formData.address,
+        timeOpen: formData.timeOpen,
+        priceRange: formData.priceRange,
+        image: foodData.image,
+        ownerId: formData.ownerId,
+        status: status,
+        cuisinesId: formData.cuisinesId,
+        subCategoryId: formData.subCategoryId,
+        districtId: formData.districtId,
+      };
+      if (!state.accessToken) return;
+      fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/addRestaurant`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`,
+        },
+        body: formDataToSend,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            if (
+              data.status !== "fail" &&
+              data.status !== "error" &&
+              data.status !== 400
+            ) {
+              if (state.user.role === "admin") {
+                setRestaurants([
+                  {
+                    ...addRestaurant,
+                    _id: data.restaurant._id.toString(),
+                    image: data.restaurant.image,
+                  },
+                  ...restaurants,
+                ]);
+              }
+              addNotification(
+                `Bạn đã thêm nhà hàng ${formData.name} thành công`
+              );
+              console.log("Add Success");
+            }
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
     handleCloseModal();
   };
@@ -304,18 +504,22 @@ const RestaurantManagement = ({ searchQuery }) => {
                       >
                         Edit
                       </button>
-                      <button
-                        className="btn btn-danger btn-sm me-2"
-                        onClick={() => handleDeleteRestaurant(restaurant)}
-                      >
-                        Delete
-                      </button>
-                      <button
-                        className="btn btn-success btn-sm me-2"
-                        onClick={() => handleOpenModal("food", restaurant)}
-                      >
-                        Manage Food
-                      </button>
+                      {state.user.role === "admin" && (
+                        <button
+                          className="btn btn-danger btn-sm me-2"
+                          onClick={() => handleDeleteRestaurant(restaurant)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                      {state.user.role === "owner" && (
+                        <button
+                          className="btn btn-success btn-sm me-2"
+                          onClick={() => handleOpenModal("food", restaurant)}
+                        >
+                          Manage Food
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -401,7 +605,7 @@ const RestaurantManagement = ({ searchQuery }) => {
                       <strong>Location:</strong> {formData.address || ""}
                     </p>
                     <p>
-                      <strong>Open Hours:</strong> {formData.openHours || ""}
+                      <strong>Open Hours:</strong> {formData.timeOpen || ""}
                     </p>
                     <p>
                       <strong>Price Range:</strong> {formData.priceRange}
@@ -451,20 +655,90 @@ const RestaurantManagement = ({ searchQuery }) => {
                       />
                     </div>
                     <div className="mb-3">
-                      <label className="form-label">Categories</label>
+                      <label className="form-label">Restaurant Image</label>
                       <input
-                        disabled={modalMode === "edit"}
-                        type="text"
+                        type="file"
                         className="form-control"
-                        value={formData.subCategory}
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </div>
+
+                    {formData.imagePreview && (
+                      <div className="mb-3">
+                        <label className="form-label">Preview</label>
+                        <img
+                          src={formData.imagePreview}
+                          alt="Preview"
+                          className="img-thumbnail"
+                          style={{ maxWidth: "200px", marginTop: "10px" }}
+                        />
+                      </div>
+                    )}
+                    {/* Chọn Thành Phố */}
+                    <div className="mb-3">
+                      <label className="form-label">City</label>
+                      <select
+                        className="form-control"
+                        value={formData.cityId}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            cityId: e.target.value,
+                            districtId: formData?.districtId || "",
+                          });
+                          fetchDistrictsByCity(e.target.value);
+                        }}
+                      >
+                        <option value="">Select a city</option>
+                        {cities.map((city) => (
+                          <option key={city._id} value={city._id}>
+                            {city.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Chọn Quận */}
+                    <div className="mb-3">
+                      <label className="form-label">District</label>
+                      <select
+                        className="form-control"
+                        value={formData.districtId}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            categories: e.target.value,
+                            districtId: e.target.value,
                           })
                         }
-                      />
+                        disabled={!formData.cityId}
+                      >
+                        <option value="">Select a district</option>
+                        {districts.map((district) => (
+                          <option key={district._id} value={district._id}>
+                            {district.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
+                    <div className="mb-3">
+                      <label className="form-label">Owner</label>
+                      <select
+                        className="form-control"
+                        value={formData.ownerId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, ownerId: e.target.value })
+                        }
+                      >
+                        <option value="">Select an owner</option>
+                        {owners.map((owner) => (
+                          <option key={owner._id} value={owner._id}>
+                            {owner.fullname}
+                          </option>
+                        ))}
+                      </select>{" "}
+                    </div>
+
                     <div className="mb-3">
                       <label className="form-label">Location</label>
                       <input
@@ -477,15 +751,55 @@ const RestaurantManagement = ({ searchQuery }) => {
                       />
                     </div>
                     <div className="mb-3">
+                      <label className="form-label">Subcategory</label>
+                      <select
+                        className="form-control"
+                        value={formData.subCategoryId}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            subCategoryId: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">Select a subcategory</option>
+                        {subCategories.map((category) => (
+                          <option key={category._id} value={category._id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Cuisines</label>
+                      <select
+                        className="form-control"
+                        value={formData.cuisinesId}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            cuisinesId: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">Select a cuisine</option>
+                        {cuisines.map((cuisine) => (
+                          <option key={cuisine._id} value={cuisine._id}>
+                            {cuisine.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-3">
                       <label className="form-label">Open Hours</label>
                       <input
                         type="text"
                         className="form-control"
-                        value={formData.openHours || ""}
+                        value={formData.timeOpen || ""}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            openHours: e.target.value,
+                            timeOpen: e.target.value,
                           })
                         }
                       />

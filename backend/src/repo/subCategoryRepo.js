@@ -76,6 +76,38 @@ class SubCategoryRepository {
       });
     });
   }
+
+  getSubCategoryByCategorySpecific() {
+    return catchAsync(async (req, res, next) => {
+      const features = new APIFeatures(this.subCategoryModel.find(), req.query)
+        .sort()
+        .limitFields()
+        .populate();
+      const doc = await features.query;
+
+      let results = doc.filter((item) => {
+        return item.categoryId?._id.toString() === "67654798e6e3bf12235f6174";
+      });
+
+      // SEND RESPONSE
+      if (!doc) {
+        return next(
+          new AppError(
+            customResourceResponse.recordNotFound.message,
+            customResourceResponse.recordNotFound.statusCode
+          )
+        );
+      }
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
+        status: "success",
+        results: results.length,
+        data: {
+          data: results,
+        },
+      });
+    });
+  }
 }
 
 export default SubCategoryRepository;

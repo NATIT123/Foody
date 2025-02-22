@@ -1,41 +1,90 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const ChatBox = () => {
   const [show, setShow] = useState(false);
-  const [newMessages, setNewMessages] = useState(1); // Số lượng tin nhắn mới
   const [messages, setMessages] = useState([
     { sender: "Bạn", text: "Xin chào!" },
-    { sender: "Người khác", text: "Chào bạn!" },
+    { sender: "Chatbot", text: "Chào bạn!" },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const [userLocation, setUserLocation] = useState({ lat: null, lon: null });
+  const navigate = useNavigate();
 
-  const handleShow = () => {
-    setShow(true);
-    setNewMessages(0); // Reset số lượng tin nhắn mới khi mở
-  };
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Lỗi lấy vị trí:", error);
+        }
+      );
+    }
+  }, []);
 
-  const handleSend = () => {
-    if (inputMessage.trim()) {
-      setMessages([...messages, { sender: "Bạn", text: inputMessage }]);
-      setInputMessage("");
+  const handleSend = async () => {
+    if (!inputMessage.trim()) return;
+
+    const newMessage = { sender: "Bạn", text: inputMessage };
+    setMessages([...messages, newMessage]);
+    setInputMessage("");
+
+    try {
+      const response = await axios.get("http://127.0.0.1:8005/chatbot", {
+        params: {
+          query: inputMessage,
+          user_lat: userLocation.lat,
+          user_lon: userLocation.lon,
+        },
+      });
+
+      const botReply = {
+        sender: "Chatbot",
+        text: response.data.response || "Không có phản hồi.",
+      };
+      setMessages((prevMessages) => [...prevMessages, botReply]);
+
+      if (response.data.restaurant_suggestions?.length > 0) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            sender: "Chatbot",
+            text: "Dưới đây là một số nhà hàng gợi ý:",
+            restaurants: response.data.restaurant_suggestions,
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Lỗi gọi API chatbot:", error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "Chatbot", text: "Lỗi kết nối chatbot." },
+      ]);
     }
   };
 
   return (
     <div>
-      {/* Nút ChatBox */}
-      <div className="chatbox-container" style={{ position: "fixed", bottom: "20px", right: "20px", zIndex: 1050 }}>
-        <button id="chatbox-btn" className="btn btn-primary position-relative" onClick={handleShow}>
-          <i className="bi bi-chat-dots"></i> Tin mới
-          {newMessages > 0 && (
-            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-              {newMessages}
-            </span>
-          )}
+      <div
+        className="chatbox-container"
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          zIndex: 1050,
+        }}
+      >
+        <button className="btn btn-primary" onClick={() => setShow(!show)}>
+          <i className="bi bi-chat-dots"></i> Chat
         </button>
       </div>
 
-      {/* ChatBox */}
       {show && (
         <div
           className="chatbox-window"
@@ -43,8 +92,8 @@ const ChatBox = () => {
             position: "fixed",
             bottom: "20px",
             right: "20px",
-            width: "300px",
-            height: "400px",
+            width: "350px",
+            height: "500px",
             backgroundColor: "#fff",
             border: "1px solid #ccc",
             borderRadius: "8px",
@@ -75,11 +124,7 @@ const ChatBox = () => {
           </div>
           <div
             className="chatbox-body"
-            style={{
-              flex: 1,
-              padding: "10px",
-              overflowY: "auto",
-            }}
+            style={{ flex: 1, padding: "10px", overflowY: "auto" }}
           >
             {messages.map((message, index) => (
               <div
@@ -94,7 +139,8 @@ const ChatBox = () => {
                     display: "inline-block",
                     padding: "8px 12px",
                     borderRadius: "8px",
-                    backgroundColor: message.sender === "Bạn" ? "#007bff" : "#e9ecef",
+                    backgroundColor:
+                      message.sender === "Bạn" ? "#007bff" : "#e9ecef",
                     color: message.sender === "Bạn" ? "#fff" : "#000",
                     maxWidth: "70%",
                     wordWrap: "break-word",
@@ -102,6 +148,52 @@ const ChatBox = () => {
                 >
                   {message.text}
                 </span>
+                {message.restaurants && (
+                  <div style={{ marginTop: "10px" }}>
+                    {message.restaurants.map((restaurant, i) => (
+                      <div
+                        key={i}
+                        onClick={() =>
+                          window.open(`/details/${restaurant._id}`, "_blank")
+                        }
+                        style={{
+                          cursor: "pointer",
+                          border: "1px solid #ccc",
+                          borderRadius: "8px",
+                          padding: "10px",
+                          marginTop: "5px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          backgroundColor: "#f9f9f9",
+                        }}
+                      >
+                        <img
+                          src={restaurant.image}
+                          alt={restaurant.name}
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <div>
+                          <strong>{restaurant.name}</strong>
+                          <p
+                            style={{
+                              margin: "0",
+                              fontSize: "12px",
+                              color: "#555",
+                            }}
+                          >
+                            {restaurant.address}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
