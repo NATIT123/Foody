@@ -6,6 +6,8 @@ import AlbumModel from "../models/AlbumModel.js";
 const albumRepo = new AlbumRepo(AlbumModel);
 const albumService = new AlbumService(albumRepo);
 
+export const countAlbums = albumService.countAlbums();
+
 export const addAlbum = albumService.addAlbum();
 
 export const getAllAlbums = albumService.getAllAlbums();

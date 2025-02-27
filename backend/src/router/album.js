@@ -7,6 +7,7 @@ import {
   updateAlbumById,
   getAlbumById,
   getAlbumsByRestaurant,
+  countAlbums,
 } from "../controllers/albumController.js";
 import multer from "multer";
 const multerStorage = multer.memoryStorage();
@@ -25,6 +26,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
+router.get("/count", countAlbums);
 router.get("/getAllAlbums", getAllAlbums);
 router.post("/addAlbum", upload.single("image"), addAlbum);
 router.delete("/deleteAlbum/:id", deleteAlbumById);

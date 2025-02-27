@@ -3,6 +3,10 @@ class UserService {
     this.userRepo = userRepo;
   }
 
+  countUsers() {
+    return this.userRepo.countUsers();
+  }
+
   addUser() {
     return this.userRepo.addUser();
   }

@@ -16,15 +16,17 @@ const Sidebar = ({ setActiveTab }) => {
 
         {/* Navigation Links */}
         <ul className="nav flex-column mb-auto">
-          <li className="nav-item">
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className="btn nav-link text-dark d-flex align-items-center w-100"
-            >
-              <i className="bi bi-grid-fill me-2 text-primary"></i>
-              <span>Dashboard</span>
-            </button>
-          </li>
+          {state.user?.role === "admin" && (
+            <li className="nav-item">
+              <button
+                onClick={() => setActiveTab("dashboard")}
+                className="btn nav-link text-dark d-flex align-items-center w-100"
+              >
+                <i className="bi bi-grid-fill me-2 text-primary"></i>
+                <span>Dashboard</span>
+              </button>
+            </li>
+          )}
           {state.user?.role === "admin" && (
             <li className="nav-item">
               <button

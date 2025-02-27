@@ -46,9 +46,49 @@ var RestaurantService = /*#__PURE__*/function () {
       return this.restaurantRepo.getTopDeals();
     }
   }, {
-    key: "getRestaurantByFileds",
-    value: function getRestaurantByFileds() {
+    key: "getRestaurantByFields",
+    value: function getRestaurantByFields() {
       return this.restaurantRepo.getRestaurantByFields();
+    }
+  }, {
+    key: "getRestaurantByRecommendation",
+    value: function getRestaurantByRecommendation() {
+      return this.restaurantRepo.getRestaurantByRecommendation();
+    }
+  }, {
+    key: "getNearestRestaurants",
+    value: function getNearestRestaurants() {
+      return this.restaurantRepo.getNearestRestaurants();
+    }
+  }, {
+    key: "getRestaurantByViews",
+    value: function getRestaurantByViews() {
+      return this.restaurantRepo.getRestaurantByViews();
+    }
+  }, {
+    key: "findRestaurantsByFields",
+    value: function findRestaurantsByFields() {
+      return this.restaurantRepo.findRestaurantsByFields();
+    }
+  }, {
+    key: "getRestaunrantsPending",
+    value: function getRestaunrantsPending() {
+      return this.restaurantRepo.getRestaunrantsPending();
+    }
+  }, {
+    key: "updateStatus",
+    value: function updateStatus() {
+      return this.restaurantRepo.updateStatus();
+    }
+  }, {
+    key: "getOwnerRestaurants",
+    value: function getOwnerRestaurants() {
+      return this.restaurantRepo.getOwnerRestaurants();
+    }
+  }, {
+    key: "fetchRestaurantsByRate",
+    value: function fetchRestaurantsByRate() {
+      return this.restaurantRepo.fetchRestaurantsByRate();
     }
   }]);
 }();

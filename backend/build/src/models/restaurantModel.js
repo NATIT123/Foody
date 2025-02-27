@@ -1,9 +1,18 @@
 import mongoose, { Schema, model } from "mongoose";
+import { type } from "node:os";
 var RestaurantDetailSchema = new Schema({
   name: {
     type: String,
     required: [true, "Please tell us your name"],
     unique: true
+  },
+  numberView: {
+    type: Number,
+    "default": 0
+  },
+  status: {
+    type: String,
+    "default": "pending"
   },
   image: {
     type: String,
@@ -17,9 +26,21 @@ var RestaurantDetailSchema = new Schema({
     type: Boolean,
     "default": true
   },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users"
+  },
   districtId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "districts"
+  },
+  coordinateId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "coordinates"
+  },
+  cuisinesId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "cuisines"
   },
   subCategoryId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -32,32 +53,34 @@ var RestaurantDetailSchema = new Schema({
     type: String
   },
   qualityRate: {
-    type: Number,
-    required: [true, "Please tell us your qualityRate"]
+    "default": 0,
+    type: Number
   },
   serviceRate: {
-    type: Number,
-    required: [true, "Please tell us your serviceRate"]
+    "default": 0,
+    type: Number
   },
   locationRate: {
-    type: Number,
-    required: [true, "Please tell us your locationRate"]
+    "default": 0,
+    type: Number
   },
   priceRate: {
-    type: Number,
-    required: [true, "Please tell us your priceRate"]
+    "default": 0,
+    type: Number
   },
   spaceRate: {
-    type: Number,
-    required: [true, "Please tell us your spaceRate"]
+    "default": 0,
+    type: Number
   },
   timeOpen: {
-    type: String,
-    required: [true, "Please tell us your timeOpen"]
+    type: String
   },
   priceRange: {
-    type: String,
-    required: [true, "Please tell us your priceRange"]
+    type: String
+  },
+  averageScore: {
+    type: Number,
+    "default": 0
   }
 }, {
   timestamps: true

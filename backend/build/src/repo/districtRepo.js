@@ -48,13 +48,13 @@ var DistrictRepository = /*#__PURE__*/function () {
             while (1) switch (_context.prev = _context.next) {
               case 0:
                 cityId = req.params.cityId;
-                console.log(cityId);
                 if (cityId.match(/^[0-9a-fA-F]{24}$/)) {
-                  _context.next = 4;
+                  _context.next = 3;
                   break;
                 }
                 return _context.abrupt("return", next(new AppError(customResourceResponse.notValidId.message, customResourceResponse.notValidId.statusCode)));
-              case 4:
+              case 3:
+                console.log(cityId);
                 features = new APIFeatures(_this.districtModel.find(), req.query).sort().limitFields().populate();
                 _context.next = 7;
                 return features.query;
@@ -62,14 +62,8 @@ var DistrictRepository = /*#__PURE__*/function () {
                 doc = _context.sent;
                 results = doc.filter(function (item) {
                   var _item$cityId;
-                  return ((_item$cityId = item.cityId) === null || _item$cityId === void 0 ? void 0 : _item$cityId._id.toString()) === cityId;
-                }); // SEND RESPONSE
-                if (doc) {
-                  _context.next = 11;
-                  break;
-                }
-                return _context.abrupt("return", next(new AppError(customResourceResponse.recordNotFound.message, customResourceResponse.recordNotFound.statusCode)));
-              case 11:
+                  return ((_item$cityId = item.cityId) === null || _item$cityId === void 0 ? void 0 : _item$cityId._id.toString()) === cityId.toString();
+                });
                 res.status(customResourceResponse.success.statusCode).json({
                   message: customResourceResponse.success.message,
                   status: "success",
@@ -78,7 +72,7 @@ var DistrictRepository = /*#__PURE__*/function () {
                     data: results
                   }
                 });
-              case 12:
+              case 10:
               case "end":
                 return _context.stop();
             }

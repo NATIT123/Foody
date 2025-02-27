@@ -6,6 +6,8 @@ import UserModel from "../models/userModel.js";
 const userRepo = new UserRepository(UserModel);
 const userService = new UserService(userRepo);
 
+export const countUsers = userService.countUsers();
+
 export const addUser = userService.addUser();
 
 export const getAllUsers = userService.getAllUsers();

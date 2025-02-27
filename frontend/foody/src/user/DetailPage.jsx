@@ -5,7 +5,6 @@ import Footer from "../components/Footer";
 import ProductSuggestion from "../components/ProductSuggestion";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { IoIosPricetag } from "react-icons/io";
 import { IoMapSharp } from "react-icons/io5";
 import { useData } from "../context/DataContext";
 import axios from "axios";
@@ -13,14 +12,67 @@ const DetailPage = () => {
   const { id } = useParams();
   const { state } = useData();
   const [totalRate, setTotalRate] = useState(0);
-  const [searchQuery, setSearchQuery] = useState(""); // State lưu từ khóa tìm kiếm
+  const [selectedCuisines, setSelectedCuisines] = useState([]);
+  const [selectedDistricts, setSelectedDistricts] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const [currentRestaurant, setCurrentRestaurant] = useState([]); // Dữ liệu sau khi lọc
   const [currentFood, setCurrentFood] = useState([]); // Dữ liệu sau khi lọc
   const [currentComment, setCurrentComment] = useState([]); // Dữ liệu sau khi lọc
   const [currentAlbum, setCurrentAlbum] = useState([]); // Dữ liệu sau khi lọc
   const [suggestRestaurants, setSuggestRestaurants] = useState([]); // Dữ liệu sau khi lọc
 
-  // Fetch API lấy detail restaurant
+  function checkTime(openTime, closeTime) {
+    const now = new Date();
+    let currentHour = now.getHours();
+    let currentMinute = now.getMinutes();
+
+    const [openHour, openMinute] = openTime.split(":").map(Number);
+    const [closeHour, closeMinute] = closeTime.split(":").map(Number);
+
+    let currentTotalMinutes = currentHour * 60 + currentMinute;
+    let openTotalMinutes = openHour * 60 + openMinute;
+    let closeTotalMinutes = closeHour * 60 + closeMinute;
+
+    if (closeTotalMinutes < openTotalMinutes) {
+      closeTotalMinutes += 24 * 60;
+      if (currentTotalMinutes < openTotalMinutes) {
+        currentTotalMinutes += 24 * 60;
+      }
+    }
+
+    return (
+      currentTotalMinutes >= openTotalMinutes &&
+      currentTotalMinutes < closeTotalMinutes
+    );
+  }
+
+  function isOpen(time) {
+    if (time && time !== "empty") {
+      if (time.includes("|")) {
+        const timeFirst = time.split("|")[0];
+        const timeSecond = time.split("|")[1];
+
+        if (timeFirst === "Cả ngày") return true;
+
+        const timeFirstOpen = timeFirst.split(" - ")[0];
+        const timeFirstClose = timeFirst.split(" - ")[1];
+
+        const timeSecondOpen = timeSecond.split(" - ")[0];
+        const timeSecondClose = timeSecond.split(" - ")[1];
+
+        return (
+          checkTime(timeFirstOpen, timeFirstClose) ||
+          checkTime(timeSecondOpen, timeSecondClose)
+        );
+      } else {
+        const openTime = time.split(" - ")[0];
+        const closeTime = time.split(" - ")[1];
+
+        return checkTime(openTime, closeTime);
+      }
+    }
+  }
+
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurant/${id}`)
       .then((response) => response.json())
@@ -134,12 +186,16 @@ const DetailPage = () => {
     );
   }, [id, state.user]);
 
-  const handleSearch = (query) => {
-    setSearchQuery(query); // Cập nhật state từ khóa tìm kiếm
-  };
   return (
     <div>
-      <Header />
+      <Header
+        selectedSubCategories={selectedSubCategories}
+        setSelectedSubCategories={setSelectedSubCategories}
+        selectedCuisines={selectedCuisines}
+        setSelectedCuisines={setSelectedCuisines}
+        selectedDistricts={selectedDistricts}
+        setSelectedDistricts={setSelectedDistricts}
+      />
 
       <div className="container mt-5">
         <div className="card shadow">
@@ -163,11 +219,20 @@ const DetailPage = () => {
               <div className="card-body">
                 <h1 className="card-title">{currentRestaurant.name}</h1>
 
-                <p className="text-muted">
-                  {currentRestaurant?.cuisinesId?.name || ""}
-                  {currentRestaurant.audiences === "empty"
-                    ? "Ăn vặt/vỉa hè - Món Việt - Sinh viên, Cặp đôi, Nhóm bạn"
-                    : currentRestaurant.audiences}
+                <p className="text-secondary fs-5 fw-bold fw-light mb-2">
+                  <span className="fw-bold">
+                    {currentRestaurant?.cuisinesId?.name || ""}
+                  </span>
+                  {" - "}
+                  {currentRestaurant.audiences === "empty" ? (
+                    <span className="text-primary">
+                      Ăn vặt/vỉa hè - Món Việt - Sinh viên, Cặp đôi, Nhóm bạn
+                    </span>
+                  ) : (
+                    <span className="text-success">
+                      {currentRestaurant.audiences}
+                    </span>
+                  )}
                 </p>
 
                 {/* Ratings */}
@@ -256,8 +321,19 @@ const DetailPage = () => {
                     </span>
                   </li>
                   <li className="mb-2">
-                    <i className="fas fa-clock text-success me-2"></i>
-                    <span>Đang mở cửa {currentRestaurant.timeOpen} </span>
+                    <i
+                      className={`fas fa-clock ${
+                        isOpen(currentRestaurant?.timeOpen)
+                          ? "text-success"
+                          : "text-danger"
+                      }  me-2`}
+                    ></i>
+                    <span>
+                      {isOpen(currentRestaurant?.timeOpen)
+                        ? "Đang mở cửa"
+                        : "Đóng cửa"}{" "}
+                      {currentRestaurant?.timeOpen}{" "}
+                    </span>
                   </li>
                   <li className="mb-2">
                     <i className="fas fa-money-bill-wave text-success me-2"></i>

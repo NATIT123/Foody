@@ -1,6 +1,5 @@
 import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
 import _createClass from "@babel/runtime/helpers/createClass";
-import customResourceResponse from "../utils/constant.js";
 var FoodService = /*#__PURE__*/function () {
   function FoodService(foodRepo) {
     _classCallCheck(this, FoodService);
@@ -30,6 +29,11 @@ var FoodService = /*#__PURE__*/function () {
     key: "deleteFoodById",
     value: function deleteFoodById() {
       return this.foodRepo.deleteFoodById();
+    }
+  }, {
+    key: "getFoodsByRestaurant",
+    value: function getFoodsByRestaurant() {
+      return this.foodRepo.getFoodSByRestaurant();
     }
   }]);
 }();

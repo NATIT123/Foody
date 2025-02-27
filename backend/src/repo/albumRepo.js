@@ -13,6 +13,21 @@ class AlbumRepository {
     this.albumModel = albumModel;
   }
 
+  countAlbums() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const totalAlbums = await this.albumModel.countDocuments();
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: totalAlbums,
+        });
+      } catch (err) {
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
+
   addAlbum() {
     return catchAsync(async (req, res, next) => {
       try {

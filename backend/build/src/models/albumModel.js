@@ -6,7 +6,7 @@ var AlbumDetailSchema = new Schema({
   },
   type: {
     type: String,
-    required: [true, "Please tell us your type"]
+    "default": "image"
   },
   active: {
     type: Boolean,
@@ -14,7 +14,13 @@ var AlbumDetailSchema = new Schema({
   },
   restaurantId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "restaurants"
+    ref: "restaurants",
+    index: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    index: true
   }
 }, {
   timestamps: true

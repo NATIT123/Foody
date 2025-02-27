@@ -34,7 +34,7 @@ const CategoryFilters = ({
       </div>
 
       {/* Filters Section */}
-      <div className="d-flex flex-wrap gap-3">
+      <div className="d-flex flex-wrap gap-3" style={{ marginTop: "16px" }}>
         {filters.map((filter, index) => (
           <select
             key={index}

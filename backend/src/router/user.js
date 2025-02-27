@@ -12,6 +12,7 @@ import {
   findUsersByFields,
   getChatBotResponse,
   findUsersByRole,
+  countUsers,
 } from "../controllers/userController.js";
 
 import {
@@ -56,6 +57,8 @@ router.get("/getUserDetails/:userId", getUserDetails);
 router.get("/getAllDetails", getAllDetails);
 router.get("/findUsersByFields", findUsersByFields);
 router.get("/findUsersByRole", findUsersByRole);
+router.get("/count", countUsers);
+
 // ///Protect all route
 router.use(protect);
 router.patch("/updatePassword", getMe, changePassword);

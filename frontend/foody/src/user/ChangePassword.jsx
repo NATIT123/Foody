@@ -14,8 +14,10 @@ const ChangePasswordPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   useEffect(() => {
-    if (state.user && !state.loading) {
-      navigate("/");
+    if (!state.loading && state.user) {
+      if (state.user.role === "admin" || state.user.role === "owner")
+        navigate("/dashboard");
+      if (state.user.role === "user") navigate("/");
     }
   }, [navigate, state.user, state.loading]);
 

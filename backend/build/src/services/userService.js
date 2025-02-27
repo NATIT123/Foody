@@ -35,6 +35,36 @@ var UserService = /*#__PURE__*/function () {
     value: function getMe() {
       return this.userRepo.getMe();
     }
+  }, {
+    key: "uploadPhoto",
+    value: function uploadPhoto() {
+      return this.userRepo.uploadPhoto();
+    }
+  }, {
+    key: "getUsersDetail",
+    value: function getUsersDetail() {
+      return this.userRepo.getUserDetails();
+    }
+  }, {
+    key: "getAllDetails",
+    value: function getAllDetails() {
+      return this.userRepo.getAllDetails();
+    }
+  }, {
+    key: "findUsersByFields",
+    value: function findUsersByFields() {
+      return this.userRepo.findUsersByFields();
+    }
+  }, {
+    key: "getChatBotResponse",
+    value: function getChatBotResponse() {
+      return this.userRepo.getChatBotResponse();
+    }
+  }, {
+    key: "findUsersByRole",
+    value: function findUsersByRole() {
+      return this.userRepo.findUsersByRole();
+    }
   }]);
 }();
 export default UserService;

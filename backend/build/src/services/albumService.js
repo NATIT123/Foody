@@ -31,6 +31,11 @@ var AlbumService = /*#__PURE__*/function () {
     value: function deleteAlbumById() {
       return this.albumRepo.deleteAlbumById();
     }
+  }, {
+    key: "getAlbumsByRestaurant",
+    value: function getAlbumsByRestaurant() {
+      return this.albumRepo.getAlbumsByRestaurant();
+    }
   }]);
 }();
 export default AlbumService;

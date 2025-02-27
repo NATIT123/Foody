@@ -16,6 +16,21 @@ class UserRepository {
     this.userModel = userModel;
   }
 
+  countUsers() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const totalUsers = await this.userModel.countDocuments();
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: totalUsers,
+        });
+      } catch (err) {
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
+
   addUser() {
     return createOne(this.userModel);
   }

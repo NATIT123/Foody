@@ -67,6 +67,7 @@ function Header({
       .then((response) => response.json())
       .then((data) => {
         if (data) {
+          console.log(data.data.data);
           setRestaurantSearch(data.data.data);
         }
       })
@@ -327,7 +328,6 @@ function Header({
                               📍 {restaurant.address}
                             </p>
                           </div>
-                          <div style={{ marginLeft: "auto" }}>dsadas</div>
                         </li>
                       ))}
                     </ul>
@@ -607,9 +607,9 @@ function Header({
                   aria-expanded="false"
                 >
                   <strong>
-                    {state.user.email.length > 12
-                      ? `${state.user.email.substring(0, 12)}...`
-                      : state.user.email}
+                    {state.user?.email.length > 12
+                      ? `${state.user?.fullname}`
+                      : state.user?.email}
                   </strong>
                 </button>
 

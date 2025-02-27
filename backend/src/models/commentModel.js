@@ -1,5 +1,18 @@
 import mongoose, { Schema, model } from "mongoose";
 
+const ReplySchema = new Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: true,
+    },
+    content: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: false } // Không cần tạo _id cho từng reply nhỏ
+);
+
 const CommentDetailSchema = new Schema(
   {
     active: {
@@ -30,6 +43,7 @@ const CommentDetailSchema = new Schema(
       ref: "restaurants",
       index: true,
     },
+    replies: [ReplySchema],
   },
   {
     timestamps: true,

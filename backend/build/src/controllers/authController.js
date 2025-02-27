@@ -15,3 +15,4 @@ export var updateMe = authService.updateMe();
 export var getMe = authService.getMe();
 export var deleteMe = authService.deleteMe();
 export var refreshToken = authService.processNewToken();
+export var checkPassword = authService.checkPassword();

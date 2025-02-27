@@ -8,15 +8,76 @@ import {
 import customResourceResponse from "../utils/constant.js";
 import catchAsync from "../utils/catchAsync.js";
 import { v2 as cloudinary } from "cloudinary";
+import AppError from "../utils/appError.js";
 class FoodRepository {
   constructor(foodModel) {
     this.foodModel = foodModel;
   }
 
   addFood() {
-    return createOne(this.foodModel);
-  }
+    return catchAsync(async (req, res, next) => {
+      try {
+        const { name, priceOriginal, priceDiscount, restaurantId } = req.body;
+        // Kiểm tra xem tên món ăn có tồn tại không
+        if (!name || !priceOriginal) {
+          return next(
+            new AppError("Name and original price are required", 400)
+          );
+        }
 
+        // Kiểm tra ID hợp lệ
+        if (!restaurantId.match(/^[0-9a-fA-F]{24}$/)) {
+          return next(
+            new AppError(
+              customResourceResponse.notValidId.message,
+              customResourceResponse.notValidId.statusCode
+            )
+          );
+        }
+
+        let imageUrl = null;
+        if (req.file) {
+          cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET,
+          });
+
+          const uploadStream = () => {
+            return new Promise((resolve, reject) => {
+              const stream = cloudinary.uploader.upload_stream(
+                { folder: "foods" }, // Lưu ảnh vào thư mục "foods" trên Cloudinary
+                (error, result) => {
+                  if (error) return reject(new AppError("Upload failed!", 500));
+                  resolve(result.secure_url);
+                }
+              );
+              stream.end(req.file.buffer);
+            });
+          };
+
+          imageUrl = await uploadStream();
+        }
+
+        const newFood = await this.foodModel.create({
+          name,
+          priceOriginal,
+          priceDiscount,
+          image: imageUrl || "",
+          restaurantId,
+        });
+
+        res.status(customResourceResponse.success.statusCode).json({
+          message: "Thêm món ăn thành công!",
+          status: "success",
+          data: { food: newFood },
+        });
+      } catch (err) {
+        console.log(err);
+        return next(new AppError("Something went wrong!", 500));
+      }
+    });
+  }
   getAllFoods() {
     return getAll(this.foodModel, "restaurantId");
   }

@@ -35,6 +35,11 @@ var SubCategoryService = /*#__PURE__*/function () {
     value: function getSubCategoryByCategory() {
       return this.subCategoryRepo.getSubCategoryByCategory();
     }
+  }, {
+    key: "getSubCategoryByCategorySpecific",
+    value: function getSubCategoryByCategorySpecific() {
+      return this.subCategoryRepo.getSubCategoryByCategorySpecific();
+    }
   }]);
 }();
 export default SubCategoryService;

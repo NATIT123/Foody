@@ -7,6 +7,10 @@ import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import customResourceResponse from "../utils/constant.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = path.dirname(__filename);
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import fs from "fs";
@@ -107,28 +111,37 @@ export var createOne = function createOne(Model) {
       return _regeneratorRuntime.wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
-            _context2.next = 2;
+            _context2.prev = 0;
+            _context2.next = 3;
             return Model.create(req.body);
-          case 2:
+          case 3:
             document = _context2.sent;
             if (document) {
-              _context2.next = 5;
+              _context2.next = 6;
               break;
             }
             return _context2.abrupt("return", next(new AppError(customResourceResponse.serverError.message, customResourceResponse.serverError.statusCode)));
-          case 5:
+          case 6:
             res.status(customResourceResponse.created.statusCode).json({
               status: "success",
               message: customResourceResponse.created.message,
               data: {
-                data: document._id
+                data: document._id,
+                createdAt: document.createdAt
               }
             });
-          case 6:
+            _context2.next = 13;
+            break;
+          case 9:
+            _context2.prev = 9;
+            _context2.t0 = _context2["catch"](0);
+            console.log(_context2.t0);
+            return _context2.abrupt("return", next(new AppError(_context2.t0.message, customResourceResponse.serverError.statusCode)));
+          case 13:
           case "end":
             return _context2.stop();
         }
-      }, _callee2);
+      }, _callee2, null, [[0, 9]]);
     }));
     return function (_x3, _x4, _x5) {
       return _ref2.apply(this, arguments);
@@ -182,7 +195,7 @@ export var updateOne = function updateOne(Model) {
     };
   }());
 };
-export var getOne = function getOne(Model, popOptions) {
+export var getOne = function getOne(Model, popOptions, multipleOptions) {
   return catchAsync(/*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime.mark(function _callee4(req, res, next) {
       var id, document, doc;
@@ -199,16 +212,21 @@ export var getOne = function getOne(Model, popOptions) {
             ///Return join collection child references and auto parse value according to _id
             document = Model.findById(id);
             if (popOptions) document = document.populate(popOptions);
-            _context4.next = 7;
+            if (Array.isArray(multipleOptions) && multipleOptions.length > 0) {
+              multipleOptions.forEach(function (option) {
+                document = document.populate(option);
+              });
+            }
+            _context4.next = 8;
             return document;
-          case 7:
+          case 8:
             doc = _context4.sent;
             if (doc) {
-              _context4.next = 10;
+              _context4.next = 11;
               break;
             }
             return _context4.abrupt("return", next(new AppError(customResourceResponse.recordNotFoundOne.message, customResourceResponse.recordNotFoundOne.statusCode)));
-          case 10:
+          case 11:
             res.status(customResourceResponse.success.statusCode).json({
               status: "success",
               message: customResourceResponse.success.message,
@@ -216,7 +234,7 @@ export var getOne = function getOne(Model, popOptions) {
                 data: doc
               }
             });
-          case 11:
+          case 12:
           case "end":
             return _context4.stop();
         }
@@ -227,38 +245,45 @@ export var getOne = function getOne(Model, popOptions) {
     };
   }());
 };
-export var getAll = function getAll(Model, options) {
+export var getAll = function getAll(Model, options, moreOptions) {
   return catchAsync(/*#__PURE__*/function () {
     var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime.mark(function _callee5(req, res, next) {
-      var filter, features, doc;
+      var filter, totalCount, totalPages, features, doc;
       return _regeneratorRuntime.wrap(function _callee5$(_context5) {
         while (1) switch (_context5.prev = _context5.next) {
           case 0:
             // To allow for nested GET reviews on tour (hack)
             filter = {
-              isPublic: true
+              active: true
             };
-            features = new APIFeatures(Model.find(filter), req.query).filter().sort().limitFields().paginate().populate(options); // const doc = await features.query.explain();
+            if (moreOptions) filter = _objectSpread(_objectSpread({}, filter), moreOptions);
             _context5.next = 4;
-            return features.query;
+            return Model.countDocuments(filter);
           case 4:
+            totalCount = _context5.sent;
+            totalPages = Math.ceil(totalCount / 100);
+            features = new APIFeatures(Model.find(filter), req.query).filter().sort().limitFields().paginate().populate(options); // const doc = await features.query.explain();
+            _context5.next = 9;
+            return features.query;
+          case 9:
             doc = _context5.sent;
             if (doc) {
-              _context5.next = 7;
+              _context5.next = 12;
               break;
             }
             return _context5.abrupt("return", next(new AppError(customResourceResponse.recordNotFound.message, customResourceResponse.recordNotFound.statusCode)));
-          case 7:
+          case 12:
             res.status(customResourceResponse.success.statusCode).json({
               message: customResourceResponse.success.message,
               status: "success",
+              totalPages: totalPages,
               page: req.query.page * 1 || 1,
               results: doc.length,
               data: {
                 data: doc
               }
             });
-          case 8:
+          case 13:
           case "end":
             return _context5.stop();
         }
@@ -320,7 +345,7 @@ export var importData = function importData(Model, nameData) {
     }
 
     // Sử dụng đường dẫn tuyệt đối
-    var dataPath = "./data/".concat(nameData, ".json");
+    var dataPath = "".concat(__dirname, "/../data/").concat(nameData, ".json");
     console.log("Reading file from path: ".concat(dataPath));
 
     // Đọc dữ liệu từ file JSON

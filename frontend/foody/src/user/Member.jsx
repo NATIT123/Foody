@@ -1,19 +1,36 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../css/Member.css"; // Import the CSS for styling
 import ImagesAndVideosPage from "../components/VideosAndImagesPage";
 import Header from "../components/Header";
 import Friends from "../components/Friends";
 import Collection from "../components/Collection";
 import { useParams } from "react-router-dom";
+import { useData } from "../context/DataContext";
 
 const Member = () => {
+  const state = useData();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (state.user && !state.loading) {
+      if (state.user.role === "admin" || state.user.role === "owner")
+        navigate("/dashboard");
+    }
+  }, [navigate, state.user, state.loading]);
   const [comments, setComments] = useState([]);
   const [items, setItems] = useState([]);
   const [activeSection, setActiveSection] = useState("hoatdong"); // State for tracking active section
   const { id } = useParams();
+  const [selectedCuisines, setSelectedCuisines] = useState([]);
+  const [selectedDistricts, setSelectedDistricts] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const handleSectionChange = (section) => {
     setActiveSection(section);
   };
+
+  useEffect(() => {
+    console.log(comments);
+  }, [comments]);
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/user/getUserDetails/${id}`, {
@@ -59,7 +76,14 @@ const Member = () => {
   }, []);
   return (
     <div>
-      <Header />
+      <Header
+        selectedSubCategories={selectedSubCategories}
+        setSelectedSubCategories={setSelectedSubCategories}
+        selectedCuisines={selectedCuisines}
+        setSelectedCuisines={setSelectedCuisines}
+        selectedDistricts={selectedDistricts}
+        setSelectedDistricts={setSelectedDistricts}
+      />
       <div className="container-fluid py-4">
         <div className="row">
           {/* Sidebar */}
@@ -143,20 +167,21 @@ const Member = () => {
             {activeSection === "hoatdong" && (
               <div className="col-md-9">
                 {/* Post Card */}
-                {comments?.comments && comments?.comments.length > 0 ? (
+                {comments?.comments &&
+                comments?.comments[0].restaurant.length > 0 ? (
                   comments?.comments?.map((comment, index) => (
                     <div className="card mb-4" key={index}>
                       <div className="card-body">
                         <h5 className="card-title">{comments.fullname}</h5>
                         <h6 className="card-subtitle mb-2 text-muted">
-                          {comment.restaurant[0].name}
+                          {comment.restaurant[0]?.name}
                         </h6>
                         <h6 className="card-subtitle mb-2 text-muted">
-                          {comment.restaurant[0].address}
+                          {comment.restaurant[0]?.address}
                         </h6>
                         <img
-                          src={comment.restaurant[0].image}
-                          alt={comment.restaurant[0].name}
+                          src={comment.restaurant[0]?.image}
+                          alt={comment.restaurant[0]?.name}
                           className="card-img-top fixed-image rounded-image"
                         />
                         <p className="card-text">

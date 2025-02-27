@@ -7,7 +7,6 @@ import LoginPage from "./user/Login";
 import RegisterPage from "./user/RegisterPage";
 import DetailPage from "./user/DetailPage";
 import ForgotPasswordPage from "./user/ForgotPasswordPage";
-import OrderHistory from "./user/OrderHistory";
 import ProfilePage from "./user/ProfilePage";
 import Member from "./user/Member";
 import ChangePasswordPage from "./user/ChangePassword";
@@ -23,7 +22,6 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/details/:id" element={<DetailPage />} />
-          <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/member/:id" element={<Member />} />
           <Route path="/forgot" element={<ForgotPasswordPage />} />

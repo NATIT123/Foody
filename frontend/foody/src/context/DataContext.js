@@ -228,27 +228,27 @@ export const DataProvider = ({ children }) => {
 
   // Fetch Cities và Categories khi ứng dụng tải lần đầu (nếu không có cache)
   useEffect(() => {
-    if (!state.cities.length) {
+    if (!state?.cities?.length) {
       fetchData(
         `${process.env.REACT_APP_BASE_URL}/city/getAllCity`,
         "SET_CITIES",
         "cities"
       );
     }
-    if (!state.categories.length)
+    if (!state?.categories?.length)
       fetchData(
         `${process.env.REACT_APP_BASE_URL}/category/getAllCategory`,
         "SET_CATEGORIES",
         "categories"
       );
 
-    if (!state.cuisines.length)
+    if (!state?.cuisines?.length)
       fetchData(
         `${process.env.REACT_APP_BASE_URL}/cuisines/getAllCuisines`,
         "SET_CUISINES",
         "cuisines"
       );
-  }, [fetchData, state.cities, state.categories, state.cuisines.length]);
+  }, [fetchData, state.cities, state.categories, state?.cuisines?.length]);
 
   // Fetch Districts khi City thay đổi
   useEffect(() => {
