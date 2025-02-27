@@ -9,6 +9,7 @@ import rateLimit from "express-rate-limit";
 import xss from "xss-clean";
 import hpp from "hpp";
 import helmet from "helmet";
+import cors from "cors";
 import mongoSanitize from "express-mongo-sanitize";
 import morgan from "morgan";
 import handleErrorGlobal from "./controllers/errorController.js";
@@ -24,6 +25,10 @@ import cityRoute from "./router/city.js";
 import districtRoute from "./router/district.js";
 import categoryRoute from "./router/category.js";
 import subCategoryRoute from "./router/subCategory.js";
+import cuisinesRoute from "./router/cuisines.js";
+import coordinateRoute from "./router/coordinate.js";
+import favoriteRestaurantRoute from "./router/favoriteRestaurant.js";
+import notificationRoute from "./router/notification.js";
 import { importData } from "./controllers/handleFactory.js";
 import UserModel from "./models/userModel.js";
 import CountryModel from "./models/CountryModel.js";
@@ -35,7 +40,11 @@ import RestaurantModel from "./models/restaurantModel.js";
 import FoodModel from "./models/foodModel.js";
 import CommentModel from "./models/commentModel.js";
 import AlbumModel from "./models/AlbumModel.js";
-
+import CuisinesModel from "./models/CuisinesModel.js";
+import CoordinateModel from "./models/coordinateModel.js";
+import FavoriteRestaurantModel from "./models/favoriteRestaurantModel.js";
+import NotificationModel from "./models/notificationModel.js";
+import { updateDatabase } from "./config/updateDb.js";
 ///Connect DB
 connectDb();
 
@@ -46,9 +55,12 @@ app.set("views", path.join(__dirname, "views"));
 ///Static Files
 app.use(express["static"](path.join(__dirname, "public")));
 
+//Cors
+app.use(cors());
+
 ///Limit requests from same API
 var limiter = rateLimit({
-  max: 100,
+  max: 10000,
   windowMs: 60 * 60 * 1000,
   message: "Too many requests from this IP, please try again in an hour"
 });
@@ -64,7 +76,7 @@ app.use(express.urlencoded({
   extended: true
 }));
 app.use(express.json({
-  limit: "10kb"
+  limit: "5mb"
 }));
 
 ///Cookie-Parser
@@ -105,6 +117,7 @@ importData(UserModel, "user");
 //Restaurant
 app.use("/api/v1/restaurant", restaurantRoute);
 importData(RestaurantModel, "restaurants");
+// updateDatabase(RestaurantModel, `${__dirname}/data/sorted_restaurants.csv`);
 
 //Food
 app.use("/api/v1/food", foodRoute);
@@ -117,9 +130,6 @@ importData(CommentModel, "comments");
 ///Album
 app.use("/api/v1/album", albumRoute);
 importData(AlbumModel, "albums");
-//Country
-app.use("/api/v1/country", countryRoute);
-importData(CountryModel, "country");
 
 //City
 app.use("/api/v1/city", cityRoute);
@@ -136,6 +146,26 @@ importData(CategoryModel, "category");
 //SubCategory
 app.use("/api/v1/subCategory", subCategoryRoute);
 importData(SubCategoryModel, "subCategory");
+
+//Cuisines
+app.use("/api/v1/cuisines", cuisinesRoute);
+importData(CuisinesModel, "cuisines");
+
+//Coordinate
+app.use("/api/v1/coordinates", coordinateRoute);
+importData(CoordinateModel, "coordinates");
+
+//FavoriteRestaurant
+app.use("/api/v1/favorite", favoriteRestaurantRoute);
+importData(FavoriteRestaurantModel, "favoriteRestaurants");
+
+//Country
+app.use("/api/v1/country", countryRoute);
+importData(CountryModel, "country");
+
+//Notification
+app.use("/api/v1/notification", notificationRoute);
+importData(NotificationModel, "notifications");
 app.all("*", function (req, res, next) {
   ///Stop all middleware and run immdiatelty to below
   next(new AppError("Can't find ".concat(req.originalUrl, " on this server"), 404));

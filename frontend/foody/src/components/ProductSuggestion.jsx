@@ -7,7 +7,7 @@ const ProductSuggestion = ({ suggestRestaurants }) => {
   }, [suggestRestaurants]);
   return (
     <div className="container">
-      <h3 className="text-center text-primary my-4">Gợi ý sản phẩm</h3>
+      <h3 className="text-center text-primary my-4">Nhà hàng liên quan</h3>
       <div className=" col-md-9"></div>
       <div className="row">
         {suggestRestaurants &&

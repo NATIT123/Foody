@@ -7,8 +7,9 @@ import {
   updateCommentById,
   getCommentById,
   getCommentsByRestaurant,
+  countComments,
 } from "../controllers/commentController.js";
-
+router.get("/count", countComments);
 router.get("/getAllComment", getAllComments);
 router.post("/addComment/user/:userId/restaurant/:restaurantId", addComment);
 router.delete("/deleteComment/:id", deleteCommentById);

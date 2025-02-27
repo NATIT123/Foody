@@ -20,6 +20,9 @@ const ProfilePage = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState("");
+  const [selectedCuisines, setSelectedCuisines] = useState([]);
+  const [selectedDistricts, setSelectedDistricts] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -133,7 +136,14 @@ const ProfilePage = () => {
 
   return (
     <div>
-      <Header />
+      <Header
+        selectedSubCategories={selectedSubCategories}
+        setSelectedSubCategories={setSelectedSubCategories}
+        selectedCuisines={selectedCuisines}
+        setSelectedCuisines={setSelectedCuisines}
+        selectedDistricts={selectedDistricts}
+        setSelectedDistricts={setSelectedDistricts}
+      />
       {showModal ? (
         <Alert
           className="d-flex flex-column align-items-center text-center"

@@ -15,9 +15,9 @@ const LoginPage = () => {
   const { state, setAccessToken } = useData();
 
   useEffect(() => {
-    if (state.user && !state.loading) {
-      console.log(state.user);
-      if (state.user.role === "admin") navigate("/dashboard");
+    if (!state.loading && state.user) {
+      if (state.user.role === "admin" || state.user.role === "owner")
+        navigate("/dashboard");
       if (state.user.role === "user") navigate("/");
     }
   }, [navigate, state.user, state.loading]);
@@ -119,16 +119,7 @@ const LoginPage = () => {
             <div></div>
           )}
         </>
-        <h4 className="text-center mb-4">Đăng nhập FDID</h4>
-        <button className="btn btn-success w-100 mb-2">
-          <i className="bi bi-phone-fill me-2"></i>
-          ĐĂNG NHẬP BẰNG SỐ ĐIỆN THOẠI
-        </button>
-        <button className="btn btn-primary w-100 mb-3">
-          <i className="bi bi-facebook me-2"></i>
-          ĐĂNG NHẬP BẰNG FACEBOOK
-        </button>
-        <div className="text-center text-muted mb-3">hoặc bằng email</div>
+        <h4 className="text-center mb-4">Đăng nhập </h4>
         <form onSubmit={handleLogin}>
           <div className="mb-3">
             <div

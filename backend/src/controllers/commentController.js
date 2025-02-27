@@ -5,6 +5,8 @@ import CommentModel from "../models/commentModel.js";
 const commentRepo = new CommentRepo(CommentModel);
 const commentService = new CommentService(commentRepo);
 
+export const countComments = commentService.countComments();
+
 export const addComment = commentService.addComment();
 
 export const getAllComments = commentService.getAllComments();

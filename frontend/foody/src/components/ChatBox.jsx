@@ -10,7 +10,6 @@ const ChatBox = () => {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [userLocation, setUserLocation] = useState({ lat: null, lon: null });
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (navigator.geolocation) {

@@ -10,6 +10,8 @@ const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
   const [name, setName] = useState("");
   const [id, setId] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false); // For Add Food modal
+
   const handleEditClick = (food) => {
     setShowEditModal(true);
     setId(food._id);
@@ -18,21 +20,28 @@ const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
     setPirceDiscount(
       food.priceDiscount !== "empty" ? food.priceDiscount.replace("đ", "") : 0
     );
-
-    // Nếu có ảnh, lưu vào previewImage
     setPreviewImage(food.image || "");
-    setImage(null); // Đặt lại file ảnh
+    setImage(null); // Reset image input
+  };
+
+  const handleAddFoodClick = () => {
+    setShowAddModal(true);
+    setName("");
+    setPriceOriginal(0);
+    setPirceDiscount(0);
+    setPreviewImage("");
+    setImage(null);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImage(file);
-      setPreviewImage(URL.createObjectURL(file)); // Hiển thị ảnh xem trước
+      setPreviewImage(URL.createObjectURL(file)); // Preview the selected image
     }
   };
 
-  // Xử lý cập nhật giá trị input
+  // Handle input change for both edit and add
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "originalPrice") {
@@ -44,23 +53,28 @@ const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
     }
   };
 
-  // Xử lý lưu chỉnh sửa
-  const handleSave = () => {
-    if (!id) return;
+  // Save new food item
+  const handleSave = (restaurant) => {
+    if (!name || !priceOriginal) return;
 
     const formData = new FormData();
     formData.append("name", name);
     formData.append("priceOriginal", `${priceOriginal}đ`);
     formData.append("priceDiscount", `${priceDiscount}đ`);
-
+    formData.append("restaurantId", restaurant._id);
     if (image) {
-      formData.append("image", image); // Chỉ gửi ảnh nếu người dùng chọn mới
+      formData.append("image", image);
     }
 
-    fetch(`${process.env.REACT_APP_BASE_URL}/food/updateFood/${id}`, {
-      method: "PATCH",
-      body: formData,
-    })
+    fetch(
+      `${process.env.REACT_APP_BASE_URL}/food/${
+        id ? `updateFood/${id}` : "addFood"
+      }`,
+      {
+        method: id ? "PATCH" : "POST",
+        body: formData,
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         if (
@@ -77,20 +91,29 @@ const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
             priceDiscount: `${priceDiscount}đ`,
             image: data.data.food.image,
           };
-          onUpdateFood(updatedFood); // Cập nhật món ăn trong danh sách
-          console.log("Update food successfully");
+          onUpdateFood(updatedFood);
+          console.log("Food saved successfully");
         }
       })
-      .catch((error) => console.error("Error updating food:", error));
+      .catch((error) => console.error("Error saving food:", error));
 
     setShowEditModal(false);
+    setShowAddModal(false);
   };
+
   return (
     <Modal show={isOpen} onHide={onClose} size="lg" centered>
       <Modal.Header closeButton>
         <Modal.Title>{restaurant.name} - Menu</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        <Button
+          variant="success"
+          className="mb-3"
+          onClick={() => handleAddFoodClick(restaurant)}
+        >
+          Add New Food
+        </Button>
         <div className="row">
           {foods && foods.length > 0 ? (
             foods.map((food) => (
@@ -129,7 +152,7 @@ const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
         </div>
       </Modal.Body>
 
-      {/* Form Edit */}
+      {/* Edit Food Modal */}
       {showEditModal && (
         <Modal show={true} onHide={() => setShowEditModal(false)} centered>
           <Modal.Header closeButton>
@@ -185,7 +208,71 @@ const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
                   onChange={handleChange}
                 />
               </Form.Group>
-              <Button variant="success" onClick={() => handleSave()}>
+              <Button variant="success" onClick={handleSave}>
+                Lưu
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
+      )}
+
+      {/* Add New Food Modal */}
+      {showAddModal && (
+        <Modal show={true} onHide={() => setShowAddModal(false)} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Thêm món ăn mới</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Hình ảnh</Form.Label>
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </Form.Group>
+              {previewImage && (
+                <div className="text-center mb-3">
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+              )}
+              <Form.Group className="mb-3">
+                <Form.Label>Tên món ăn</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="name"
+                  value={name}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Giá gốc (VND)</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="originalPrice"
+                  value={priceOriginal}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Giá giảm (VND)</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="discountPrice"
+                  value={priceDiscount}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <Button variant="success" onClick={() => handleSave(restaurant)}>
                 Lưu
               </Button>
             </Form>

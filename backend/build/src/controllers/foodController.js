@@ -8,3 +8,4 @@ export var getAllFoods = foodService.getAllFoods();
 export var getFoodById = foodService.getFoodById();
 export var updateFoodById = foodService.updateFoodById();
 export var deleteFoodById = foodService.deleteFoodById();
+export var getFoodsByRestaurant = foodService.getFoodsByRestaurant();

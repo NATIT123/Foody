@@ -20,9 +20,16 @@ const RestaurantManagement = ({ searchQuery }) => {
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
   const handleUpdateFood = (updatedFood) => {
-    setFoodData((prev) =>
-      prev.map((food) => (food._id === updatedFood._id ? updatedFood : food))
-    );
+    setFoodData((prev) => {
+      const exist = prev.findIndex((food) => food._id === updatedFood._id);
+      if (exist !== -1) {
+        return prev.map((food) =>
+          food._id === updatedFood._id ? updatedFood : food
+        );
+      } else {
+        return [updatedFood, ...prev];
+      }
+    });
   };
   useEffect(() => {
     const fetchSubCategories = async () => {

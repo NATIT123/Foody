@@ -3,6 +3,10 @@ class RestaurantService {
     this.restaurantRepo = restaurantRepo;
   }
 
+  countRestaurants() {
+    return this.restaurantRepo.countRestaurants();
+  }
+
   addRestaurant() {
     return this.restaurantRepo.addRestaurant();
   }

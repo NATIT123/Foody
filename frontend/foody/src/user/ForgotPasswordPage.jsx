@@ -9,8 +9,10 @@ const ForgotPasswordPage = () => {
   const navigate = useNavigate(); // For navigation to the home page
   const [email, setEmail] = useState("");
   useEffect(() => {
-    if (state.user && !state.loading) {
-      navigate("/");
+    if (!state.loading && state.user) {
+      if (state.user.role === "admin" || state.user.role === "owner")
+        navigate("/dashboard");
+      if (state.user.role === "user") navigate("/");
     }
   }, [navigate, state.user, state.loading]);
 

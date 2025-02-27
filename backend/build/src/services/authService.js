@@ -66,6 +66,11 @@ var AuthService = /*#__PURE__*/function () {
     value: function processNewToken() {
       return this.authRepo.processNewToken();
     }
+  }, {
+    key: "checkPassword",
+    value: function checkPassword() {
+      return this.authRepo.checkPassword();
+    }
   }]);
 }();
 export default AuthService;

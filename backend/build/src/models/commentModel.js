@@ -4,6 +4,10 @@ var CommentDetailSchema = new Schema({
     type: Boolean,
     "default": true
   },
+  numberOfLikes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users"
+  }],
   time: {
     type: String,
     required: [true, "Please tell us your time"]
@@ -22,15 +26,17 @@ var CommentDetailSchema = new Schema({
   },
   type: {
     type: String,
-    required: [true, "Please tell us your type"]
+    "default": "via Web"
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "users"
+    ref: "users",
+    index: true
   },
   restaurantId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "restaurants"
+    ref: "restaurants",
+    index: true
   }
 }, {
   timestamps: true

@@ -6,6 +6,8 @@ import CoordinateModel from "../models/coordinateModel.js";
 const restaurantRepo = new RestaurantRepo(RestauranModel, CoordinateModel);
 const restaurantService = new RestaurantService(restaurantRepo);
 
+export const countRestaurants = restaurantService.countRestaurants();
+
 export const addRestaurant = restaurantService.addRestaurant();
 
 export const getAllRestaurants = restaurantService.getAllRestaurants();

@@ -8,3 +8,4 @@ export var getAllAlbums = albumService.getAllAlbums();
 export var getAlbumById = albumService.getAlbumById();
 export var updateAlbumById = albumService.updateAlbumById();
 export var deleteAlbumById = albumService.deleteAlbumById();
+export var getAlbumsByRestaurant = albumService.getAlbumsByRestaurant();

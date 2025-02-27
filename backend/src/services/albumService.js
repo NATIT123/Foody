@@ -5,6 +5,10 @@ class AlbumService {
     this.albumRepo = albumRepo;
   }
 
+  countAlbums() {
+    return this.albumRepo.countAlbums();
+  }
+
   addAlbum() {
     return this.albumRepo.addAlbum();
   }

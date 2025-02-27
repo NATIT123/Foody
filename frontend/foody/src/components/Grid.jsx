@@ -475,7 +475,7 @@ const Grid = () => {
       <div
         className="ms-lg-2 p-3 flex-grow-1"
         style={{
-          minWidth: "300px", // Đặt chiều rộng tối thiểu để tránh bị thu nhỏ quá mức
+          minWidth: "200px", // Đặt chiều rộng tối thiểu để tránh bị thu nhỏ quá mức
           flexBasis: "0", // Đảm bảo thành phần này chia không gian linh hoạt
           overflow: "hidden", // Ngăn cuộn ngang không mong muốn
         }}

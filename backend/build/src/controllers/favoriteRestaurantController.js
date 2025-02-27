@@ -1,0 +1,12 @@
+import FavoriteRestaurantRepo from "../repo/favoriteRestaurantRepo.js";
+import FavoriteRestaurantService from "../services/favoriteRestaurantService.js";
+import FavoriteRestaurantModel from "../models/favoriteRestaurantModel.js";
+var favoriteRestaurantRepo = new FavoriteRestaurantRepo(FavoriteRestaurantModel);
+var favoriteRestaurantService = new FavoriteRestaurantService(favoriteRestaurantRepo);
+export var addFavoriteRestaurant = favoriteRestaurantService.addFavoriteRestaurant();
+export var getAllFavoriteRestaurants = favoriteRestaurantService.getAll();
+export var getFavoriteRestaurantById = favoriteRestaurantService.getFavoriteRestaurantById();
+export var updateFavoriteRestaurantById = favoriteRestaurantService.updateFavoriteRestaurantById();
+export var deleteFavoriteRestaurantById = favoriteRestaurantService.deleteFavoriteRestaurantById();
+export var getFavoriteRestaurantByUserId = favoriteRestaurantService.getFavoriteRestaurantsByUserId();
+export var getSavedRestaunrantByUserId = favoriteRestaurantRepo.getSavedRestaurantByUserId();

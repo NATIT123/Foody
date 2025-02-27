@@ -15,6 +15,21 @@ class CommentRepository {
     this.commentModel = commentModel;
   }
 
+  countComments() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const totalComments = await this.commentModel.countDocuments();
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: totalComments,
+        });
+      } catch (err) {
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
+
   addComment() {
     return catchAsync(async (req, res, next) => {
       try {
@@ -41,7 +56,6 @@ class CommentRepository {
           restaurantId,
         };
         const savedComment = await this.commentModel.create(newComment);
-        console.log(savedComment);
         res.status(customResourceResponse.success.statusCode).json({
           message: customResourceResponse.success.message,
           status: "success",
@@ -116,7 +130,48 @@ class CommentRepository {
             },
           },
           {
+            $lookup: {
+              from: "users",
+              localField: "replies.userId",
+              foreignField: "_id",
+              as: "replyUsers",
+            },
+          },
+          {
+            $addFields: {
+              replies: {
+                $map: {
+                  input: "$replies",
+                  as: "reply",
+                  in: {
+                    _id: "$$reply._id",
+                    description: "$$reply.description",
+                    createdAt: "$$reply.createdAt",
+                    user: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$replyUsers",
+                            as: "user",
+                            cond: { $eq: ["$$user._id", "$$reply.userId"] },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $addFields: {
+              replies: { $ifNull: ["$replies", []] },
+            },
+          },
+          {
             $project: {
+              numberOfLikes: 1,
               "user._id": 1,
               "user.fullname": 1,
               "user.photo": 1,
@@ -130,6 +185,7 @@ class CommentRepository {
               time: 1,
               title: 1,
               type: 1,
+              replies: 1,
             },
           },
           {
@@ -215,10 +271,52 @@ class CommentRepository {
           },
 
           {
+            $lookup: {
+              from: "users",
+              localField: "replies.userId",
+              foreignField: "_id",
+              as: "replyUsers",
+            },
+          },
+          {
+            $addFields: {
+              replies: {
+                $map: {
+                  input: "$replies",
+                  as: "reply",
+                  in: {
+                    _id: "$$reply._id",
+                    description: "$$reply.description",
+                    createdAt: "$$reply.createdAt",
+                    user: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$replyUsers",
+                            as: "user",
+                            cond: { $eq: ["$$user._id", "$$reply.userId"] },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $addFields: {
+              replies: { $ifNull: ["$replies", []] },
+            },
+          },
+
+          {
             $limit: 10, // Lấy 10 bản ghi đầu tiên
           },
           {
             $project: {
+              numberOfLikes: 1,
               userId: 1,
               time: 1,
               rate: 1,
@@ -228,6 +326,7 @@ class CommentRepository {
               "user._id": 1,
               "user.fullname": 1,
               "user.photo": 1,
+              replies: 1,
             },
           },
         ]),

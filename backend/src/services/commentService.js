@@ -5,6 +5,10 @@ class CommentService {
     this.commentRepo = commentRepo;
   }
 
+  countComments() {
+    return this.commentRepo.countComments();
+  }
+
   addComment() {
     return this.commentRepo.addComment();
   }

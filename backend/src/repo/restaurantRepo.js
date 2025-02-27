@@ -20,6 +20,21 @@ class RestaurantRepository {
     this.coordinateModel = coordinateModel;
   }
 
+  countRestaurants() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const totalRestaurants = await this.restaurantModel.countDocuments();
+        return res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          results: totalRestaurants,
+        });
+      } catch (err) {
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
+
   addRestaurant() {
     return catchAsync(async (req, res, next) => {
       try {
@@ -1106,6 +1121,7 @@ class RestaurantRepository {
               name: 1,
               address: 1,
               image: 1,
+              timeOpen: 1,
             },
           },
         ]);

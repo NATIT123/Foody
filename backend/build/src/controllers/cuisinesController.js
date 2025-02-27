@@ -1,0 +1,10 @@
+import CuisinesRepo from "../repo/cuisinesRepo.js";
+import CuisinesService from "../services/cuisinesService.js";
+import CuisinesModel from "../models/CuisinesModel.js";
+var cuisinesRepo = new CuisinesRepo(CuisinesModel);
+var cuisinesService = new CuisinesService(cuisinesRepo);
+export var addCuisines = cuisinesService.addCuisines();
+export var getAllCuisines = cuisinesService.getAllCuisines();
+export var getCuisinesById = cuisinesService.getCuisinesById();
+export var updateCuisinesById = cuisinesService.updateCuisinesById();
+export var deleteCuisinesById = cuisinesService.deleteCuisinesById();

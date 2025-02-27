@@ -4,8 +4,11 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import nodemailer from "nodemailer";
 import pug from "pug";
+import path from "node:path";
 import { htmlToText } from "html-to-text";
-var __dirname = import.meta.dirname;
+import { fileURLToPath } from "node:url";
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = path.dirname(__filename);
 var Email = /*#__PURE__*/function () {
   function Email(user, url) {
     _classCallCheck(this, Email);
@@ -82,7 +85,7 @@ var Email = /*#__PURE__*/function () {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
               _context2.next = 2;
-              return this.send("welcome", "Welcome to the Foody Service!");
+              return this.send("welcome", "Welcome to the Foody!");
             case 2:
             case "end":
               return _context2.stop();

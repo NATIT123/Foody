@@ -1,4 +1,4 @@
-import UserRepository from "../repo/userrepo.js";
+import UserRepository from "../repo/userRepo.js";
 import UserService from "../services/userService.js";
 import UserModel from "../models/userModel.js";
 var userRepo = new UserRepository(UserModel);
@@ -8,3 +8,9 @@ export var getAllUsers = userService.getAllUsers();
 export var getUserById = userService.getUserById();
 export var updateUserById = userService.updateUserById();
 export var deleteUserById = userService.deleteUserById();
+export var uploadPhoto = userService.uploadPhoto();
+export var getUserDetails = userService.getUsersDetail();
+export var getAllDetails = userService.getAllDetails();
+export var findUsersByFields = userService.findUsersByFields();
+export var getChatBotResponse = userService.getChatBotResponse();
+export var findUsersByRole = userService.findUsersByRole();

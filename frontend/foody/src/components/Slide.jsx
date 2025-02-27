@@ -9,6 +9,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useData } from "../context/DataContext";
 import LoginModal from "./LoginModal";
 import ImageModal from "./ImageModal";
+import axios from "axios";
 const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
 
@@ -24,7 +25,7 @@ const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title" id="mapModalLabel">
-              Bản đồ - {currentRestaurant.name}
+              Bản đồ - {currentRestaurant.name || ""}
             </h5>
             <button
               type="button"
@@ -37,7 +38,12 @@ const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
             <div style={{ height: "400px" }}>
               <iframe
                 title="Google Map"
-                src={currentRestaurant?.coordinateId.iframe}
+                src={
+                  currentRestaurant.coordinateId?.iframe ===
+                  "Không tìm thấy nút Chia sẻ"
+                    ? "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3920.033019962903!2d106.69676687486857!3d10.73193666001315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317528b2747a81a3%3A0x33c1813055acb613!2zxJDhuqFpIGjhu41jIFTDtG4gxJDhu6ljIFRo4bqvbmc!5e0!3m2!1svi!2s!4v1739377005781!5m2!1svi!2s"
+                    : currentRestaurant.coordinateId?.iframe
+                }
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
@@ -72,6 +78,83 @@ const Slide = ({
   const [showModalImage, setShowModalImage] = useState(false);
   const [showModalComment, setShowModalComment] = useState(false);
   const [totalRate, setTotalRate] = useState(0);
+
+  const [openCommentId, setOpenCommentId] = useState(null);
+  const [replies, setReplies] = useState({}); // Lưu trữ phản hồi theo commentId
+  const [replyText, setReplyText] = useState({}); // Lưu nội dung phản hồi
+
+  const [likes, setLikes] = useState({});
+
+  function isLike(comment) {
+    const likes = comment.numberOfLikes;
+    if (likes && state.user) {
+      if (likes.includes(state.user._id)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  useEffect(() => {
+    // Khởi tạo trạng thái lượt thích từ danh sách bình luận
+    const initialLikes = {};
+    if (currentComment) {
+      currentComment.forEach((comment) => {
+        initialLikes[comment._id] = comment.numberOfLikes.length || 0;
+      });
+    }
+    setLikes(initialLikes);
+  }, [currentComment]);
+
+  const handleLike = async (commentId) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/comment/like`,
+        { commentId },
+        { headers: { Authorization: `Bearer ${state.user.token}` } }
+      );
+
+      if (response.data.success) {
+        setLikes({
+          ...likes,
+          [commentId]: likes[commentId] + 1,
+        });
+      }
+    } catch (error) {
+      console.error("Error liking comment", error);
+    }
+  };
+
+  const handleReplyClick = (commentId) => {
+    setOpenCommentId(openCommentId === commentId ? null : commentId);
+  };
+
+  const handleReplyChange = (commentId, text) => {
+    setReplyText({ ...replyText, [commentId]: text });
+  };
+
+  const handleReplySubmit = (commentId) => {
+    if (!replyText[commentId]?.trim()) return;
+
+    const newReply = {
+      id: new Date().getTime(),
+      user: {
+        fullname: state.user?.fullname || "Bạn",
+        photo: "/images/default.jpg",
+      },
+      description: replyText[commentId],
+      time: "Vừa xong",
+    };
+
+    setReplies({
+      ...replies,
+      [commentId]: [...(replies[commentId] || []), newReply],
+    });
+
+    setReplyText({ ...replyText, [commentId]: "" });
+  };
   useEffect(() => {
     let total =
       currentRestaurant.qualityRate +
@@ -249,7 +332,7 @@ const Slide = ({
                 padding: "16px",
               }}
             >
-              <h4 className="mb-3">Đặt món & Giao tận nơi</h4>
+              <h4 className="mb-3">Thực đơn</h4>
               <div className="row">
                 {currentFood &&
                   currentFood.map((item, index) => (
@@ -307,20 +390,6 @@ const Slide = ({
                       </div>
                     </div>
                   ))}
-              </div>
-              <div className="mt-3">
-                <button
-                  className="btn btn-primary w-100"
-                  style={{
-                    backgroundColor: "#ff5722",
-                    borderColor: "#ff5722",
-                    color: "white",
-                    borderRadius: "4px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Xem thêm & Đặt giao tận nơi
-                </button>
               </div>
             </div>
 
@@ -457,23 +526,74 @@ const Slide = ({
                             className="btn btn-link p-0 me-3 text-muted"
                             style={{ textDecoration: "none", fontSize: "14px" }}
                           >
-                            <i className="fas fa-heart me-1"></i> Thích
+                            <i
+                              className={`fas fa-heart me-1 ${
+                                isLike(review._id) ? "text-danger" : ""
+                              }`}
+                            ></i>{" "}
+                            Thích ({likes[review._id] || 0})
                           </button>
                           <button
+                            onClick={() => handleReplyClick(review._id)}
                             className="btn btn-link p-0 me-3 text-muted"
                             style={{ textDecoration: "none", fontSize: "14px" }}
                           >
                             <i className="fas fa-comment-alt me-1"></i> Thảo
                             luận
                           </button>
-                          <button
-                            className="btn btn-link p-0 text-muted"
-                            style={{ textDecoration: "none", fontSize: "14px" }}
-                          >
-                            <i className="fas fa-exclamation-triangle me-1"></i>{" "}
-                            Báo lỗi
-                          </button>
                         </div>
+                        {/* Ô nhập bình luận */}
+                        {openCommentId === review._id && (
+                          <div className="mt-2">
+                            <textarea
+                              className="form-control"
+                              rows="2"
+                              placeholder="Nhập bình luận của bạn..."
+                              value={replyText[review._id] || ""}
+                              onChange={(e) =>
+                                handleReplyChange(review._id, e.target.value)
+                              }
+                            ></textarea>
+                            <button
+                              className="btn btn-primary btn-sm mt-2"
+                              onClick={() => handleReplySubmit(review._id)}
+                            >
+                              Gửi
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Hiển thị bình luận con */}
+                        {replies[review._id] &&
+                          replies[review._id].length > 0 && (
+                            <div className="mt-3 ps-4 border-start">
+                              {replies[review._id].map((reply, i) => (
+                                <div key={i} className="mb-2">
+                                  <div className="d-flex align-items-center">
+                                    <img
+                                      src={reply.user.photo}
+                                      alt="User Avatar"
+                                      className="rounded-circle me-2"
+                                      style={{
+                                        width: "30px",
+                                        height: "30px",
+                                        objectFit: "cover",
+                                      }}
+                                    />
+                                    <div>
+                                      <strong>{reply.user.fullname}</strong>
+                                      <div className="text-muted small">
+                                        {reply.time}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <p className="text-muted fw-semibold mt-1">
+                                    {reply.description}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                       </div>
                     ))
                   ) : (
@@ -641,7 +761,6 @@ const Slide = ({
               </div>
             </div>
 
-            {/* Map and Information Section */}
             {/* Map and Information Section */}
             <div
               className="mt-5"
@@ -929,7 +1048,7 @@ const Slide = ({
           <MapModal
             isVisible={isMapVisible}
             onClose={handleCloseModal}
-            currentRestaurants={currentRestaurant}
+            currentRestaurant={currentRestaurant}
           />
         )}
       </div>

@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useNavigate } from "react-router-dom";
 import "../App.css"; // Đảm bảo bạn đã liên kết file CSS
 import Header from "../components/Header";
 import Grid from "../components/Grid";
 import Footer from "../components/Footer";
 import ChatBox from "../components/ChatBox";
+import { useData } from "../context/DataContext";
 const DeliveryCategories = [
   "Deal hôm nay",
   "Tất cả",
@@ -90,13 +92,25 @@ const items = [
 ];
 
 const Index = () => {
+  const { state } = useData();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (state.loading) return; // Chờ loading hoàn tất
+
+    if (state.user && state.user.role !== "user") {
+      const timeout = setTimeout(() => {
+        if (state.user.role === "admin" || state.user.role === "owner")
+          navigate("/dashboard");
+      }, 1000);
+
+      return () => clearTimeout(timeout); // Xóa timeout nếu component unmount hoặc state thay đổi
+    }
+  }, [state.loading, state.user, navigate]);
   const [activeTab, setActiveTab] = useState("Deal hôm nay"); // State for active tab
   const [showDropdown, setShowDropdown] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerRow = 4; // Số lượng mục mỗi dòng
   const itemsPerPage = itemsPerRow * 2; // Hiển thị 2 dòng (8 mục)
-  const [selectedProvince, setSelectedProvince] = useState([]); // Tỉnh được chọn với id và name
-  const [selectedCategory, setSelectedCategory] = useState({}); // Category được chọn với id và name
   const [selectedCuisines, setSelectedCuisines] = useState([]);
   const [selectedDistricts, setSelectedDistricts] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
@@ -126,10 +140,6 @@ const Index = () => {
         selectedCuisines={selectedCuisines}
         setSelectedCuisines={setSelectedCuisines}
         selectedDistricts={selectedDistricts}
-        selectedProvince={selectedProvince}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        setSelectedProvince={setSelectedProvince}
         setSelectedDistricts={setSelectedDistricts}
       />
 

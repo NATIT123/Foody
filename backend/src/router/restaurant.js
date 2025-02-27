@@ -18,6 +18,7 @@ import {
   updateStatus,
   getOwnerRestaurants,
   fetchRestaurantsByRate,
+  countRestaurants,
 } from "../controllers/restaurantController.js";
 
 import multer from "multer";
@@ -36,6 +37,8 @@ const upload = multer({
   fileFilter: multerFilter,
   limits: { fileSize: 5 * 1024 * 1024 },
 });
+
+router.get("/count", countRestaurants);
 
 router.post("/getAllRestaurants", getAllRestaurants);
 router.post("/addRestaurant", upload.single("image"), addRestaurant);
