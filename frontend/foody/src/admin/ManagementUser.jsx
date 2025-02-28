@@ -115,7 +115,7 @@ const UserManagement = ({ searchQuery }) => {
             data.status !== 400
           ) {
             setUsers(users.filter((user) => user._id !== id));
-            addNotification(`Delete user successfully`);
+            addNotification(`Delete user ${fullname} successfully`);
             console.log("Delete Success");
           }
         }
@@ -178,7 +178,7 @@ const UserManagement = ({ searchQuery }) => {
               setUsers(
                 users.map((user) => (user._id === id ? { ...newUser } : user))
               );
-              addNotification(`Update user successfully`);
+              addNotification(`Update user ${fullname} successfully`);
               console.log("Update Success");
             }
           }
@@ -221,7 +221,7 @@ const UserManagement = ({ searchQuery }) => {
             ) {
               newUser["_id"] = data.data.data;
               setUsers([newUser, ...users]);
-              addNotification(`Add user successfully`);
+              addNotification(`Add user ${fullname} successfully`);
               console.log("Add Success");
             }
           }
@@ -426,6 +426,7 @@ const UserManagement = ({ searchQuery }) => {
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
+                    <option value="owner">Owner</option>
                   </select>
                 </div>
               </div>

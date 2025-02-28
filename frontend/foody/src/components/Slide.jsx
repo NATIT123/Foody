@@ -83,14 +83,17 @@ const Slide = ({
   const [replyText, setReplyText] = useState({}); // Lưu nội dung phản hồi
 
   const [likes, setLikes] = useState({});
-
+  const [likedComments, setLikedComments] = useState(new Set());
   useEffect(() => {
     const initialLikes = {};
+    const inititalReplies = {};
     if (currentComment) {
       currentComment.forEach((comment) => {
         initialLikes[comment._id] = comment.numberOfLikes.length || 0;
+        inititalReplies[comment._id] = comment.replies;
       });
       setLikes(initialLikes);
+      setReplies(inititalReplies);
       const userLikedComments = new Set(
         currentComment
           .filter((comment) => comment.numberOfLikes.includes(state.user?._id))
@@ -99,8 +102,6 @@ const Slide = ({
       setLikedComments(userLikedComments);
     }
   }, [currentComment, state.user?._id]);
-
-  const [likedComments, setLikedComments] = useState(new Set());
 
   const isLike = (comment) => likedComments.has(comment);
 
@@ -161,7 +162,7 @@ const Slide = ({
     if (state.user._id) {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_BASE_URL}/comment/reply/${commentId}/${state.user._id}`,
+          `${process.env.REACT_APP_BASE_URL}/comment/reply/${commentId}`,
           {
             method: "POST",
             headers: {
@@ -185,8 +186,8 @@ const Slide = ({
               fullname: state.user?.fullname || "Bạn",
               photo: state.user?.photo,
             },
-            description: data.data.content,
-            time: data.data.createdAt,
+            content: data.data.content,
+            createdAt: data.data.createdAt,
           };
 
           setReplies((prevReplies) => ({
@@ -205,6 +206,21 @@ const Slide = ({
         console.error("Error adding reply:", error);
       }
     }
+  };
+
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Ho_Chi_Minh",
+    })
+      .format(date)
+      .replace(",", "");
   };
 
   useEffect(() => {
@@ -640,12 +656,12 @@ const Slide = ({
                                     <div>
                                       <strong>{reply.user.fullname}</strong>
                                       <div className="text-muted small">
-                                        {reply.time}
+                                        {formatDate(reply.createdAt)}
                                       </div>
                                     </div>
                                   </div>
                                   <p className="text-muted fw-semibold mt-1">
-                                    {reply.description}
+                                    {reply.content}
                                   </p>
                                 </div>
                               ))}

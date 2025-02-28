@@ -129,46 +129,7 @@ class CommentRepository {
               albumCount: { $size: "$restaurant.albums" },
             },
           },
-          {
-            $lookup: {
-              from: "users",
-              localField: "replies.userId",
-              foreignField: "_id",
-              as: "replyUsers",
-            },
-          },
-          {
-            $addFields: {
-              replies: {
-                $map: {
-                  input: "$replies",
-                  as: "reply",
-                  in: {
-                    _id: "$$reply._id",
-                    description: "$$reply.description",
-                    createdAt: "$$reply.createdAt",
-                    user: {
-                      $arrayElemAt: [
-                        {
-                          $filter: {
-                            input: "$replyUsers",
-                            as: "user",
-                            cond: { $eq: ["$$user._id", "$$reply.userId"] },
-                          },
-                        },
-                        0,
-                      ],
-                    },
-                  },
-                },
-              },
-            },
-          },
-          {
-            $addFields: {
-              replies: { $ifNull: ["$replies", []] },
-            },
-          },
+
           {
             $project: {
               numberOfLikes: 1,
@@ -267,47 +228,7 @@ class CommentRepository {
           {
             $match: {
               "restaurant._id": new mongoose.Types.ObjectId(restaurantId),
-            },
-          },
-
-          {
-            $lookup: {
-              from: "users",
-              localField: "replies.userId",
-              foreignField: "_id",
-              as: "replyUsers",
-            },
-          },
-          {
-            $addFields: {
-              replies: {
-                $map: {
-                  input: "$replies",
-                  as: "reply",
-                  in: {
-                    _id: "$$reply._id",
-                    description: "$$reply.description",
-                    createdAt: "$$reply.createdAt",
-                    user: {
-                      $arrayElemAt: [
-                        {
-                          $filter: {
-                            input: "$replyUsers",
-                            as: "user",
-                            cond: { $eq: ["$$user._id", "$$reply.userId"] },
-                          },
-                        },
-                        0,
-                      ],
-                    },
-                  },
-                },
-              },
-            },
-          },
-          {
-            $addFields: {
-              replies: { $ifNull: ["$replies", []] },
+              active: true,
             },
           },
 
@@ -394,7 +315,7 @@ class CommentRepository {
   replyComment() {
     return catchAsync(async (req, res, next) => {
       try {
-        const { commentId, userId } = req.params;
+        const { commentId } = req.params;
         const { content, fullname, photo } = req.body;
         if (!content.trim()) {
           return next(new AppError("Reply content cannot be empty!", 400));
@@ -415,6 +336,7 @@ class CommentRepository {
         };
 
         comment.replies.push(newReply);
+
         await comment.save();
 
         res.status(customResourceResponse.success.statusCode).json({

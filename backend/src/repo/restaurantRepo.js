@@ -704,12 +704,32 @@ class RestaurantRepository {
           return next(new AppError("Invalid restaurant ID", 400));
         }
 
-        const updateFields = { ...req.body }; // Dữ liệu cập nhật từ request body
-
         // Kiểm tra xem có hình ảnh mới được tải lên không
+
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY,
+          api_secret: process.env.CLOUDINARY_API_SECRET,
+        });
+
+        let imageUrl = "";
         if (req.file) {
-          updateFields.image = req.file.path;
+          const uploadStream = () => {
+            return new Promise((resolve, reject) => {
+              const stream = cloudinary.uploader.upload_stream(
+                { folder: "restaurants" },
+                (error, result) => {
+                  if (error) return reject(new AppError("Upload failed!", 500));
+                  resolve(result.secure_url);
+                }
+              );
+              stream.end(req.file.buffer);
+            });
+          };
+          imageUrl = await uploadStream();
         }
+
+        const updateFields = { ...req.body, image: imageUrl }; // Dữ liệu cập nhật từ request body
 
         // Cập nhật nhà hàng trong DB
         const updatedRestaurant = await this.restaurantModel.findByIdAndUpdate(
@@ -759,7 +779,6 @@ class RestaurantRepository {
         .populate()
         .paginate();
       const doc = await features.query;
-      console.log(doc.length);
 
       // const results = doc.filter((item) => {
       //   return (
@@ -813,8 +832,6 @@ class RestaurantRepository {
         .limitFields()
         .populate();
       const doc = await features.query;
-
-      console.log(doc);
 
       let results = doc.filter((item) => {
         return item.districtId?.cityId.toString() === cityId;

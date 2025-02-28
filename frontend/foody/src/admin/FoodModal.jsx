@@ -1,16 +1,24 @@
 import React, { useState } from "react";
 import { Modal, Button, Card, Form } from "react-bootstrap";
 
-const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
+const FoodModal = ({
+  isOpen,
+  onClose,
+  foods,
+  onUpdateFood,
+  restaurant,
+  onDeleteFood,
+}) => {
   const [image, setImage] = useState(null);
   const [previewImage, setPreviewImage] = useState("");
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [priceDiscount, setPirceDiscount] = useState(0);
   const [priceOriginal, setPriceOriginal] = useState(0);
   const [name, setName] = useState("");
   const [id, setId] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false); // For Add Food modal
+  const [deleteFoodId, setDeleteFoodId] = useState(null);
 
   const handleEditClick = (food) => {
     setShowEditModal(true);
@@ -22,6 +30,27 @@ const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
     );
     setPreviewImage(food.image || "");
     setImage(null); // Reset image input
+  };
+
+  const handleDeleteClick = (foodId) => {
+    setDeleteFoodId(foodId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteFood = () => {
+    fetch(`${process.env.REACT_APP_BASE_URL}/food/deleteFood/${deleteFoodId}`, {
+      method: "DELETE",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "success") {
+          onDeleteFood(deleteFoodId);
+          console.log("Food deleted successfully");
+        }
+      })
+      .catch((error) => console.error("Error deleting food:", error));
+
+    setShowDeleteModal(false);
   };
 
   const handleAddFoodClick = () => {
@@ -135,13 +164,20 @@ const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
                         ? `${food.priceDiscount} VND`
                         : ""}{" "}
                     </p>
-                    <Button
-                      variant="primary"
-                      className="w-100"
-                      onClick={() => handleEditClick(food)}
-                    >
-                      Edit
-                    </Button>
+                    <div className="d-flex justify-content-center gap-2">
+                      <Button
+                        variant="primary"
+                        onClick={() => handleEditClick(food)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleDeleteClick(food._id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </Card.Body>
                 </Card>
               </div>
@@ -278,6 +314,47 @@ const FoodModal = ({ isOpen, onClose, foods, onUpdateFood, restaurant }) => {
             </Form>
           </Modal.Body>
         </Modal>
+      )}
+
+      {showDeleteModal && (
+        <div
+          className="modal show fade"
+          style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+          tabIndex="-1"
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Delete Restaurant</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                ></button>
+              </div>
+              <div class="modal-body">
+                <p>{`Do you want to delete  `} </p>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={confirmDeleteFood}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </Modal>
   );

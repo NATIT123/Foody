@@ -24,6 +24,6 @@ router.get("/getCommentsByRestaurant/:restaurantId", getCommentsByRestaurant);
 
 router.get("/like/:commentId/:userId", protect, handleLike);
 
-router.post("/reply/:commentId/:userId", protect, replyComment);
+router.post("/reply/:commentId", protect, replyComment);
 
 export default router;

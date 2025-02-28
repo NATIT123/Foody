@@ -22,7 +22,20 @@ const CommentsSection = ({
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [openCommentId, setOpenCommentId] = useState(null);
   const [replyText, setReplyText] = useState({}); // Lưu nội dung phản hồi
-
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Ho_Chi_Minh",
+    })
+      .format(date)
+      .replace(",", "");
+  };
   useEffect(() => {
     if (!state.loading && state.user) {
       const filteredComments = currentComments.filter(
@@ -199,11 +212,13 @@ const CommentsSection = ({
                           />
                           <div>
                             <strong>{reply.user.fullname}</strong>
-                            <div className="text-muted small">{reply.time}</div>
+                            <div className="text-muted small">
+                              {formatDate(reply.createdAt)}
+                            </div>
                           </div>
                         </div>
                         <p className="text-muted fw-semibold mt-1">
-                          {reply.description}
+                          {reply.content}
                         </p>
                       </div>
                     ))}

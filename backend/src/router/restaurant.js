@@ -43,7 +43,11 @@ router.get("/count", countRestaurants);
 router.post("/getAllRestaurants", getAllRestaurants);
 router.post("/addRestaurant", upload.single("image"), addRestaurant);
 router.delete("/deleteRestaurant/:id", deleteRestaurantById);
-router.patch("/updateRestaurant/:id", updateRestaurantById);
+router.patch(
+  "/updateRestaurant/:id",
+  upload.single("image"),
+  updateRestaurantById
+);
 router.get("/getRestaurant/:id", getRestaurantById);
 router.get("/getOwnerRestaurants/:ownerId", getOwnerRestaurants);
 router.get(
