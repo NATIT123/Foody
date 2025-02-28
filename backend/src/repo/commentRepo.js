@@ -347,5 +347,85 @@ class CommentRepository {
       });
     });
   }
+  handleLike() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const { commentId, userId } = req.params;
+
+        if (
+          !commentId.match(/^[0-9a-fA-F]{24}$/) ||
+          !userId.match(/^[0-9a-fA-F]{24}$/)
+        ) {
+          return next(
+            new AppError(
+              customResourceResponse.notValidId.message,
+              customResourceResponse.notValidId.statusCode
+            )
+          );
+        }
+        const comment = await this.commentModel.findById(commentId);
+        if (!comment) {
+          return next(
+            new AppError(
+              customResourceResponse.commentNotFound.message,
+              customResourceResponse.commentNotFound.statusCode
+            )
+          );
+        }
+        const hasLiked = comment.numberOfLikes.includes(userId);
+        if (hasLiked) {
+          comment.numberOfLikes = comment.numberOfLikes.filter(
+            (id) => id.toString() !== userId
+          );
+        } else {
+          comment.numberOfLikes.push(userId);
+        }
+        res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          data: hasLiked ? null : userId,
+        });
+        await comment.save();
+      } catch (err) {
+        return new next(AppError("Server error", 500));
+      }
+    });
+  }
+  replyComment() {
+    return catchAsync(async (req, res, next) => {
+      try {
+        const { commentId, userId } = req.params;
+        const { content, fullname, photo } = req.body;
+        if (!content.trim()) {
+          return next(new AppError("Reply content cannot be empty!", 400));
+        }
+        const comment = await this.commentModel.findById(commentId);
+        if (!comment) {
+          return next(new AppError("Comment not found", 404));
+        }
+
+        // Thêm reply vào danh sách replies của comment
+        const newReply = {
+          user: {
+            fullname,
+            photo,
+          },
+          content,
+          createdAt: new Date(),
+        };
+
+        comment.replies.push(newReply);
+        await comment.save();
+
+        res.status(customResourceResponse.success.statusCode).json({
+          message: customResourceResponse.success.message,
+          status: "success",
+          data: newReply,
+        });
+      } catch (err) {
+        return next(new AppError("Server error", 500));
+      }
+    });
+  }
 }
 export default CommentRepository;

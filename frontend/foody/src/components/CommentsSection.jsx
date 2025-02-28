@@ -3,32 +3,25 @@ import { useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import LoginModal from "./LoginModal";
-import axios from "axios";
-const CommentsSection = ({ currentComments }) => {
+const CommentsSection = ({
+  handleReplySubmit,
+  replies,
+  likes,
+  likedComments,
+  handleLike,
+  currentComments,
+}) => {
   const { state } = useData();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("latest");
   const [myComments, setMyComments] = useState([]);
-  const [likes, setLikes] = useState({});
   const [tabs, setTabs] = useState([
     { name: "Mới nhất", count: currentComments.length || 0, id: "latest" },
     { name: "Của tôi", count: 0, id: "mine" },
   ]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [openCommentId, setOpenCommentId] = useState(null);
-  const [replies, setReplies] = useState({}); // Lưu trữ phản hồi theo commentId
   const [replyText, setReplyText] = useState({}); // Lưu nội dung phản hồi
-
-  useEffect(() => {
-    // Khởi tạo trạng thái lượt thích từ danh sách bình luận
-    const initialLikes = {};
-    if (currentComments) {
-      currentComments.forEach((comment) => {
-        initialLikes[comment._id] = comment.numberOfLikes.length || 0;
-      });
-    }
-    setLikes(initialLikes);
-  }, [currentComments]);
 
   useEffect(() => {
     if (!state.loading && state.user) {
@@ -46,41 +39,7 @@ const CommentsSection = ({ currentComments }) => {
     }
   }, [currentComments, state.user, state.loading]);
 
-  function isLike(comment) {
-    const likes = comment.numberOfLikes;
-    if (likes && state.user) {
-      if (likes.includes(state.user._id)) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    return false;
-  }
-
-  const handleLike = async (commentId) => {
-    if (!state.user) {
-      setShowLoginModal(true);
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/comment/like`,
-        { commentId },
-        { headers: { Authorization: `Bearer ${state.user.token}` } }
-      );
-
-      if (response.data.success) {
-        setLikes({
-          ...likes,
-          [commentId]: likes[commentId] + 1,
-        });
-      }
-    } catch (error) {
-      console.error("Error liking comment", error);
-    }
-  };
+  const isLike = (comment) => likedComments.has(comment);
 
   useEffect(() => {
     if (activeTab === tabs[1].id) {
@@ -106,27 +65,6 @@ const CommentsSection = ({ currentComments }) => {
 
   const handleReplyChange = (commentId, text) => {
     setReplyText({ ...replyText, [commentId]: text });
-  };
-
-  const handleReplySubmit = (commentId) => {
-    if (!replyText[commentId]?.trim()) return;
-
-    const newReply = {
-      id: new Date().getTime(),
-      user: {
-        fullname: state.user?.fullname || "Bạn",
-        photo: "/images/default.jpg",
-      },
-      description: replyText[commentId],
-      time: "Vừa xong",
-    };
-
-    setReplies({
-      ...replies,
-      [commentId]: [...(replies[commentId] || []), newReply],
-    });
-
-    setReplyText({ ...replyText, [commentId]: "" });
   };
 
   return (
@@ -193,6 +131,7 @@ const CommentsSection = ({ currentComments }) => {
                 {/* Action Buttons */}
                 <div className="d-flex align-items-center mt-3">
                   <button
+                    onClick={() => handleLike(comment._id)}
                     className="btn btn-link p-0 me-3 text-muted "
                     style={{
                       textDecoration: "none",
@@ -200,6 +139,7 @@ const CommentsSection = ({ currentComments }) => {
                       color: "red",
                     }}
                   >
+                    {isLike(comment._id)}
                     <i
                       className={`fas fa-heart me-1 ${
                         isLike(comment._id) ? "text-danger" : ""
@@ -244,7 +184,11 @@ const CommentsSection = ({ currentComments }) => {
                       <div key={i} className="mb-2">
                         <div className="d-flex align-items-center">
                           <img
-                            src={reply.user.photo}
+                            src={
+                              reply.user.photo === "default.jpg"
+                                ? "/images/default.jpg"
+                                : reply.user.photo
+                            }
                             alt="User Avatar"
                             className="rounded-circle me-2"
                             style={{

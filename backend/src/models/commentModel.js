@@ -2,10 +2,9 @@ import mongoose, { Schema, model } from "mongoose";
 
 const ReplySchema = new Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
-      required: true,
+    user: {
+      fullname: { type: String, required: true },
+      photo: { type: String, required: true },
     },
     content: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },

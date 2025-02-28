@@ -32,6 +32,14 @@ class CommentService {
   getCommentsByRestaurant() {
     return this.commentRepo.getCommentsByRestaurant();
   }
+
+  handleLike() {
+    return this.commentRepo.handleLike();
+  }
+
+  replyComment() {
+    return this.commentRepo.replyComment();
+  }
 }
 
 export default CommentService;
