@@ -1218,7 +1218,14 @@ class RestaurantRepository {
   getNearestRestaurants() {
     return catchAsync(async (req, res, next) => {
       try {
-        const { latitude, longitude, maxDistance } = req.body;
+        const {
+          latitude,
+          longitude,
+          maxDistance,
+          subCategory,
+          cuisines,
+          district,
+        } = req.body;
 
         if (!latitude || !longitude) {
           return next(
@@ -1233,6 +1240,20 @@ class RestaurantRepository {
 
         // Tạo điều kiện match
         let matchConditions = {};
+
+        // Apply match conditions based on incoming filters
+        if (mongoose.Types.ObjectId.isValid(subCategory)) {
+          matchConditions["restaurant.subCategoryId"] =
+            new mongoose.Types.ObjectId(subCategory);
+        }
+        if (mongoose.Types.ObjectId.isValid(district)) {
+          matchConditions["restaurant.districtId"] =
+            new mongoose.Types.ObjectId(district);
+        }
+        if (mongoose.Types.ObjectId.isValid(cuisines)) {
+          matchConditions["restaurant.cuisinesId"] =
+            new mongoose.Types.ObjectId(cuisines);
+        }
 
         const restaurants = await this.coordinateModel.aggregate([
           {
@@ -1257,6 +1278,42 @@ class RestaurantRepository {
           },
           {
             $unwind: { path: "$restaurant", preserveNullAndEmptyArrays: false },
+          },
+
+          {
+            $lookup: {
+              from: "subcategories",
+              localField: "restaurant.subCategoryId",
+              foreignField: "_id",
+              as: "subCategory",
+            },
+          },
+          {
+            $unwind: { path: "$subCategory", preserveNullAndEmptyArrays: true },
+          },
+
+          {
+            $lookup: {
+              from: "cuisines",
+              localField: "restaurant.cuisinesId",
+              foreignField: "_id",
+              as: "cuisines",
+            },
+          },
+          {
+            $unwind: { path: "$cuisines", preserveNullAndEmptyArrays: true },
+          },
+
+          {
+            $lookup: {
+              from: "districts",
+              localField: "restaurant.districtId",
+              foreignField: "_id",
+              as: "districts",
+            },
+          },
+          {
+            $unwind: { path: "$district", preserveNullAndEmptyArrays: true },
           },
 
           ...(Object.keys(matchConditions).length > 0

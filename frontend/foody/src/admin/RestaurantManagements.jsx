@@ -122,7 +122,7 @@ const RestaurantManagement = ({ searchQuery }) => {
         `${process.env.REACT_APP_BASE_URL}/restaurant/getOwnerRestaurants/${state.user?._id}?page=${currentPage}`,
         {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
+          headers: { Authorization: `Bearer ${state.accessToken}` },
         }
       )
         .then((response) => response.json())
@@ -365,24 +365,27 @@ const RestaurantManagement = ({ searchQuery }) => {
         });
     } else if (modalMode === "add") {
       let status = "approved";
+      let ownerId = formData.ownerId;
       const formDataToSend = new FormData();
       formDataToSend.append("name", formData.name);
       formDataToSend.append("address", formData.address);
       formDataToSend.append("timeOpen", formData.timeOpen);
       formDataToSend.append("priceRange", formData.priceRange);
       formDataToSend.append("image", formData.image);
-      formDataToSend.append("ownerId", formData.ownerId);
+      if (state.user?.role === "owner") ownerId = state.user?._id.toString();
+      formDataToSend.append("ownerId", ownerId);
       formDataToSend.append("subCategoryId", formData.subCategoryId);
       formDataToSend.append("cuisinesId", formData.cuisinesId);
       formDataToSend.append("districtId", formData.districtId);
       if (state.user?.role === "owner") status = "pending";
       formDataToSend.append("status", status);
+
       const addRestaurant = {
         name: formData.name,
         address: formData.address,
         timeOpen: formData.timeOpen,
         priceRange: formData.priceRange,
-        ownerId: formData.ownerId,
+        ownerId: ownerId,
         status: status,
         cuisinesId: formData.cuisinesId,
         subCategoryId: formData.subCategoryId,
@@ -743,23 +746,28 @@ const RestaurantManagement = ({ searchQuery }) => {
                         ))}
                       </select>
                     </div>
-                    <div className="mb-3">
-                      <label className="form-label">Owner</label>
-                      <select
-                        className="form-control"
-                        value={formData.ownerId}
-                        onChange={(e) =>
-                          setFormData({ ...formData, ownerId: e.target.value })
-                        }
-                      >
-                        <option value="">Select an owner</option>
-                        {owners.map((owner) => (
-                          <option key={owner._id} value={owner._id}>
-                            {owner.fullname}
-                          </option>
-                        ))}
-                      </select>{" "}
-                    </div>
+                    {state.user?.role === "admin" && (
+                      <div className="mb-3">
+                        <label className="form-label">Owner</label>
+                        <select
+                          className="form-control"
+                          value={formData.ownerId}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              ownerId: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Select an owner</option>
+                          {owners.map((owner) => (
+                            <option key={owner._id} value={owner._id}>
+                              {owner.fullname}
+                            </option>
+                          ))}
+                        </select>{" "}
+                      </div>
+                    )}
 
                     <div className="mb-3">
                       <label className="form-label">Location</label>

@@ -125,12 +125,9 @@ const Grid = () => {
     navigate("/login");
   };
 
-  // Fetch API lấy danh sách restaurant
-  const prevCategory = useRef(activeCategory);
-  const prevPage = useRef(currentPage);
-
   const fetchRestaurants = useCallback(() => {
     setCurrentItems([]);
+    console.log(filtersState);
     fetch(
       `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
       {
@@ -192,6 +189,9 @@ const Grid = () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
+              subCategory: filtersState[0],
+              cuisines: filtersState[1],
+              district: filtersState[2],
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               maxDistance: 1000,
@@ -211,7 +211,7 @@ const Grid = () => {
       },
       (error) => console.error("Lỗi lấy vị trí:", error)
     );
-  }, [currentPage]);
+  }, [currentPage, filtersState]);
 
   const fetchRateRestaurants = useCallback(() => {
     setCurrentItems([]);
@@ -242,16 +242,6 @@ const Grid = () => {
   }, [currentPage, state, filtersState]);
 
   useEffect(() => {
-    if (
-      prevCategory.current === activeCategory &&
-      prevPage.current === currentPage
-    ) {
-      return;
-    }
-
-    prevCategory.current = activeCategory;
-    prevPage.current = currentPage;
-
     if (activeCategory === categories[0]) {
       fetchRestaurants();
     } else if (activeCategory === categories[2]) {
@@ -262,17 +252,9 @@ const Grid = () => {
     } else if (activeCategory === categories[3]) {
       fetchRateRestaurants();
     }
-  }, [
-    activeCategory,
-    currentPage,
-    fetchRestaurants,
-    fetchFavoriteRestaurants,
-    fetchNearestRestaurants,
-  ]);
+  }, [filtersState, activeCategory, currentPage]);
 
   // Fetch API lấy danh sách restaurant
-  const prevCategoryEat = useRef(activeCategoryEat);
-  const prevPageEat = useRef(currentPageEat);
 
   const fetchAllRestaurants = useCallback(() => {
     setItemEat([]);
@@ -377,19 +359,9 @@ const Grid = () => {
       .catch((error) =>
         console.error("Error fetching favorite restaurants:", error)
       );
-  }, [currentPageEat, state]);
+  }, [currentPageEat, state, filtersState]);
 
   useEffect(() => {
-    if (
-      prevPageEat.current === currentPageEat &&
-      prevCategoryEat.current === activeCategoryEat
-    ) {
-      return;
-    }
-
-    prevPageEat.current = currentPageEat;
-    prevCategoryEat.current = activeCategoryEat;
-
     if (activeCategoryEat === categoriesEat[0]) {
       fetchAllRestaurants();
     } else if (activeCategoryEat === categoriesEat[2]) {
@@ -400,14 +372,7 @@ const Grid = () => {
       handleShowModalLogin();
       fetchFavoriteRestaurantsEat();
     }
-  }, [
-    activeCategoryEat,
-    currentPageEat,
-    fetchAllRestaurants,
-    fetchTopDeals,
-    fetchMostViewed,
-    fetchFavoriteRestaurantsEat,
-  ]);
+  }, [activeCategoryEat, currentPageEat, filtersState]);
 
   const handleShowModal = (item) => {
     setSelectedItem(item);

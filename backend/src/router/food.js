@@ -9,6 +9,7 @@ import {
   getFoodsByRestaurant,
 } from "../controllers/foodController.js";
 import multer from "multer";
+import { protect } from "../controllers/authController.js";
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
@@ -25,11 +26,13 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-router.get("/getAllFoods", getAllFoods);
 router.post("/addFood", upload.single("image"), addFood);
+router.get("/getFoodsByRestaurant/:restaurantId", getFoodsByRestaurant);
+
+router.use(protect);
+router.get("/getAllFoods", getAllFoods);
 router.delete("/deleteFood/:id", deleteFoodById);
 router.patch("/updateFood/:id", upload.single("image"), updateFoodById);
 router.get("/getFood/:id", getFoodById);
-router.get("/getFoodsByRestaurant/:restaurantId", getFoodsByRestaurant);
 
 export default router;

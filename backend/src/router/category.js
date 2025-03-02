@@ -7,8 +7,11 @@ import {
   getCategoryById,
   deleteCategoryById,
 } from "../controllers/categoryController.js";
+import { protect } from "../controllers/authController.js";
 
 router.get("/getAllCategory", getAllCategorys);
+
+router.use(protect);
 router.post("/addCategory", addCategory);
 router.delete("/deleteCategory/:id", deleteCategoryById);
 router.patch("/updateCategory/:id", updateCategoryById);

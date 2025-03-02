@@ -35,6 +35,7 @@ const Member = () => {
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/user/getUserDetails/${id}`, {
       method: "GET",
+      headers: { Authorization: `Bearer ${state.accessToken}` },
     })
       .then((response) => response.json())
       .then((data) => {

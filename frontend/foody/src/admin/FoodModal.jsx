@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Modal, Button, Card, Form } from "react-bootstrap";
+import { useData } from "../context/DataContext";
 
 const FoodModal = ({
   isOpen,
@@ -19,7 +20,7 @@ const FoodModal = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false); // For Add Food modal
   const [deleteFoodId, setDeleteFoodId] = useState(null);
-
+  const { state } = useData();
   const handleEditClick = (food) => {
     setShowEditModal(true);
     setId(food._id);
@@ -40,6 +41,9 @@ const FoodModal = ({
   const confirmDeleteFood = () => {
     fetch(`${process.env.REACT_APP_BASE_URL}/food/deleteFood/${deleteFoodId}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${state.accessToken}`,
+      },
     })
       .then((response) => response.json())
       .then((data) => {
@@ -100,6 +104,9 @@ const FoodModal = ({
         id ? `updateFood/${id}` : "addFood"
       }`,
       {
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`,
+        },
         method: id ? "PATCH" : "POST",
         body: formData,
       }

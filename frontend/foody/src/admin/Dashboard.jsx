@@ -53,10 +53,18 @@ const Dashboard = () => {
         try {
           const [usersRes, albumsRes, restaurantsRes, commentsRes] =
             await Promise.all([
-              fetch(`${process.env.REACT_APP_BASE_URL}/user/count`),
-              fetch(`${process.env.REACT_APP_BASE_URL}/album/count`),
-              fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/count`),
-              fetch(`${process.env.REACT_APP_BASE_URL}/comment/count`),
+              fetch(`${process.env.REACT_APP_BASE_URL}/user/count`, {
+                headers: { Authorization: `Bearer ${state.accessToken}` },
+              }),
+              fetch(`${process.env.REACT_APP_BASE_URL}/album/count`, {
+                headers: { Authorization: `Bearer ${state.accessToken}` },
+              }),
+              fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/count`, {
+                headers: { Authorization: `Bearer ${state.accessToken}` },
+              }),
+              fetch(`${process.env.REACT_APP_BASE_URL}/comment/count`, {
+                headers: { Authorization: `Bearer ${state.accessToken}` },
+              }),
             ]);
 
           const [users, albums, restaurants, comments] = await Promise.all([

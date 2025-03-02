@@ -43,10 +43,6 @@ class RestaurantService {
     return this.restaurantRepo.getRestaurantByFields();
   }
 
-  getRestaurantByRecommendation() {
-    return this.restaurantRepo.getRestaurantByRecommendation();
-  }
-
   getNearestRestaurants() {
     return this.restaurantRepo.getNearestRestaurants();
   }
