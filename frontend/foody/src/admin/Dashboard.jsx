@@ -36,6 +36,11 @@ const Dashboard = () => {
   const [countRestaurants, setCountRestaurants] = useState(0);
   const [countComments, setCountComments] = useState(0);
   const [countAlbums, setCountAlbums] = useState(0);
+
+  useEffect(() => {
+    document.title = `Dashboard`;
+  }, []);
+
   useEffect(() => {
     if (state.loading) return; // Chờ loading hoàn tất
 
@@ -188,7 +193,7 @@ const Dashboard = () => {
           {state.user?.role === "admin" &&
             activeTab === "Xét duyệt nhà hàng" && (
               <div>
-                <AdminRestaurantApproval />
+                <AdminRestaurantApproval searchQuery={searchQuery} />
               </div>
             )}
         </div>

@@ -15,6 +15,10 @@ const LoginPage = () => {
   const { state, setAccessToken } = useData();
 
   useEffect(() => {
+    document.title = "Đăng nhập";
+  }, []);
+
+  useEffect(() => {
     if (!state.loading && state.user) {
       if (state.user.role === "admin" || state.user.role === "owner")
         navigate("/dashboard");

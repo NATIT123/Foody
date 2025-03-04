@@ -29,6 +29,10 @@ const ChangePasswordPage = () => {
   const [status, setStatus] = useState("");
 
   useEffect(() => {
+    document.title = `Thay đổi mật khẩu`;
+  }, []);
+
+  useEffect(() => {
     if (resetToken) {
       fetch(
         `${process.env.REACT_APP_BASE_URL}/user/checkPassword/${resetToken}`,

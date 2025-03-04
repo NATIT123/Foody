@@ -18,6 +18,8 @@ import {
   getOwnerRestaurants,
   fetchRestaurantsByRate,
   countRestaurants,
+  findRestaurantsOwnerByFields,
+  findRestaurantsPendingByFields,
 } from "../controllers/restaurantController.js";
 
 import multer from "multer";
@@ -50,13 +52,14 @@ router.post("/getRestaurantByFields", getRestaurantByFields);
 
 router.post("/getNearestRestaurants", getNearestRestaurants);
 router.post("/getRestaurantByViews", getRestaurantByViews);
-router.get("/findRestaurantsByFields", findRestaurantsByFields);
+
 router.get(
   "/getRestaurantByOptions/city/:cityId/category/:categoryId",
   getRestaurantByOptions
 );
 
 router.use(protect);
+router.get("/findRestaurantsByFields", findRestaurantsByFields);
 router.post("/addRestaurant", upload.single("image"), addRestaurant);
 router.delete("/deleteRestaurant/:id", deleteRestaurantById);
 router.patch(
@@ -68,4 +71,10 @@ router.get("/getRestaurant/:id", getRestaurantById);
 router.get("/getOwnerRestaurants/:ownerId", getOwnerRestaurants);
 router.get("/getRestaunrantsPending", getRestaunrantsPending);
 router.patch("/updateStatus/:restaurantId", updateStatus);
+router.get(
+  "/findRestaurantsOwnerByFields/:ownerId",
+  findRestaurantsOwnerByFields
+);
+
+router.get("/findRestaurantsPendingByFields", findRestaurantsPendingByFields);
 export default router;

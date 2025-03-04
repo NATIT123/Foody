@@ -299,7 +299,7 @@ class FavoriteRestaurantRepository {
           },
         });
       } catch (error) {
-        console.error("Error fetching comments", error);
+        console.error("Error fetching restaurants", error);
         return next(new AppError("Server error", 500));
       }
     });

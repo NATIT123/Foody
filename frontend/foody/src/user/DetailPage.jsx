@@ -95,6 +95,12 @@ const DetailPage = () => {
       });
   }, [id]);
 
+  useEffect(() => {
+    if (currentRestaurant) {
+      document.title = `${currentRestaurant.name} ${currentRestaurant.address}`;
+    }
+  }, [currentRestaurant]);
+
   // Fetch API lấy detail restaurant
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/food/getFoodsByRestaurant/${id}`)

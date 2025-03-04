@@ -20,6 +20,10 @@ const ForgotPasswordPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    document.title = `Quên mật khẩu`;
+  }, []);
+
   const [status, setStatus] = useState("");
   const handleSubmit = (e) => {
     e.preventDefault();

@@ -19,7 +19,7 @@ const UserManagement = ({ searchQuery }) => {
   const { state, addNotification } = useData();
 
   useEffect(() => {
-    if (searchQuery) {
+    if (searchQuery && state.user.role === "admin") {
       fetch(
         `${process.env.REACT_APP_BASE_URL}/user/findUsersByFields?page=${currentPage}&searchQuery=${searchQuery}`,
         {
@@ -46,7 +46,7 @@ const UserManagement = ({ searchQuery }) => {
           console.error("Error fetching users:", error);
         });
     }
-  }, [searchQuery]);
+  }, [searchQuery, currentPage]);
   useEffect(() => {
     if (!state.accessToken) return;
     if (state.user?.role !== "admin") return;

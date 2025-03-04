@@ -34,6 +34,10 @@ const RegisterPage = () => {
   };
 
   useEffect(() => {
+    document.title = "Đăng ký";
+  }, []);
+
+  useEffect(() => {
     if (state.user && !state.loading) {
       console.log(state.user);
       if (state.user.role === "admin") navigate("/dashboard");
