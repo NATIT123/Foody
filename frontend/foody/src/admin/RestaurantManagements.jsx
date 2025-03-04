@@ -31,6 +31,13 @@ const RestaurantManagement = ({ searchQuery }) => {
       }
     });
   };
+
+  const handleDeleteFood = (deletedFood) => {
+    setFoodData((prev) => {
+      return prev.filter((food) => food._id !== deletedFood);
+    });
+  };
+
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
@@ -84,7 +91,7 @@ const RestaurantManagement = ({ searchQuery }) => {
   }, []);
   const { state, addNotification } = useData();
   useEffect(() => {
-    if (state.user.role === "admin") {
+    if (state.user?.role === "admin") {
       fetch(
         `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
         {
@@ -110,12 +117,12 @@ const RestaurantManagement = ({ searchQuery }) => {
             navigate("/");
           }
         });
-    } else if (state.user.role === "owner") {
+    } else if (state.user?.role === "owner") {
       fetch(
-        `${process.env.REACT_APP_BASE_URL}/restaurant/getOwnerRestaurants/${state.user._id}?page=${currentPage}`,
+        `${process.env.REACT_APP_BASE_URL}/restaurant/getOwnerRestaurants/${state.user?._id}?page=${currentPage}`,
         {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
+          headers: { Authorization: `Bearer ${state.accessToken}` },
         }
       )
         .then((response) => response.json())
@@ -296,12 +303,21 @@ const RestaurantManagement = ({ searchQuery }) => {
 
   const handleSave = () => {
     if (modalMode === "edit") {
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("address", formData.address);
+      formDataToSend.append("timeOpen", formData.timeOpen);
+      formDataToSend.append("priceRange", formData.priceRange);
+      formDataToSend.append("image", formData.image);
+      formDataToSend.append("ownerId", formData.ownerId);
+      formDataToSend.append("subCategoryId", formData.subCategoryId);
+      formDataToSend.append("cuisinesId", formData.cuisinesId);
+      formDataToSend.append("districtId", formData.districtId);
       const updatedRestaurant = {
         name: formData.name,
         address: formData.address,
         timeOpen: formData.timeOpen,
         priceRange: formData.priceRange,
-        image: foodData.image,
         ownerId: formData.ownerId,
         cuisinesId: formData.cuisinesId,
         subCategoryId: formData.subCategoryId,
@@ -313,10 +329,9 @@ const RestaurantManagement = ({ searchQuery }) => {
         {
           method: "PATCH",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${state.accessToken}`,
           },
-          body: JSON.stringify(updatedRestaurant),
+          body: formDataToSend,
         }
       )
         .then((response) => response.json())
@@ -332,8 +347,8 @@ const RestaurantManagement = ({ searchQuery }) => {
                   restaurant._id === formData._id
                     ? {
                         ...updatedRestaurant,
-                        _id: data.data._id.toString(),
                         image: data.data.image,
+                        _id: data.data._id.toString(),
                       }
                     : restaurant
                 )
@@ -350,25 +365,27 @@ const RestaurantManagement = ({ searchQuery }) => {
         });
     } else if (modalMode === "add") {
       let status = "approved";
+      let ownerId = formData.ownerId;
       const formDataToSend = new FormData();
       formDataToSend.append("name", formData.name);
       formDataToSend.append("address", formData.address);
       formDataToSend.append("timeOpen", formData.timeOpen);
       formDataToSend.append("priceRange", formData.priceRange);
       formDataToSend.append("image", formData.image);
-      formDataToSend.append("ownerId", formData.ownerId);
+      if (state.user?.role === "owner") ownerId = state.user?._id.toString();
+      formDataToSend.append("ownerId", ownerId);
       formDataToSend.append("subCategoryId", formData.subCategoryId);
       formDataToSend.append("cuisinesId", formData.cuisinesId);
       formDataToSend.append("districtId", formData.districtId);
-      if (state.user.role === "owner") status = "pending";
+      if (state.user?.role === "owner") status = "pending";
       formDataToSend.append("status", status);
+
       const addRestaurant = {
         name: formData.name,
         address: formData.address,
         timeOpen: formData.timeOpen,
         priceRange: formData.priceRange,
-        image: foodData.image,
-        ownerId: formData.ownerId,
+        ownerId: ownerId,
         status: status,
         cuisinesId: formData.cuisinesId,
         subCategoryId: formData.subCategoryId,
@@ -390,7 +407,7 @@ const RestaurantManagement = ({ searchQuery }) => {
               data.status !== "error" &&
               data.status !== 400
             ) {
-              if (state.user.role === "admin") {
+              if (state.user?.role === "admin") {
                 setRestaurants([
                   {
                     ...addRestaurant,
@@ -511,7 +528,7 @@ const RestaurantManagement = ({ searchQuery }) => {
                       >
                         Edit
                       </button>
-                      {state.user.role === "admin" && (
+                      {state.user?.role === "admin" && (
                         <button
                           className="btn btn-danger btn-sm me-2"
                           onClick={() => handleDeleteRestaurant(restaurant)}
@@ -519,7 +536,7 @@ const RestaurantManagement = ({ searchQuery }) => {
                           Delete
                         </button>
                       )}
-                      {state.user.role === "owner" && (
+                      {state.user?.role === "owner" && (
                         <button
                           className="btn btn-success btn-sm me-2"
                           onClick={() => handleOpenModal("food", restaurant)}
@@ -582,6 +599,7 @@ const RestaurantManagement = ({ searchQuery }) => {
         onClose={() => setShowModal(false)}
         foods={foodData}
         onUpdateFood={handleUpdateFood}
+        onDeleteFood={handleDeleteFood}
       />
       {/* Modal */}
       {isModalOpen && (
@@ -728,23 +746,28 @@ const RestaurantManagement = ({ searchQuery }) => {
                         ))}
                       </select>
                     </div>
-                    <div className="mb-3">
-                      <label className="form-label">Owner</label>
-                      <select
-                        className="form-control"
-                        value={formData.ownerId}
-                        onChange={(e) =>
-                          setFormData({ ...formData, ownerId: e.target.value })
-                        }
-                      >
-                        <option value="">Select an owner</option>
-                        {owners.map((owner) => (
-                          <option key={owner._id} value={owner._id}>
-                            {owner.fullname}
-                          </option>
-                        ))}
-                      </select>{" "}
-                    </div>
+                    {state.user?.role === "admin" && (
+                      <div className="mb-3">
+                        <label className="form-label">Owner</label>
+                        <select
+                          className="form-control"
+                          value={formData.ownerId}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              ownerId: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Select an owner</option>
+                          {owners.map((owner) => (
+                            <option key={owner._id} value={owner._id}>
+                              {owner.fullname}
+                            </option>
+                          ))}
+                        </select>{" "}
+                      </div>
+                    )}
 
                     <div className="mb-3">
                       <label className="form-label">Location</label>

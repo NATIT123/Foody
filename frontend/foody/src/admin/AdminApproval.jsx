@@ -75,7 +75,7 @@ const AdminRestaurantApproval = () => {
                     <div className="card-body">
                       <h5 className="card-title">{restaurant.name}</h5>
                       <p className="card-text">
-                        <strong>Category:</strong> {restaurant.category}
+                        <strong>Category:</strong> {restaurant.subCategory}
                       </p>
                       <p className="card-text">
                         <strong>Location:</strong> {restaurant.address}

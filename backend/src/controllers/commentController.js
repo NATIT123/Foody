@@ -18,3 +18,7 @@ export const updateCommentById = commentService.updateCommentById();
 export const deleteCommentById = commentService.deleteCommentById();
 
 export const getCommentsByRestaurant = commentService.getCommentsByRestaurant();
+
+export const handleLike = commentService.handleLike();
+
+export const replyComment = commentService.replyComment();

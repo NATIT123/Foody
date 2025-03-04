@@ -9,7 +9,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useData } from "../context/DataContext";
 import LoginModal from "./LoginModal";
 import ImageModal from "./ImageModal";
-import axios from "axios";
 const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
 
@@ -84,43 +83,69 @@ const Slide = ({
   const [replyText, setReplyText] = useState({}); // Lưu nội dung phản hồi
 
   const [likes, setLikes] = useState({});
-
-  function isLike(comment) {
-    const likes = comment.numberOfLikes;
-    if (likes && state.user) {
-      if (likes.includes(state.user._id)) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    return false;
-  }
-
+  const [likedComments, setLikedComments] = useState(new Set());
   useEffect(() => {
-    // Khởi tạo trạng thái lượt thích từ danh sách bình luận
     const initialLikes = {};
+    const inititalReplies = {};
     if (currentComment) {
       currentComment.forEach((comment) => {
         initialLikes[comment._id] = comment.numberOfLikes.length || 0;
+        inititalReplies[comment._id] = comment.replies;
       });
+      setLikes(initialLikes);
+      setReplies(inititalReplies);
+      const userLikedComments = new Set(
+        currentComment
+          .filter((comment) => comment.numberOfLikes.includes(state.user?._id))
+          .map((comment) => comment._id)
+      );
+      setLikedComments(userLikedComments);
     }
-    setLikes(initialLikes);
-  }, [currentComment]);
+  }, [currentComment, state.user?._id]);
+
+  const isLike = (comment) => likedComments.has(comment);
 
   const handleLike = async (commentId) => {
+    if (!state.user) {
+      setShowModalLogin(true);
+      return;
+    }
+
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/comment/like`,
-        { commentId },
-        { headers: { Authorization: `Bearer ${state.user.token}` } }
+      const response = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/comment/like/${commentId}/${state.user._id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${state.accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      if (response.data.success) {
-        setLikes({
-          ...likes,
-          [commentId]: likes[commentId] + 1,
+      const data = await response.json();
+
+      if (response.ok && data.status === "success") {
+        setLikes((prevLikes) => {
+          const currentLikes = prevLikes[commentId] || 0;
+          return {
+            ...prevLikes,
+            [commentId]: data.data
+              ? Math.max(currentLikes - 1, 0)
+              : currentLikes + 1,
+          };
         });
+        setLikedComments((prevLikedComments) => {
+          const newLikedComments = new Set(prevLikedComments);
+          if (data.data) {
+            newLikedComments.delete(commentId);
+          } else {
+            newLikedComments.add(commentId);
+          }
+          return newLikedComments;
+        });
+      } else {
+        console.error("Error liking comment", data.message);
       }
     } catch (error) {
       console.error("Error liking comment", error);
@@ -135,26 +160,72 @@ const Slide = ({
     setReplyText({ ...replyText, [commentId]: text });
   };
 
-  const handleReplySubmit = (commentId) => {
+  const handleReplySubmit = async (commentId) => {
     if (!replyText[commentId]?.trim()) return;
+    if (state.user._id) {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BASE_URL}/comment/reply/${commentId}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${state.accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              content: replyText[commentId],
+              fullname: state.user.fullname,
+              photo: state.user.photo,
+            }),
+          }
+        );
 
-    const newReply = {
-      id: new Date().getTime(),
-      user: {
-        fullname: state.user?.fullname || "Bạn",
-        photo: "/images/default.jpg",
-      },
-      description: replyText[commentId],
-      time: "Vừa xong",
-    };
+        const data = await response.json();
 
-    setReplies({
-      ...replies,
-      [commentId]: [...(replies[commentId] || []), newReply],
-    });
+        if (response.ok && data.status === "success") {
+          const newReply = {
+            id: data.data._id,
+            user: {
+              fullname: state.user?.fullname || "Bạn",
+              photo: state.user?.photo,
+            },
+            content: data.data.content,
+            createdAt: data.data.createdAt,
+          };
 
-    setReplyText({ ...replyText, [commentId]: "" });
+          setReplies((prevReplies) => ({
+            ...prevReplies,
+            [commentId]: [...(prevReplies[commentId] || []), newReply],
+          }));
+
+          setReplyText((prevText) => ({
+            ...prevText,
+            [commentId]: "",
+          }));
+        } else {
+          console.error("Error adding reply:", data.message);
+        }
+      } catch (error) {
+        console.error("Error adding reply:", error);
+      }
+    }
   };
+
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Ho_Chi_Minh",
+    })
+      .format(date)
+      .replace(",", "");
+  };
+
   useEffect(() => {
     let total =
       currentRestaurant.qualityRate +
@@ -523,6 +594,7 @@ const Slide = ({
                         {/* Action Icons */}
                         <div className="d-flex align-items-center mt-3">
                           <button
+                            onClick={() => handleLike(review._id)}
                             className="btn btn-link p-0 me-3 text-muted"
                             style={{ textDecoration: "none", fontSize: "14px" }}
                           >
@@ -571,7 +643,11 @@ const Slide = ({
                                 <div key={i} className="mb-2">
                                   <div className="d-flex align-items-center">
                                     <img
-                                      src={reply.user.photo}
+                                      src={
+                                        reply.user.photo === "default.jpg"
+                                          ? "/images/default.jpg"
+                                          : reply.user.photo
+                                      }
                                       alt="User Avatar"
                                       className="rounded-circle me-2"
                                       style={{
@@ -583,12 +659,12 @@ const Slide = ({
                                     <div>
                                       <strong>{reply.user.fullname}</strong>
                                       <div className="text-muted small">
-                                        {reply.time}
+                                        {formatDate(reply.createdAt)}
                                       </div>
                                     </div>
                                   </div>
                                   <p className="text-muted fw-semibold mt-1">
-                                    {reply.description}
+                                    {reply.content}
                                   </p>
                                 </div>
                               ))}
@@ -1041,7 +1117,14 @@ const Slide = ({
           <ImageGallery currentAlbums={currentAlbum} />
         )}
         {activeSection === "Bình luận" && (
-          <CommentsSection currentComments={currentComment} />
+          <CommentsSection
+            handleReplySubmit={handleReplySubmit}
+            replies={replies}
+            likes={likes}
+            likedComments={likedComments}
+            handleLike={handleLike}
+            currentComments={currentComment}
+          />
         )}
 
         {activeSection === "Bản đồ" && (

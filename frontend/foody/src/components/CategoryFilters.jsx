@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useData } from "../context/DataContext";
 const CategoryFilters = ({
   categories,
@@ -9,6 +9,7 @@ const CategoryFilters = ({
   setFiltersState,
 }) => {
   const { state } = useData();
+
   return (
     <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between flex-wrap mb-3 bg-white p-3 border">
       {/* Categories Section */}

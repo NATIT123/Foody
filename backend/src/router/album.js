@@ -10,6 +10,7 @@ import {
   countAlbums,
 } from "../controllers/albumController.js";
 import multer from "multer";
+import { protect } from "../controllers/authController.js";
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
@@ -26,12 +27,14 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-router.get("/count", countAlbums);
 router.get("/getAllAlbums", getAllAlbums);
 router.post("/addAlbum", upload.single("image"), addAlbum);
-router.delete("/deleteAlbum/:id", deleteAlbumById);
-router.patch("/updateAlbum/:id", updateAlbumById);
 router.get("/getAlbum/:id", getAlbumById);
 router.get("/getAlbumsByRestaurant/:restaurantId", getAlbumsByRestaurant);
+
+router.use(protect);
+router.get("/count", countAlbums);
+router.delete("/deleteAlbum/:id", deleteAlbumById);
+router.patch("/updateAlbum/:id", updateAlbumById);
 
 export default router;

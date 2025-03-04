@@ -7,8 +7,11 @@ import {
   getCityById,
   deleteCityById,
 } from "../controllers/cityController.js";
+import { protect } from "../controllers/authController.js";
 
 router.get("/getAllCity", getAllCitys);
+
+router.use(protect);
 router.post("/addCity", addCity);
 router.delete("/deleteCity/:id", deleteCityById);
 router.patch("/updateCity/:id", updateCityById);

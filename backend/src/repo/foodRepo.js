@@ -18,7 +18,7 @@ class FoodRepository {
     return catchAsync(async (req, res, next) => {
       try {
         const { name, priceOriginal, priceDiscount, restaurantId } = req.body;
-        // Kiểm tra xem tên món ăn có tồn tại không
+
         if (!name || !priceOriginal) {
           return next(
             new AppError("Name and original price are required", 400)
@@ -166,7 +166,7 @@ class FoodRepository {
           )
         );
       }
-      const doc = await this.foodModel.find({ restaurantId });
+      const doc = await this.foodModel.find({ restaurantId, active: true });
       // SEND RESPONSE
       if (!doc) {
         return next(

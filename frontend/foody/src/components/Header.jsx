@@ -74,7 +74,14 @@ function Header({
       .catch((error) => {
         console.error("Error fetching restaurants:", error);
       });
-  }, [searchQuery, selectedCuisines, selectedDistricts, selectedSubCategories]);
+  }, [
+    searchQuery,
+    selectedCuisines,
+    selectedDistricts,
+    selectedSubCategories,
+    state.selectedCategory,
+    state.selectedCity,
+  ]);
   const handleSelectRestaurant = (restaurant) => {
     setSearchQuery(restaurant.name); // Gán tên nhà hàng vào ô tìm kiếm
     setShowDropdown(false); // Đóng dropdown sau khi chọn

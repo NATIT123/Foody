@@ -9,11 +9,6 @@ const Sidebar = ({ setActiveTab }) => {
         className="d-none d-lg-flex flex-column vh-100 p-3 bg-white shadow"
         style={{ width: "250px", borderRight: "1px solid #ddd" }}
       >
-        {/* Logo Section */}
-        <div className="mb-4 text-center">
-          <h5 className="fw-bold text-primary">Creative Tim</h5>
-        </div>
-
         {/* Navigation Links */}
         <ul className="nav flex-column mb-auto">
           {state.user?.role === "admin" && (

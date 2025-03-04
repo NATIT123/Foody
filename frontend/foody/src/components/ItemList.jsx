@@ -22,7 +22,7 @@ const ItemList = ({ currentItems, handleShowModal }) => {
         {
           method: "GET",
           headers: {
-            "Content-type": "application/json",
+            Authorization: `Bearer ${state.accessToken}`,
           },
         }
       )
@@ -58,6 +58,7 @@ const ItemList = ({ currentItems, handleShowModal }) => {
         {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${state.accessToken}`,
             "Content-type": "application/json",
           },
           body: JSON.stringify({

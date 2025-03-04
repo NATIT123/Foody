@@ -10,7 +10,6 @@ import {
   getRestaurantByCity,
   getRestaurantTopDeals,
   getRestaurantByFields,
-  getRestaurantByRecommendation,
   getNearestRestaurants,
   getRestaurantByViews,
   findRestaurantsByFields,
@@ -22,6 +21,7 @@ import {
 } from "../controllers/restaurantController.js";
 
 import multer from "multer";
+import { protect } from "../controllers/authController.js";
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
@@ -39,18 +39,7 @@ const upload = multer({
 });
 
 router.get("/count", countRestaurants);
-
 router.post("/getAllRestaurants", getAllRestaurants);
-router.post("/addRestaurant", upload.single("image"), addRestaurant);
-router.delete("/deleteRestaurant/:id", deleteRestaurantById);
-router.patch("/updateRestaurant/:id", updateRestaurantById);
-router.get("/getRestaurant/:id", getRestaurantById);
-router.get("/getOwnerRestaurants/:ownerId", getOwnerRestaurants);
-router.get(
-  "/getRestaurantByOptions/city/:cityId/category/:categoryId",
-  getRestaurantByOptions
-);
-
 router.post("/fetchRestaurantsByRate", fetchRestaurantsByRate);
 
 router.get("/getRestaurantByCity/city/:cityId", getRestaurantByCity);
@@ -59,14 +48,24 @@ router.post("/getRestaurantTopDeals", getRestaurantTopDeals);
 
 router.post("/getRestaurantByFields", getRestaurantByFields);
 
-router.post(
-  "/getRestaurantByRecommendation/:restaurantId/:userId",
-  getRestaurantByRecommendation
-);
-
 router.post("/getNearestRestaurants", getNearestRestaurants);
 router.post("/getRestaurantByViews", getRestaurantByViews);
 router.get("/findRestaurantsByFields", findRestaurantsByFields);
+router.get(
+  "/getRestaurantByOptions/city/:cityId/category/:categoryId",
+  getRestaurantByOptions
+);
+
+router.use(protect);
+router.post("/addRestaurant", upload.single("image"), addRestaurant);
+router.delete("/deleteRestaurant/:id", deleteRestaurantById);
+router.patch(
+  "/updateRestaurant/:id",
+  upload.single("image"),
+  updateRestaurantById
+);
+router.get("/getRestaurant/:id", getRestaurantById);
+router.get("/getOwnerRestaurants/:ownerId", getOwnerRestaurants);
 router.get("/getRestaunrantsPending", getRestaunrantsPending);
 router.patch("/updateStatus/:restaurantId", updateStatus);
 export default router;

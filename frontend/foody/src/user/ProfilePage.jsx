@@ -124,6 +124,7 @@ const ProfilePage = () => {
             data.status !== 400
           ) {
             setImageUrl(data.data.photo);
+            setProfilePic("");
           }
         }
       })
@@ -260,6 +261,7 @@ const ProfilePage = () => {
                         disabled
                       />
                       <button
+                        style={{ fontWeight: "bold" }}
                         className="btn btn-link"
                         onClick={() => setShowPasswordFields(true)}
                       >

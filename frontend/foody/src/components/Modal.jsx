@@ -24,7 +24,6 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
 
   useEffect(() => {
     if (!state.loading && state.user) {
-      console.log("My", restaurant.comments);
       const filteredComments = restaurant.comments.filter(
         (el) => el.user._id.toString() === state.user._id.toString()
       );
@@ -60,6 +59,199 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
       return;
     }
     setShowCommentModal(true);
+  };
+
+  const [openCommentId, setOpenCommentId] = useState(null);
+  const [replies, setReplies] = useState({}); // Lưu trữ phản hồi theo commentId
+  const [replyText, setReplyText] = useState({}); // Lưu nội dung phản hồi
+
+  const [likes, setLikes] = useState({});
+  const [likedComments, setLikedComments] = useState(new Set());
+  useEffect(() => {
+    console.log(restaurant.comments);
+    const initialLikes = {};
+    const inititalReplies = {};
+    if (restaurant?.comments) {
+      restaurant?.comments.forEach((comment) => {
+        initialLikes[comment._id] = comment.numberOfLikes?.length || 0;
+        inititalReplies[comment._id] = comment.replies;
+      });
+      setLikes(initialLikes);
+      setReplies(inititalReplies);
+      const userLikedComments = new Set(
+        restaurant?.comments
+          .filter((comment) => comment.numberOfLikes?.includes(state.user?._id))
+          .map((comment) => comment._id)
+      );
+      setLikedComments(userLikedComments);
+    }
+  }, [restaurant?.comments, state.user?._id]);
+
+  const isLike = (comment) => likedComments.has(comment);
+
+  const handleLike = async (commentId) => {
+    if (!state.user) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/comment/like/${commentId}/${state.user._id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${state.accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.status === "success") {
+        setLikes((prevLikes) => {
+          const currentLikes = prevLikes[commentId] || 0;
+          return {
+            ...prevLikes,
+            [commentId]: data.data
+              ? Math.max(currentLikes - 1, 0)
+              : currentLikes + 1,
+          };
+        });
+        setLikedComments((prevLikedComments) => {
+          const newLikedComments = new Set(prevLikedComments);
+          if (data.data) {
+            newLikedComments.delete(commentId);
+          } else {
+            newLikedComments.add(commentId);
+          }
+          return newLikedComments;
+        });
+
+        setCurrentItems((prevCurrent) => {
+          return prevCurrent.map((current) =>
+            current._id.toString() === item._id.toString()
+              ? {
+                  ...current,
+                  comments: current.comments.map((comment) =>
+                    comment._id.toString() === commentId.toString()
+                      ? {
+                          ...comment,
+                          numberOfLikes: data.data
+                            ? comment?.numberOfLikes.filter(
+                                (id) =>
+                                  id.toString() !== state.user._id.toString()
+                              ) || []
+                            : [
+                                ...(comment?.numberOfLikes || []),
+                                state.user._id.toString(),
+                              ],
+                        }
+                      : comment
+                  ),
+                }
+              : current
+          );
+        });
+      } else {
+        console.error("Error liking comment", data.message);
+      }
+    } catch (error) {
+      console.error("Error liking comment", error);
+    }
+  };
+
+  const handleReplyClick = (commentId) => {
+    setOpenCommentId(openCommentId === commentId ? null : commentId);
+  };
+
+  const handleReplyChange = (commentId, text) => {
+    setReplyText({ ...replyText, [commentId]: text });
+  };
+
+  const handleReplySubmit = async (commentId) => {
+    if (!replyText[commentId]?.trim()) return;
+    if (state.user._id) {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BASE_URL}/comment/reply/${commentId}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${state.accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              content: replyText[commentId],
+              fullname: state.user.fullname,
+              photo: state.user.photo,
+            }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.ok && data.status === "success") {
+          const newReply = {
+            id: data.data._id,
+            user: {
+              fullname: state.user?.fullname || "Bạn",
+              photo: state.user?.photo,
+            },
+            content: data.data.content,
+            createdAt: data.data.createdAt,
+          };
+
+          setReplies((prevReplies) => ({
+            ...prevReplies,
+            [commentId]: [...(prevReplies[commentId] || []), newReply],
+          }));
+
+          setCurrentItems((prevCurrent) => {
+            return prevCurrent.map((current) =>
+              current._id.toString() === item._id.toString()
+                ? {
+                    ...current,
+                    comments: current.comments.map((comment) =>
+                      comment._id.toString() === commentId.toString()
+                        ? {
+                            ...comment,
+                            replies: [newReply, ...comment.replies],
+                          }
+                        : comment
+                    ),
+                  }
+                : current
+            );
+          });
+
+          setReplyText((prevText) => ({
+            ...prevText,
+            [commentId]: "",
+          }));
+        } else {
+          console.error("Error adding reply:", data.message);
+        }
+      } catch (error) {
+        console.error("Error adding reply:", error);
+      }
+    }
+  };
+
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Ho_Chi_Minh",
+    })
+      .format(date)
+      .replace(",", "");
   };
 
   useEffect(() => {
@@ -343,15 +535,22 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                             {/* Action Buttons */}
                             <div className="d-flex align-items-center mt-3">
                               <button
+                                onClick={() => handleLike(comment._id)}
                                 className="btn btn-link p-0 me-3 text-muted"
                                 style={{
                                   textDecoration: "none",
                                   fontSize: "14px",
                                 }}
                               >
-                                <i className="fas fa-heart me-1"></i> Thích
+                                <i
+                                  className={`fas fa-heart me-1 ${
+                                    isLike(comment._id) ? "text-danger" : ""
+                                  }`}
+                                ></i>{" "}
+                                Thích ({likes[comment._id] || 0})
                               </button>
                               <button
+                                onClick={() => handleReplyClick(comment._id)}
                                 className="btn btn-link p-0 me-3 text-muted"
                                 style={{
                                   textDecoration: "none",
@@ -361,17 +560,65 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                                 <i className="fas fa-comment-alt me-1"></i> Thảo
                                 luận
                               </button>
-                              <button
-                                className="btn btn-link p-0 text-muted"
-                                style={{
-                                  textDecoration: "none",
-                                  fontSize: "14px",
-                                }}
-                              >
-                                <i className="fas fa-exclamation-triangle me-1"></i>{" "}
-                                Báo lỗi
-                              </button>
                             </div>
+                            {openCommentId === comment._id && (
+                              <div className="mt-2">
+                                <textarea
+                                  className="form-control"
+                                  rows="2"
+                                  placeholder="Nhập bình luận của bạn..."
+                                  value={replyText[comment._id] || ""}
+                                  onChange={(e) =>
+                                    handleReplyChange(
+                                      comment._id,
+                                      e.target.value
+                                    )
+                                  }
+                                ></textarea>
+                                <button
+                                  className="btn btn-primary btn-sm mt-2"
+                                  onClick={() => handleReplySubmit(comment._id)}
+                                >
+                                  Gửi
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Hiển thị bình luận con */}
+                            {replies[comment._id] &&
+                              replies[comment._id].length > 0 && (
+                                <div className="mt-3 ps-4 border-start">
+                                  {replies[comment._id].map((reply, i) => (
+                                    <div key={i} className="mb-2">
+                                      <div className="d-flex align-items-center">
+                                        <img
+                                          src={
+                                            reply.user.photo === "default.jpg"
+                                              ? "/images/default.jpg"
+                                              : reply.user.photo
+                                          }
+                                          alt="User Avatar"
+                                          className="rounded-circle me-2"
+                                          style={{
+                                            width: "30px",
+                                            height: "30px",
+                                            objectFit: "cover",
+                                          }}
+                                        />
+                                        <div>
+                                          <strong>{reply.user.fullname}</strong>
+                                          <div className="text-muted small">
+                                            {formatDate(reply.createdAt)}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <p className="text-muted fw-semibold mt-1">
+                                        {reply.content}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                           </div>
                         ))
                       ) : (
@@ -458,15 +705,22 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                             {/* Action Buttons */}
                             <div className="d-flex align-items-center mt-3">
                               <button
+                                onClick={() => handleLike(comment._id)}
                                 className="btn btn-link p-0 me-3 text-muted"
                                 style={{
                                   textDecoration: "none",
                                   fontSize: "14px",
                                 }}
                               >
-                                <i className="fas fa-heart me-1"></i> Thích
+                                <i
+                                  className={`fas fa-heart me-1 ${
+                                    isLike(comment._id) ? "text-danger" : ""
+                                  }`}
+                                ></i>{" "}
+                                Thích ({likes[comment._id] || 0})
                               </button>
                               <button
+                                onClick={() => handleReplyClick(comment._id)}
                                 className="btn btn-link p-0 me-3 text-muted"
                                 style={{
                                   textDecoration: "none",
@@ -476,17 +730,65 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                                 <i className="fas fa-comment-alt me-1"></i> Thảo
                                 luận
                               </button>
-                              <button
-                                className="btn btn-link p-0 text-muted"
-                                style={{
-                                  textDecoration: "none",
-                                  fontSize: "14px",
-                                }}
-                              >
-                                <i className="fas fa-exclamation-triangle me-1"></i>{" "}
-                                Báo lỗi
-                              </button>
                             </div>
+                            {openCommentId === comment._id && (
+                              <div className="mt-2">
+                                <textarea
+                                  className="form-control"
+                                  rows="2"
+                                  placeholder="Nhập bình luận của bạn..."
+                                  value={replyText[comment._id] || ""}
+                                  onChange={(e) =>
+                                    handleReplyChange(
+                                      comment._id,
+                                      e.target.value
+                                    )
+                                  }
+                                ></textarea>
+                                <button
+                                  className="btn btn-primary btn-sm mt-2"
+                                  onClick={() => handleReplySubmit(comment._id)}
+                                >
+                                  Gửi
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Hiển thị bình luận con */}
+                            {replies[comment._id] &&
+                              replies[comment._id].length > 0 && (
+                                <div className="mt-3 ps-4 border-start">
+                                  {replies[comment._id].map((reply, i) => (
+                                    <div key={i} className="mb-2">
+                                      <div className="d-flex align-items-center">
+                                        <img
+                                          src={
+                                            reply.user.photo === "default.jpg"
+                                              ? "/images/default.jpg"
+                                              : reply.user.photo
+                                          }
+                                          alt="User Avatar"
+                                          className="rounded-circle me-2"
+                                          style={{
+                                            width: "30px",
+                                            height: "30px",
+                                            objectFit: "cover",
+                                          }}
+                                        />
+                                        <div>
+                                          <strong>{reply.user.fullname}</strong>
+                                          <div className="text-muted small">
+                                            {formatDate(reply.createdAt)}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <p className="text-muted fw-semibold mt-1">
+                                        {reply.content}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                           </div>
                         ))
                       ) : (

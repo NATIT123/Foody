@@ -400,6 +400,8 @@ class RestaurantRepository {
                 { $sort: { createdAt: -1 } },
                 {
                   $project: {
+                    numberOfLikes: 1,
+                    replies: 1,
                     rate: 1,
                     type: 1,
                     description: 1,
@@ -704,12 +706,32 @@ class RestaurantRepository {
           return next(new AppError("Invalid restaurant ID", 400));
         }
 
-        const updateFields = { ...req.body }; // Dữ liệu cập nhật từ request body
-
         // Kiểm tra xem có hình ảnh mới được tải lên không
+
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY,
+          api_secret: process.env.CLOUDINARY_API_SECRET,
+        });
+
+        let imageUrl = "";
         if (req.file) {
-          updateFields.image = req.file.path;
+          const uploadStream = () => {
+            return new Promise((resolve, reject) => {
+              const stream = cloudinary.uploader.upload_stream(
+                { folder: "restaurants" },
+                (error, result) => {
+                  if (error) return reject(new AppError("Upload failed!", 500));
+                  resolve(result.secure_url);
+                }
+              );
+              stream.end(req.file.buffer);
+            });
+          };
+          imageUrl = await uploadStream();
         }
+
+        const updateFields = { ...req.body, image: imageUrl }; // Dữ liệu cập nhật từ request body
 
         // Cập nhật nhà hàng trong DB
         const updatedRestaurant = await this.restaurantModel.findByIdAndUpdate(
@@ -759,7 +781,6 @@ class RestaurantRepository {
         .populate()
         .paginate();
       const doc = await features.query;
-      console.log(doc.length);
 
       // const results = doc.filter((item) => {
       //   return (
@@ -813,8 +834,6 @@ class RestaurantRepository {
         .limitFields()
         .populate();
       const doc = await features.query;
-
-      console.log(doc);
 
       let results = doc.filter((item) => {
         return item.districtId?.cityId.toString() === cityId;
@@ -1201,7 +1220,14 @@ class RestaurantRepository {
   getNearestRestaurants() {
     return catchAsync(async (req, res, next) => {
       try {
-        const { latitude, longitude, maxDistance } = req.body;
+        const {
+          latitude,
+          longitude,
+          maxDistance,
+          subCategory,
+          cuisines,
+          district,
+        } = req.body;
 
         if (!latitude || !longitude) {
           return next(
@@ -1216,6 +1242,20 @@ class RestaurantRepository {
 
         // Tạo điều kiện match
         let matchConditions = {};
+
+        // Apply match conditions based on incoming filters
+        if (mongoose.Types.ObjectId.isValid(subCategory)) {
+          matchConditions["restaurant.subCategoryId"] =
+            new mongoose.Types.ObjectId(subCategory);
+        }
+        if (mongoose.Types.ObjectId.isValid(district)) {
+          matchConditions["restaurant.districtId"] =
+            new mongoose.Types.ObjectId(district);
+        }
+        if (mongoose.Types.ObjectId.isValid(cuisines)) {
+          matchConditions["restaurant.cuisinesId"] =
+            new mongoose.Types.ObjectId(cuisines);
+        }
 
         const restaurants = await this.coordinateModel.aggregate([
           {
@@ -1240,6 +1280,42 @@ class RestaurantRepository {
           },
           {
             $unwind: { path: "$restaurant", preserveNullAndEmptyArrays: false },
+          },
+
+          {
+            $lookup: {
+              from: "subcategories",
+              localField: "restaurant.subCategoryId",
+              foreignField: "_id",
+              as: "subCategory",
+            },
+          },
+          {
+            $unwind: { path: "$subCategory", preserveNullAndEmptyArrays: true },
+          },
+
+          {
+            $lookup: {
+              from: "cuisines",
+              localField: "restaurant.cuisinesId",
+              foreignField: "_id",
+              as: "cuisines",
+            },
+          },
+          {
+            $unwind: { path: "$cuisines", preserveNullAndEmptyArrays: true },
+          },
+
+          {
+            $lookup: {
+              from: "districts",
+              localField: "restaurant.districtId",
+              foreignField: "_id",
+              as: "districts",
+            },
+          },
+          {
+            $unwind: { path: "$district", preserveNullAndEmptyArrays: true },
           },
 
           ...(Object.keys(matchConditions).length > 0

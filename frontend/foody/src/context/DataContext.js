@@ -78,20 +78,13 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     if (state.user) {
       dispatch({ type: "LOADING" });
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/notification/getNotificationsByUserId/${state.user._id}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${state.accessToken}` },
-        }
+
+      fetchWithAuth(
+        `${process.env.REACT_APP_BASE_URL}/notification/getNotificationsByUserId/${state.user._id}`
       )
         .then((response) => response.json())
         .then((data) => {
-          if (
-            data.status !== "fail" &&
-            data.status !== "error" &&
-            data.status !== 400
-          ) {
+          if (data.status !== "fail" && data.status !== "error") {
             dispatch({ type: "SET_NOTIFICATIONS", payload: data.data.data });
           }
         })
@@ -99,7 +92,7 @@ export const DataProvider = ({ children }) => {
           console.error("Error fetching notifications:", error)
         );
     }
-  }, [state.user, state.accessToken]);
+  }, [state.user]);
 
   const addNotification = useCallback(
     (message) => {
@@ -138,6 +131,32 @@ export const DataProvider = ({ children }) => {
     [state.user, state.accessToken]
   );
 
+  const refreshToken = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/user/refresh`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) throw new Error("Refresh token failed");
+
+      const data = await response.json();
+      if (!data.accessToken) throw new Error("No new access token received");
+
+      localStorage.setItem("access_token", data.accessToken);
+      dispatch({ type: "SET_ACCESS_TOKEN", payload: data.accessToken });
+
+      return data.accessToken;
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      logout();
+      return null;
+    }
+  };
+
   const unreadExists = useMemo(() => {
     if (state.notifications) {
       return state.notifications.some((n) => !n.isRead);
@@ -172,34 +191,21 @@ export const DataProvider = ({ children }) => {
   // Fetch User khi có accessToken
   useEffect(() => {
     if (state.accessToken) {
-      const fetchUser = async (token) => {
-        dispatch({ type: "LOADING" });
-        try {
-          const response = await fetch(
-            `${process.env.REACT_APP_BASE_URL}/user/me`,
-            {
-              method: "GET",
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          const data = await response.json();
-
+      fetchWithAuth(`${process.env.REACT_APP_BASE_URL}/user/me`)
+        .then((response) => response.json())
+        .then((data) => {
           if (data.status !== "fail" && data.status !== "error") {
-            if (JSON.stringify(state.user) !== JSON.stringify(data.data.data)) {
-              dispatch({ type: "SET_USER", payload: data.data.data });
-            }
+            dispatch({ type: "SET_USER", payload: data.data.data });
           } else {
-            throw new Error(data.message || "Lỗi không xác định");
+            throw new Error(data.message || "Unknown error");
           }
-        } catch (error) {
+        })
+        .catch((error) => {
           dispatch({ type: "ERROR", payload: error.message });
           console.error("Error fetching user:", error);
-        }
-      };
-      fetchUser(state.accessToken);
+        });
     }
-  }, [state.accessToken, state.user]);
-
+  }, [state.accessToken]);
   // Hàm gọi API chung để giảm trùng lặp
   const fetchData = useCallback(async (url, type, cacheKey = null) => {
     dispatch({ type: "LOADING" });
@@ -285,6 +291,31 @@ export const DataProvider = ({ children }) => {
   const setAccessToken = (token) => {
     localStorage.setItem("access_token", token);
     dispatch({ type: "SET_ACCESS_TOKEN", payload: token });
+  };
+
+  const fetchWithAuth = async (url, options = {}) => {
+    let accessToken = state.accessToken;
+
+    options.headers = {
+      ...options.headers,
+      Authorization: `Bearer ${accessToken}`,
+    };
+    options.credentials = "include";
+
+    let response = await fetch(url, options);
+
+    if (response.status === 401) {
+      console.log("Access token expired, refreshing...");
+
+      const newToken = await refreshToken();
+
+      if (newToken) {
+        options.headers.Authorization = `Bearer ${newToken}`;
+        response = await fetch(url, options);
+      }
+    }
+
+    return response;
   };
 
   // Hàm logout

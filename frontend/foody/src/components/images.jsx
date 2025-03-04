@@ -28,7 +28,7 @@ const ImageGallery = ({ currentAlbums }) => {
 
       {/* Image Grid */}
       <div className="row">
-        {currentAlbums &&
+        {currentAlbums && currentAlbums.length > 0 ? (
           currentAlbums.map((image, index) => (
             <div
               className="col-6 col-md-3 mb-4 d-flex justify-content-center"
@@ -50,7 +50,12 @@ const ImageGallery = ({ currentAlbums }) => {
                 />
               </div>
             </div>
-          ))}
+          ))
+        ) : (
+          <div className="col-12 text-center fw-bold">
+            <p className="text-muted">Hiện tại không có hình ảnh nào</p>
+          </div>
+        )}
       </div>
     </div>
   );

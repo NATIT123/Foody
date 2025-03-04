@@ -7,8 +7,11 @@ import {
   getCuisinesById,
   deleteCuisinesById,
 } from "../controllers/cuisinesController.js";
+import { protect } from "../controllers/authController.js";
 
 router.get("/getAllCuisines", getAllCuisines);
+
+router.use(protect);
 router.post("/addCuisines", addCuisines);
 router.delete("/deleteCuisines/:id", deleteCuisinesById);
 router.patch("/updateCuisines/:id", updateCuisinesById);

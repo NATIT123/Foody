@@ -49,18 +49,17 @@ const upload = multer({
 });
 router.post("/signUp", signUp);
 router.post("/login", logIn);
-
+router.get("/getAllDetails", getAllDetails);
 router.post("/forgotPassword", forgotPassword);
 router.post("/checkPassword/:token", checkPassword);
 router.patch("/resetPassword/:token", resetPassword);
-router.get("/getUserDetails/:userId", getUserDetails);
-router.get("/getAllDetails", getAllDetails);
 router.get("/findUsersByFields", findUsersByFields);
 router.get("/findUsersByRole", findUsersByRole);
-router.get("/count", countUsers);
 
 // ///Protect all route
 router.use(protect);
+router.get("/count", countUsers);
+router.get("/getUserDetails/:userId", getUserDetails);
 router.patch("/updatePassword", getMe, changePassword);
 router.get("/me", getMe, getUserById);
 
