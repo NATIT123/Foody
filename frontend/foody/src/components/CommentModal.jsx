@@ -75,7 +75,7 @@ const CommentModal = ({
               prevItems.map((el) =>
                 el._id.toString() === restaurant._id.toString()
                   ? {
-                      ...el, // Spread existing item to keep other properties unchanged
+                      ...el,
                       comments: [
                         {
                           ...commentData,

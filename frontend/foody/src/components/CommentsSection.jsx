@@ -41,6 +41,7 @@ const CommentsSection = ({
       const filteredComments = currentComments.filter(
         (el) => el.user[0]._id.toString() === state.user._id.toString()
       );
+      console.log(filteredComments);
       setMyComments(filteredComments);
       setTabs((prevTabs) =>
         prevTabs.map((el) =>
@@ -170,6 +171,168 @@ const CommentsSection = ({
                 </div>
 
                 {/* Ô nhập bình luận */}
+                {openCommentId === comment._id && (
+                  <div className="mt-2">
+                    <textarea
+                      className="form-control"
+                      rows="2"
+                      placeholder="Nhập bình luận của bạn..."
+                      value={replyText[comment._id] || ""}
+                      onChange={(e) =>
+                        handleReplyChange(comment._id, e.target.value)
+                      }
+                    ></textarea>
+                    <button
+                      className="btn btn-primary btn-sm mt-2"
+                      onClick={() => handleReplySubmit(comment._id)}
+                    >
+                      Gửi
+                    </button>
+                  </div>
+                )}
+
+                {/* Hiển thị bình luận con */}
+                {replies[comment._id] && replies[comment._id].length > 0 && (
+                  <div className="mt-3 ps-4 border-start">
+                    {replies[comment._id].map((reply, i) => (
+                      <div key={i} className="mb-2">
+                        <div className="d-flex align-items-center">
+                          <img
+                            src={
+                              reply.user.photo === "default.jpg"
+                                ? "/images/default.jpg"
+                                : reply.user.photo
+                            }
+                            alt="User Avatar"
+                            className="rounded-circle me-2"
+                            style={{
+                              width: "30px",
+                              height: "30px",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <div>
+                            <strong>{reply.user.fullname}</strong>
+                            <div className="text-muted small">
+                              {formatDate(reply.createdAt)}
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-muted fw-semibold mt-1">
+                          {reply.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-muted fw-bold text-center fs-4">
+              Hiện tại không có bình luận nào
+            </p>
+          )}
+        </div>
+      )}
+
+      {activeTab === "mine" && (
+        <div className="mt-3">
+          {myComments && myComments.length > 0 ? (
+            myComments.map((comment, index) => (
+              <div
+                key={index}
+                className="p-3 mb-3"
+                style={{
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: "8px",
+                  border: "1px solid #ddd",
+                }}
+              >
+                {/* Header */}
+                <div className="d-flex align-items-center">
+                  {/* Avatar */}
+                  <img
+                    src={
+                      comment?.user[0].photo === "default.jpg"
+                        ? "/images/default.jpg"
+                        : comment?.user[0].photo
+                    }
+                    alt="User Avatar"
+                    className="rounded-circle me-2"
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      objectFit: "cover",
+                    }}
+                  />
+
+                  {/* Thông tin người dùng */}
+                  <div>
+                    <div className="d-flex align-items-center">
+                      <strong className="me-2">
+                        {comment?.user.fullname || "empty"}
+                      </strong>
+
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/512/190/190411.png" // Icon xác nhận (dấu check)
+                        alt="Verified"
+                        style={{ width: "16px", height: "16px" }}
+                      />
+                    </div>
+
+                    {/* Nguồn và thời gian */}
+                    <div className="d-flex align-items-center text-muted small">
+                      <span className="fw-bold me-1">{comment.type}</span>
+                      <i className="bi bi-phone"></i>{" "}
+                      {/* Icon điện thoại (Bootstrap Icons) */}
+                      <span className="ms-2">{comment.time}</span>
+                    </div>
+                  </div>
+
+                  {/* Đánh giá (badge sao) */}
+                  <span
+                    className="badge bg-success ms-auto"
+                    style={{
+                      fontSize: "14px",
+                      padding: "4px 8px",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    {comment.rate}
+                  </span>
+                </div>
+
+                <div className="fw-bold">{comment.title}</div>
+                <p className="text-muted fw-semibold">{comment.description}</p>
+
+                {/* Action Buttons */}
+                <div className="d-flex align-items-center mt-3">
+                  <button
+                    onClick={() => handleLike(comment._id)}
+                    className="btn btn-link p-0 me-3 text-muted"
+                    style={{
+                      textDecoration: "none",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <i
+                      className={`fas fa-heart me-1 ${
+                        isLike(comment._id) ? "text-danger" : ""
+                      }`}
+                    ></i>{" "}
+                    Thích ({likes[comment._id] || 0})
+                  </button>
+                  <button
+                    onClick={() => handleReplyClick(comment._id)}
+                    className="btn btn-link p-0 me-3 text-muted"
+                    style={{
+                      textDecoration: "none",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <i className="fas fa-comment-alt me-1"></i> Thảo luận
+                  </button>
+                </div>
                 {openCommentId === comment._id && (
                   <div className="mt-2">
                     <textarea

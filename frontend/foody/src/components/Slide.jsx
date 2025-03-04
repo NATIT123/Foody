@@ -126,18 +126,21 @@ const Slide = ({
       const data = await response.json();
 
       if (response.ok && data.status === "success") {
-        setLikes((prevLikes) => ({
-          ...prevLikes,
-          [commentId]: data.data
-            ? (prevLikes[commentId] || 0) + 1
-            : Math.max((prevLikes[commentId] || 1) - 1, 0),
-        }));
+        setLikes((prevLikes) => {
+          const currentLikes = prevLikes[commentId] || 0;
+          return {
+            ...prevLikes,
+            [commentId]: data.data
+              ? Math.max(currentLikes - 1, 0)
+              : currentLikes + 1,
+          };
+        });
         setLikedComments((prevLikedComments) => {
           const newLikedComments = new Set(prevLikedComments);
           if (data.data) {
-            newLikedComments.add(commentId);
-          } else {
             newLikedComments.delete(commentId);
+          } else {
+            newLikedComments.add(commentId);
           }
           return newLikedComments;
         });

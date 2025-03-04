@@ -400,6 +400,8 @@ class RestaurantRepository {
                 { $sort: { createdAt: -1 } },
                 {
                   $project: {
+                    numberOfLikes: 1,
+                    replies: 1,
                     rate: 1,
                     type: 1,
                     description: 1,

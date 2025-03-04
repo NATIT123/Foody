@@ -304,7 +304,7 @@ class CommentRepository {
         res.status(customResourceResponse.success.statusCode).json({
           message: customResourceResponse.success.message,
           status: "success",
-          data: hasLiked ? null : userId,
+          data: hasLiked ? userId : null,
         });
         await comment.save();
       } catch (err) {

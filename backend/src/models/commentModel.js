@@ -22,6 +22,7 @@ const CommentDetailSchema = new Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "users",
+        default: [],
       },
     ],
 
