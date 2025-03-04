@@ -285,7 +285,12 @@ const Grid = () => {
         }
       })
       .catch((error) => console.error("Error fetching restaurants:", error));
-  }, [currentPageEat, state, filtersState]);
+  }, [
+    currentPageEat,
+    state.selectedCategory,
+    state.selectedCity,
+    filtersState,
+  ]);
 
   const fetchTopDeals = useCallback(() => {
     setItemEat([]);

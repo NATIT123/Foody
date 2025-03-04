@@ -115,6 +115,10 @@ const Index = () => {
   const [selectedDistricts, setSelectedDistricts] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
 
+  useEffect(() => {
+    document.title = `Địa điểm ăn uống, ẩm thực`;
+  }, []);
+
   const nextSlide = () => {
     if (currentIndex + itemsPerPage < items.length) {
       setCurrentIndex((prev) => prev + itemsPerPage);

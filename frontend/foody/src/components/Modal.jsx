@@ -163,6 +163,10 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
   };
 
   const handleReplyClick = (commentId) => {
+    if (!state.user) {
+      setShowLoginModal(true);
+      return;
+    }
     setOpenCommentId(openCommentId === commentId ? null : commentId);
   };
 

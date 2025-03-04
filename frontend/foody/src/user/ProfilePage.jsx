@@ -25,6 +25,10 @@ const ProfilePage = () => {
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
 
   useEffect(() => {
+    document.title = "Thông tin cá nhân";
+  }, []);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       if (!state.loading && !state.user) {
         navigate("/");

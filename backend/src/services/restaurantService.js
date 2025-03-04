@@ -65,6 +65,14 @@ class RestaurantService {
   fetchRestaurantsByRate() {
     return this.restaurantRepo.fetchRestaurantsByRate();
   }
+
+  findRestaurantsOwnerByFields() {
+    return this.restaurantRepo.findRestaurantsOwnerByFields();
+  }
+
+  findRestaurantsPendingByFields() {
+    return this.restaurantRepo.findRestaurantsPendingByFields();
+  }
 }
 
 export default RestaurantService;

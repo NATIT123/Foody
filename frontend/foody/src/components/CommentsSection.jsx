@@ -74,6 +74,10 @@ const CommentsSection = ({
   };
 
   const handleReplyClick = (commentId) => {
+    if (!state.user) {
+      setShowLoginModal(true);
+      return;
+    }
     setOpenCommentId(openCommentId === commentId ? null : commentId);
   };
 

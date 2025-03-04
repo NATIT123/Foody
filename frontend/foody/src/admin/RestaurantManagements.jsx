@@ -148,29 +148,55 @@ const RestaurantManagement = ({ searchQuery }) => {
 
   useEffect(() => {
     if (searchQuery) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsByFields?page=${currentPage}&searchQuery=${searchQuery}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${state.accessToken}` },
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.data?.data) {
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              setTotalPages(data.totalPages);
-              setRestaurants(data.data.data);
-            }
+      if (state.user.role === "admin") {
+        fetch(
+          `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsByFields?page=${currentPage}&searchQuery=${searchQuery}`,
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${state.accessToken}` },
           }
-        })
-        .catch((error) => {
-          console.error("Error fetching users:", error);
-        });
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.data?.data) {
+              if (
+                data.status !== "fail" &&
+                data.status !== "error" &&
+                data.status !== 400
+              ) {
+                setTotalPages(data.totalPages);
+                setRestaurants(data.data.data);
+              }
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching users:", error);
+          });
+      } else if (state.user?.role === "owner") {
+        fetch(
+          `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsOwnerByFields/${state.user._id}?page=${currentPage}&searchQuery=${searchQuery}`,
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${state.accessToken}` },
+          }
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.data?.data) {
+              if (
+                data.status !== "fail" &&
+                data.status !== "error" &&
+                data.status !== 400
+              ) {
+                setTotalPages(data.totalPages);
+                setRestaurants(data.data.data);
+              }
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching users:", error);
+          });
+      }
     }
   }, [searchQuery]);
 

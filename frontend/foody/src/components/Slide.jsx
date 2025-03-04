@@ -153,6 +153,10 @@ const Slide = ({
   };
 
   const handleReplyClick = (commentId) => {
+    if (!state.user) {
+      setShowModalLogin(true);
+      return;
+    }
     setOpenCommentId(openCommentId === commentId ? null : commentId);
   };
 

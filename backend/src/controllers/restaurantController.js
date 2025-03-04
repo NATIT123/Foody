@@ -43,3 +43,9 @@ export const getOwnerRestaurants = restaurantService.getOwnerRestaurants();
 
 export const fetchRestaurantsByRate =
   restaurantService.fetchRestaurantsByRate();
+
+export const findRestaurantsOwnerByFields =
+  restaurantService.findRestaurantsOwnerByFields();
+
+export const findRestaurantsPendingByFields =
+  restaurantService.findRestaurantsPendingByFields();

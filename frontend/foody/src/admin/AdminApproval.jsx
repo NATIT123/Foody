@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useData } from "../context/DataContext";
 
-const AdminRestaurantApproval = () => {
+const AdminRestaurantApproval = ({ searchQuery }) => {
   const [pendingRestaurants, setPendingRestaurants] = useState([]);
   const { state, addNotification } = useData();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaunrantsPending`,
+      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaunrantsPending?page=${currentPage}`,
       {
         method: "GET",
         headers: { Authorization: `Bearer ${state.accessToken}` },
@@ -23,6 +25,34 @@ const AdminRestaurantApproval = () => {
         console.error("Error fetching pending restaurants:", error)
       );
   }, []);
+
+  useEffect(() => {
+    if (searchQuery) {
+      fetch(
+        `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsPendingByFields?page=${currentPage}&searchQuery=${searchQuery}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${state.accessToken}` },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.data?.data) {
+            if (
+              data.status !== "fail" &&
+              data.status !== "error" &&
+              data.status !== 400
+            ) {
+              setTotalPages(data.totalPages);
+              setPendingRestaurants(data.data.data);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching users:", error);
+        });
+    }
+  }, [searchQuery]);
 
   const handleApproval = (restaurantId, status) => {
     fetch(
@@ -50,6 +80,52 @@ const AdminRestaurantApproval = () => {
         }
       })
       .catch((error) => console.error("Error updating status:", error));
+  };
+
+  const changePage = (page) => {
+    setCurrentPage(page);
+  };
+  const renderPagination = () => {
+    if (totalPages <= 1) return null; // Ẩn nếu chỉ có 1 trang
+
+    return (
+      <nav>
+        <ul className="pagination justify-content-center mt-4">
+          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+            <button
+              className="page-link"
+              onClick={() => changePage(currentPage - 1)}
+            >
+              &laquo; Trước
+            </button>
+          </li>
+
+          {[...Array(totalPages)].map((_, i) => (
+            <li
+              key={i + 1}
+              className={`page-item ${i + 1 === currentPage ? "active" : ""}`}
+            >
+              <button className="page-link" onClick={() => changePage(i + 1)}>
+                {i + 1}
+              </button>
+            </li>
+          ))}
+
+          <li
+            className={`page-item ${
+              currentPage === totalPages ? "disabled" : ""
+            }`}
+          >
+            <button
+              className="page-link"
+              onClick={() => changePage(currentPage + 1)}
+            >
+              Sau &raquo;
+            </button>
+          </li>
+        </ul>
+      </nav>
+    );
   };
 
   return (
@@ -112,6 +188,9 @@ const AdminRestaurantApproval = () => {
           <p className="text-center">No restaurants pending approval.</p>
         )}
       </div>
+      {pendingRestaurants &&
+        pendingRestaurants.length > 0 &&
+        renderPagination()}
     </div>
   );
 };
