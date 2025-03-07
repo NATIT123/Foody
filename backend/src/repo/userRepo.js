@@ -92,6 +92,10 @@ class UserRepository {
     return catchAsync(async (req, res, next) => {
       try {
         const { userId } = req.params;
+        console.log(userId);
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+          return next(new AppError("Invalid user ID", 400));
+        }
 
         const userDetails = await this.userModel.aggregate([
           { $match: { _id: new mongoose.Types.ObjectId(userId) } },

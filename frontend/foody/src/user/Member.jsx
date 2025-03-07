@@ -9,7 +9,7 @@ import { useParams } from "react-router-dom";
 import { useData } from "../context/DataContext";
 
 const Member = () => {
-  const state = useData();
+  const { state } = useData();
   const navigate = useNavigate();
   useEffect(() => {
     if (state.user && !state.loading) {
@@ -29,31 +29,34 @@ const Member = () => {
   };
 
   useEffect(() => {
-    console.log(comments);
-  }, [comments]);
+    document.title = "Member";
+  }, []);
 
   useEffect(() => {
+    if (!state.accessToken) return;
+    fetchUserDetails();
+  }, [state.accessToken]);
+
+  const fetchUserDetails = () => {
     fetch(`${process.env.REACT_APP_BASE_URL}/user/getUserDetails/${id}`, {
       method: "GET",
       headers: { Authorization: `Bearer ${state.accessToken}` },
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data) {
-          if (
-            data.status !== "fail" &&
-            data.status !== "error" &&
-            data.status !== 400
-          ) {
-            console.log(data.data.data);
-            setComments(data.data.data);
-          }
+        if (
+          data &&
+          data.status !== "fail" &&
+          data.status !== "error" &&
+          data.status !== "400"
+        ) {
+          setComments(data.data.data);
         }
       })
       .catch((error) => {
         console.error("Error fetching items:", error);
       });
-  }, [id]);
+  };
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/user/getAllDetails`, {

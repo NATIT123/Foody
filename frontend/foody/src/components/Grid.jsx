@@ -158,7 +158,10 @@ const Grid = () => {
       `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`,
       {
         method: "POST",
-        headers: { "Content-type": "application/json" },
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${state.accessToken}`,
+        },
         body: JSON.stringify({
           subCategory: filtersState[0],
           cuisines: filtersState[1],
@@ -351,7 +354,10 @@ const Grid = () => {
       `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPageEat}`,
       {
         method: "POST",
-        headers: { "Content-type": "application/json" },
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${state.accessToken}`,
+        },
         body: JSON.stringify({
           subCategory: filtersState[0],
           cuisines: filtersState[1],

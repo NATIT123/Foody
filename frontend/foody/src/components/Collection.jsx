@@ -14,7 +14,12 @@ const Collection = ({ saved }) => {
                   className="card-img-top"
                 />
                 <div className="card-body">
-                  <a href={`/details/${collection.restaurantInfo._id}`}>
+                  <a
+                    href={`/details/${collection.restaurantInfo._id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "black", textDecoration: "none" }}
+                  >
                     {" "}
                     <h6 className="card-title">
                       {collection.restaurantInfo.name}

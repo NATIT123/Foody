@@ -57,6 +57,7 @@ router.get(
   "/getRestaurantByOptions/city/:cityId/category/:categoryId",
   getRestaurantByOptions
 );
+router.get("/getRestaurant/:id", getRestaurantById);
 
 router.use(protect);
 router.get("/findRestaurantsByFields", findRestaurantsByFields);
@@ -67,7 +68,6 @@ router.patch(
   upload.single("image"),
   updateRestaurantById
 );
-router.get("/getRestaurant/:id", getRestaurantById);
 router.get("/getOwnerRestaurants/:ownerId", getOwnerRestaurants);
 router.get("/getRestaunrantsPending", getRestaunrantsPending);
 router.patch("/updateStatus/:restaurantId", updateStatus);
