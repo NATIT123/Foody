@@ -96,6 +96,12 @@ const Dashboard = () => {
 
   const [activeTab, setActiveTab] = useState("dashboard");
 
+  useEffect(() => {
+    if (state.user?.role === "owner") {
+      setActiveTab("Quản lí nhà hàng");
+    }
+  }, [state.user]);
+
   const [searchQuery, setSearchQuery] = useState("");
 
   return (

@@ -718,7 +718,7 @@ class RestaurantRepository {
           api_secret: process.env.CLOUDINARY_API_SECRET,
         });
 
-        let imageUrl = "";
+        let imageUrl = req.body.image;
         if (req.file) {
           const uploadStream = () => {
             return new Promise((resolve, reject) => {
@@ -735,7 +735,7 @@ class RestaurantRepository {
           imageUrl = await uploadStream();
         }
 
-        const updateFields = { ...req.body, image: imageUrl }; // Dữ liệu cập nhật từ request body
+        const updateFields = { ...req.body, image: imageUrl };
 
         // Cập nhật nhà hàng trong DB
         const updatedRestaurant = await this.restaurantModel.findByIdAndUpdate(
@@ -1275,15 +1275,15 @@ class RestaurantRepository {
             },
           },
           {
-            $match: { active: true, status: "approved" },
-          },
-          {
             $lookup: {
               from: "restaurants",
               localField: "_id",
               foreignField: "coordinateId",
               as: "restaurant",
             },
+          },
+          {
+            $match: { active: true, "restaurant.status": "approved" },
           },
           {
             $unwind: { path: "$restaurant", preserveNullAndEmptyArrays: false },
@@ -1660,8 +1660,6 @@ class RestaurantRepository {
           matchConditions["$or"] = [
             { name: { $regex: searchQuery, $options: "i" } },
             { address: { $regex: searchQuery, $options: "i" } },
-            { phone: { $regex: searchQuery, $options: "i" } },
-            { email: { $regex: searchQuery, $options: "i" } },
             { "subCategory.name": { $regex: searchQuery, $options: "i" } },
           ];
         }
@@ -2174,8 +2172,6 @@ class RestaurantRepository {
           matchConditions["$or"] = [
             { name: { $regex: searchQuery, $options: "i" } },
             { address: { $regex: searchQuery, $options: "i" } },
-            { phone: { $regex: searchQuery, $options: "i" } },
-            { email: { $regex: searchQuery, $options: "i" } },
             { "subCategory.name": { $regex: searchQuery, $options: "i" } },
           ];
         }

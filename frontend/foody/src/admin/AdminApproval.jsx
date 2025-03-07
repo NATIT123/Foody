@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useData } from "../context/DataContext";
-
+import { debounce } from "lodash";
 const AdminRestaurantApproval = ({ searchQuery }) => {
   const [pendingRestaurants, setPendingRestaurants] = useState([]);
   const { state, addNotification } = useData();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+
+  useEffect(() => {
+    const handler = debounce(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    handler();
+    return () => handler.cancel();
+  }, [searchQuery]);
 
   useEffect(() => {
     fetch(
@@ -27,9 +38,9 @@ const AdminRestaurantApproval = ({ searchQuery }) => {
   }, []);
 
   useEffect(() => {
-    if (searchQuery) {
+    if (debouncedSearchQuery) {
       fetch(
-        `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsPendingByFields?page=${currentPage}&searchQuery=${searchQuery}`,
+        `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsPendingByFields?page=${currentPage}&searchQuery=${debouncedSearchQuery}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${state.accessToken}` },
@@ -52,7 +63,7 @@ const AdminRestaurantApproval = ({ searchQuery }) => {
           console.error("Error fetching users:", error);
         });
     }
-  }, [searchQuery]);
+  }, [debouncedSearchQuery, currentPage]);
 
   const handleApproval = (restaurantId, status) => {
     fetch(

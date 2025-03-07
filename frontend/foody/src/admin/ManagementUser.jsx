@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useData } from "../context/DataContext";
 import { useNavigate } from "react-router-dom"; // For navigation
+import { debounce } from "lodash";
 const UserManagement = ({ searchQuery }) => {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate(); // For navigation to the home page
@@ -17,11 +18,21 @@ const UserManagement = ({ searchQuery }) => {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const { state, addNotification } = useData();
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
 
   useEffect(() => {
-    if (searchQuery && state.user.role === "admin") {
+    const handler = debounce(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    handler();
+    return () => handler.cancel();
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (debouncedSearchQuery && state.user.role === "admin") {
       fetch(
-        `${process.env.REACT_APP_BASE_URL}/user/findUsersByFields?page=${currentPage}&searchQuery=${searchQuery}`,
+        `${process.env.REACT_APP_BASE_URL}/user/findUsersByFields?page=${currentPage}&searchQuery=${debouncedSearchQuery}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${state.accessToken}` },
@@ -46,7 +57,8 @@ const UserManagement = ({ searchQuery }) => {
           console.error("Error fetching users:", error);
         });
     }
-  }, [searchQuery, currentPage]);
+  }, [debouncedSearchQuery, currentPage]);
+
   useEffect(() => {
     if (!state.accessToken) return;
     if (state.user?.role !== "admin") return;

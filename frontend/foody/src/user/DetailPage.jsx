@@ -96,7 +96,7 @@ const DetailPage = () => {
   }, [id]);
 
   useEffect(() => {
-    if (currentRestaurant) {
+    if (currentRestaurant.name) {
       document.title = `${currentRestaurant.name} ${currentRestaurant.address}`;
     }
   }, [currentRestaurant]);

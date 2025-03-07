@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // For navigation
 import { useData } from "../context/DataContext";
 import FoodModal from "./FoodModal";
+import { debounce } from "lodash";
 const RestaurantManagement = ({ searchQuery }) => {
   const [restaurants, setRestaurants] = useState([]);
   const navigate = useNavigate(); // For navigation to the home page
@@ -19,6 +20,7 @@ const RestaurantManagement = ({ searchQuery }) => {
   const [cuisines, setCuisines] = useState([]);
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const handleUpdateFood = (updatedFood) => {
     setFoodData((prev) => {
       const exist = prev.findIndex((food) => food._id === updatedFood._id);
@@ -147,10 +149,19 @@ const RestaurantManagement = ({ searchQuery }) => {
   }, [currentPage]);
 
   useEffect(() => {
-    if (searchQuery) {
+    const handler = debounce(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    handler();
+    return () => handler.cancel();
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (debouncedSearchQuery) {
       if (state.user.role === "admin") {
         fetch(
-          `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsByFields?page=${currentPage}&searchQuery=${searchQuery}`,
+          `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsByFields?page=${currentPage}&searchQuery=${debouncedSearchQuery}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${state.accessToken}` },
@@ -174,7 +185,7 @@ const RestaurantManagement = ({ searchQuery }) => {
           });
       } else if (state.user?.role === "owner") {
         fetch(
-          `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsOwnerByFields/${state.user._id}?page=${currentPage}&searchQuery=${searchQuery}`,
+          `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsOwnerByFields/${state.user._id}?page=${currentPage}&searchQuery=${debouncedSearchQuery}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${state.accessToken}` },
@@ -198,7 +209,7 @@ const RestaurantManagement = ({ searchQuery }) => {
           });
       }
     }
-  }, [searchQuery]);
+  }, [debouncedSearchQuery, currentPage]);
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_BASE_URL}/city/getAllCity`)
@@ -261,6 +272,7 @@ const RestaurantManagement = ({ searchQuery }) => {
     setModalMode(mode);
     setIsModalOpen(true);
     if (restaurant) {
+      console.log(restaurant);
       setFormData({ ...restaurant, imagePreview: restaurant.image });
     }
   };
