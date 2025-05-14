@@ -5,6 +5,8 @@ import Alert from "react-bootstrap/Alert";
 import { MdAttachEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useData } from "../context/DataContext";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const LoginPage = () => {
   const [email, setEmail] = useState(""); // To store email input
   const [password, setPassword] = useState(""); // To store password input
@@ -22,7 +24,9 @@ const LoginPage = () => {
     if (!state.loading && state.user) {
       if (state.user.role === "admin" || state.user.role === "owner")
         navigate("/dashboard");
-      if (state.user.role === "user") navigate("/");
+      if (state.user.role === "user") {
+        navigate("/");
+      }
     }
   }, [navigate, state.user, state.loading]);
 
@@ -70,6 +74,7 @@ const LoginPage = () => {
               } else {
                 navigate("/");
               }
+              toast.success("Login Successfully");
             }
           }
         })

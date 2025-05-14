@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button, Card, Form } from "react-bootstrap";
 import { useData } from "../context/DataContext";
+import { toast } from "react-toastify";
 
 const FoodModal = ({
   isOpen,
@@ -49,7 +50,7 @@ const FoodModal = ({
       .then((data) => {
         if (data.status === "success") {
           onDeleteFood(deleteFoodId);
-          console.log("Food deleted successfully");
+          toast.success("Food deleted successfully");
         }
       })
       .catch((error) => console.error("Error deleting food:", error));
@@ -128,7 +129,7 @@ const FoodModal = ({
             image: data.data.food.image,
           };
           onUpdateFood(updatedFood);
-          console.log("Food saved successfully");
+          toast.success("Food saved successfully");
         }
       })
       .catch((error) => console.error("Error saving food:", error));

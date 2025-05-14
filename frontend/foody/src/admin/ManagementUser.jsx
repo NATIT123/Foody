@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useData } from "../context/DataContext";
 import { useNavigate } from "react-router-dom"; // For navigation
 import { debounce } from "lodash";
+import { toast } from "react-toastify";
 const UserManagement = ({ searchQuery }) => {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate(); // For navigation to the home page
@@ -128,7 +129,7 @@ const UserManagement = ({ searchQuery }) => {
           ) {
             setUsers(users.filter((user) => user._id !== id));
             addNotification(`Delete user ${fullname} successfully`);
-            console.log("Delete Success");
+            toast.success("Delete user successfully");
           }
         }
       })
@@ -191,7 +192,7 @@ const UserManagement = ({ searchQuery }) => {
                 users.map((user) => (user._id === id ? { ...newUser } : user))
               );
               addNotification(`Update user ${fullname} successfully`);
-              console.log("Update Success");
+              toast.success("Update user successfully");
             }
           }
         })
@@ -234,7 +235,7 @@ const UserManagement = ({ searchQuery }) => {
               newUser["_id"] = data.data.data;
               setUsers([newUser, ...users]);
               addNotification(`Add user ${fullname} successfully`);
-              console.log("Add Success");
+              toast.success("Add user successfully");
             }
           }
         })
