@@ -1,22 +1,19 @@
-import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import { DataProvider } from "./context/DataContext"; // import DataProvider
-
-import Home from "./user/Home";
-import LoginPage from "./user/Login";
-import RegisterPage from "./user/RegisterPage";
-import DetailPage from "./user/DetailPage";
-import ForgotPasswordPage from "./user/ForgotPasswordPage";
-import ProfilePage from "./user/ProfilePage";
-import Member from "./user/Member";
-import ChangePasswordPage from "./user/ChangePassword";
-import Dashboard from "./admin/Dashboard";
-import Order from "./components/Order";
-import HistoryPage from "./components/HistoryPage";
+import Home from "./components/Home/Home";
+import DetailPage from "./pages/user/DetailPage";
+import ProfilePage from "./pages/user/ProfilePage";
+import Member from "./pages/user/Member";
+import LoginPage from "./pages/login/Login";
+import RegisterPage from "./pages/register/RegisterPage";
+import ChangePasswordPage from "./pages/user/ChangePassword";
+import ForgotPasswordPage from "./pages/user/ForgotPasswordPage";
+import Order from "./pages/order/Order";
+import HistoryPage from "./pages/history/HistoryPage";
 import LayoutUser from "./components/LayoutUser/LayoutUser";
 import NotFound from "./components/NotFound";
-
+import AdminPage from "./pages/admin";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -35,7 +32,7 @@ const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
   { path: "/changePassword/:resetToken", element: <ChangePasswordPage /> },
-  { path: "/dashboard", element: <Dashboard /> },
+  { path: "/dashboard", element: <AdminPage /> },
 ]);
 
 const App = () => {
