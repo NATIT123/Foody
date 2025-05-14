@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"; // For navigation
 import { useData } from "../context/DataContext";
 import FoodModal from "./FoodModal";
 import { debounce } from "lodash";
+import { toast } from "react-toastify";
 const RestaurantManagement = ({ searchQuery }) => {
   const [restaurants, setRestaurants] = useState([]);
   const navigate = useNavigate(); // For navigation to the home page
@@ -323,7 +324,7 @@ const RestaurantManagement = ({ searchQuery }) => {
               )
             );
             addNotification(`Bạn đã xóa nhà hàng ${formData.name} thành công`);
-            console.log("Delete Success");
+            toast.success("Delete restaurant successfully");
           }
         }
       })
@@ -394,7 +395,7 @@ const RestaurantManagement = ({ searchQuery }) => {
               addNotification(
                 `Bạn đã sửa nhà hàng ${formData.name} thành công`
               );
-              console.log("Update Success");
+              toast.success("Update restaurant successfully");
             }
           }
         })
@@ -458,7 +459,7 @@ const RestaurantManagement = ({ searchQuery }) => {
               addNotification(
                 `Bạn đã thêm nhà hàng ${formData.name} thành công`
               );
-              console.log("Add Success");
+              toast.success("Add restaurant successfully");
             }
           }
         })

@@ -8,6 +8,7 @@ import "../css/Header.css"; // Import file CSS tùy chỉnh
 import "bootstrap-icons/font/bootstrap-icons.css";
 import React, { useState, useEffect, useRef } from "react";
 import { useData } from "../context/DataContext";
+import { toast } from "react-toastify";
 
 function Header({
   selectedSubCategories,
@@ -67,7 +68,6 @@ function Header({
       .then((response) => response.json())
       .then((data) => {
         if (data) {
-          console.log(data.data.data);
           setRestaurantSearch(data.data.data);
         }
       })
@@ -662,6 +662,7 @@ function Header({
                     <button
                       className="btn btn-link text-decoration-none text-dark p-0"
                       onClick={() => {
+                        toast.success("Logout Successfully");
                         logout();
                       }}
                     >
