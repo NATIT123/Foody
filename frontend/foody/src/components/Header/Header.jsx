@@ -12,7 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Popover, Empty } from "antd";
 import { FiShoppingCart } from "react-icons/fi";
 import { useData } from "../../context/DataContext";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppSelector, useAppDispatch } from "../../redux/hooks";
+import { doLogoutAction } from "../../redux/account/accountSlice";
 function Header({
   selectedSubCategories,
   setSelectedSubCategories,
@@ -38,15 +39,16 @@ function Header({
   const dropdownRefSearch = useRef(null);
   const [restaurantSearch, setRestaurantSearch] = useState([]);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const carts = useSelector((state) => state.order.carts);
+  const dispatch = useAppDispatch();
+  const carts = useAppSelector((state) => state.order.carts);
+  const user = useAppSelector((state) => state.account.user);
   const contentPopover = () => {
     return (
       <div className="pop-cart-body">
         <div className="pop-cart-content">
           {carts?.map((food) => {
             return (
-              <div className="book" key={food?.detail_id}>
+              <div className="book" key={food?.detail._id}>
                 <img src={food.detail.image} alt={food?.detail.name || ""} />
                 <div>{food?.detail?.name}</div>
                 <div className="price">
@@ -637,7 +639,7 @@ function Header({
             className="col-12 col-md-4 d-flex justify-content-md-end justify-content-center align-items-center"
             style={{ gap: "10px" }}
           >
-            {state.user ? (
+            {user ? (
               <div className="dropdown">
                 {/* Display user email */}
                 <button
@@ -648,9 +650,9 @@ function Header({
                   aria-expanded="false"
                 >
                   <strong>
-                    {state.user?.email.length > 12
-                      ? `${state.user?.fullname}`
-                      : state.user?.email}
+                    {user?.email.length > 12
+                      ? `${user?.fullname}`
+                      : user?.email}
                   </strong>
                 </button>
 
@@ -682,7 +684,7 @@ function Header({
                       style={{ fontSize: "16px" }}
                     ></i>
                     <a
-                      href={`/member/${state.user._id}`}
+                      href={`/member/${user._id}`}
                       className="text-decoration-none text-dark"
                     >
                       Hoạt động cá nhân
@@ -697,6 +699,7 @@ function Header({
                       className="btn btn-link text-decoration-none text-dark p-0"
                       onClick={() => {
                         toast.success("Logout Successfully");
+                        dispatch(doLogoutAction());
                         logout();
                       }}
                     >

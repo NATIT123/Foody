@@ -22,8 +22,19 @@ const Payment = (props) => {
   useEffect(() => {
     if (carts && carts.length > 0) {
       let sum = 0;
+      let currentPrice = 0;
       carts.map((item) => {
-        sum += item.quantity * item.detail.price;
+        currentPrice =
+          item.detail.priceDiscount === "empty"
+            ? item.detail.priceOriginal
+            : item.detail.priceDiscount;
+        sum +=
+          item.quantity *
+          Number(
+            currentPrice
+              .substring(0, currentPrice.length - 1)
+              .replace(/\./g, "")
+          );
       });
       setTotalPrice(sum);
     } else {
@@ -76,37 +87,37 @@ const Payment = (props) => {
   return (
     <Row gutter={[20, 20]}>
       <Col md={16} xs={24}>
-        {carts?.map((book, index) => {
-          const currentBookPrice = book?.detail?.price ?? 0;
+        {carts?.map((food, index) => {
+          const currentFoodPrice =
+            food?.detail.priceDiscount === "empty"
+              ? food.detail.priceOriginal
+              : food.detail.priceDiscount ?? 0;
           return (
-            <div className="order-book" key={`index-${index}`}>
+            <div className="order-book" key={food._id}>
               <div className="book-content">
-                <img
-                  src={`${import.meta.env.VITE_BACKEND_URL}/images/book/${
-                    book?.detail?.thumbnail
-                  }`}
-                />
-                <div className="title">{book?.detail?.mainText}</div>
-                <div className="price">
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(currentBookPrice)}
-                </div>
+                <img src={food.detail.image} alt={food?.detail.name || ""} />
+                <div className="title">{food?.detail?.name}</div>
+                <div className="price">{currentFoodPrice}</div>
               </div>
               <div className="action">
-                <div className="quantity">Số lượng: {book?.quantity}</div>
+                <div className="quantity">Số lượng: {food?.quantity}</div>
                 <div className="sum">
                   Tổng:{" "}
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
                     currency: "VND",
-                  }).format(currentBookPrice * (book?.quantity ?? 0))}
+                  }).format(
+                    Number(
+                      currentFoodPrice
+                        .substring(0, currentFoodPrice.length - 1)
+                        .replace(/\./g, "")
+                    ) * (food?.quantity ?? 0)
+                  )}
                 </div>
                 <DeleteTwoTone
                   style={{ cursor: "pointer" }}
                   onClick={() =>
-                    dispatch(doDeleteItemCartAction({ _id: book._id }))
+                    dispatch(doDeleteItemCartAction({ _id: food._id }))
                   }
                   twoToneColor="#eb2f96"
                 />
@@ -144,9 +155,18 @@ const Payment = (props) => {
                   required: true,
                   message: "Số điện thoại không được để trống!",
                 },
+                {
+                  pattern: /^\d+$/,
+                  message: "Chỉ được nhập số!",
+                },
               ]}
             >
-              <Input />
+              <Input
+                onChange={(e) => {
+                  const onlyNums = e.target.value.replace(/\D/g, "");
+                  e.target.value = onlyNums;
+                }}
+              />
             </Form.Item>
             <Form.Item
               style={{ margin: 0 }}

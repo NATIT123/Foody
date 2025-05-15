@@ -1,23 +1,34 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Alert from "react-bootstrap/Alert";
-import { useData } from "../../context/DataContext";
+import { useAppSelector, useAppDispatch } from "../../redux/hooks";
+import {
+  callUpdateAvatar,
+  callUpdatePassword,
+  callUpdateUserInfo,
+} from "../../services/api";
+import {
+  doLogoutAction,
+  doUpdateUserInfoAction,
+  doUploadAvatarAction,
+} from "../../redux/account/accountSlice";
+import { toast } from "react-toastify";
+
 const ProfilePage = () => {
-  const { state, logout } = useData();
-  const [showModal, setShowModal] = useState(false);
-  const [message, setMessage] = useState("");
+  const user = useAppSelector((state) => state.account.user);
+  const isLoading = useAppSelector((state) => state.account.isLoading);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [profilePic, setProfilePic] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const tempPhoto = useAppSelector((state) => state.account.tempPhoto);
+  const [imageUrl, setImageUrl] = useState(tempPhoto || user?.photo);
   const [showPasswordFields, setShowPasswordFields] = useState(false); // For password fields
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [status, setStatus] = useState("");
   const [selectedCuisines, setSelectedCuisines] = useState([]);
   const [selectedDistricts, setSelectedDistricts] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
@@ -27,114 +38,85 @@ const ProfilePage = () => {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!state.loading && !state.user) {
-        navigate("/");
-      } else if (state.user) {
-        const currentUser = state.user;
-        setName(currentUser.fullname);
-        setEmail(currentUser.email);
-        setPhone(currentUser.phone);
-        setImageUrl(currentUser.photo);
-      }
-    }, 100);
-
-    return () => clearTimeout(timer); // Cleanup tránh memory leak
-  }, [navigate, state.user, state.loading]);
+    if (!isLoading) {
+      setName(user.fullname);
+      setEmail(user.email);
+      setPhone(user.phone);
+    }
+  }, [user]);
 
   const handleFileChange = (event) => {
     setProfilePic(event.target.files[0]);
   };
 
-  const handleSaveChanges = () => {
-    if (!newPassword || !confirmPassword || !currentPassword) {
-      setMessage("Vui lòng nhập mật khẩu");
-      setShowModal(true);
-      setStatus("fail");
-      return;
-    } else if (newPassword !== confirmPassword) {
-      setMessage("Mật khẩu không trùng khớp");
-      setShowModal(true);
-      setStatus("fail");
-      return;
-    } else {
-      fetch(`${process.env.REACT_APP_BASE_URL}/user/updatePassword`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-        body: JSON.stringify({
-          password: currentPassword,
-          newPassword,
-          confirmPassword,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            setMessage(data.message);
-            setShowModal(true);
-            setStatus(data.status);
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              setNewPassword("");
-              setConfirmPassword("");
-              setCurrentPassword("");
-              setShowPasswordFields(false);
-              logout();
-              window.location.reload();
-            }
-          }
-        })
-        .catch((error) => {
-          setStatus("error");
-          setShowModal(true);
-          setMessage(error.message);
-        });
+  const onFinish = async () => {
+    const isChangingPassword =
+      currentPassword || newPassword || confirmPassword;
+
+    if (isChangingPassword) {
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        toast.error("Please fill in all password fields.");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        toast.error("Password confirmation does not match.");
+        return;
+      }
+    }
+
+    try {
+      // Gọi API cập nhật thông tin và đổi mật khẩu nếu cần
+      const promises = [callUpdateUserInfo(phone, name, user.photo)];
+
+      if (isChangingPassword) {
+        promises.push(
+          callUpdatePassword(user.email, currentPassword, newPassword)
+        );
+      }
+
+      const [resUserInfo, resPassword] = await Promise.all(promises);
+
+      if (resUserInfo && resUserInfo.data) {
+        console.log(resUserInfo);
+        dispatch(
+          doUpdateUserInfoAction({
+            photo: user.photo,
+            phone,
+            name,
+          })
+        );
+        localStorage.removeItem("access_token");
+        navigate("/login");
+        toast.success("Update user info successfully");
+      }
+
+      if (resPassword && resPassword.data) {
+        toast.success("Update password successfully. Please log in again.");
+        dispatch(doLogoutAction());
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error when updating user info.");
     }
   };
 
-  const handleUploadPhoto = async () => {
-    if (!profilePic) {
-      setMessage("Vui lòng chọn ảnh");
-      setShowModal(true);
-      setStatus("fail");
+  const handleUploadAvatar = async (file) => {
+    if (!file) {
+      toast.error("Please choose image to update.");
       return;
     }
-    const formData = new FormData();
-    formData.append("image", profilePic);
-    fetch(`${process.env.REACT_APP_BASE_URL}/user/uploadPhoto`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${state.accessToken}`,
-      },
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          setMessage(data.message);
-          setShowModal(true);
-          setStatus(data.status);
-          if (
-            data.status === "fail" ||
-            data.status !== "error" ||
-            data.status !== 400
-          ) {
-            setImageUrl(data.data.photo);
-            setProfilePic("");
-          }
-        }
-      })
-      .catch((error) => {
-        setStatus("error");
-        setShowModal(true);
-        setMessage(error.message);
-      });
+    const res = await callUpdateAvatar(file);
+    if (res && res.data) {
+      const newAvatar = res.data.photo;
+      dispatch(doUploadAvatarAction({ photo: newAvatar }));
+      setImageUrl(newAvatar);
+      setProfilePic("");
+      toast.success("Upload photo successfully");
+    } else {
+      toast.error("Upload photo failed");
+    }
   };
 
   return (
@@ -147,27 +129,6 @@ const ProfilePage = () => {
         selectedDistricts={selectedDistricts}
         setSelectedDistricts={setSelectedDistricts}
       /> */}
-      {showModal ? (
-        <Alert
-          className="d-flex flex-column align-items-center text-center"
-          variant={`${
-            status === "fail" || status === "error" || status === 400
-              ? "danger"
-              : "success"
-          }`}
-          onClick={() => setShowModal(false)}
-          dismissible
-        >
-          <Alert.Heading>
-            {status === "fail" || status === "error" || status === 400
-              ? "Error"
-              : "Success"}
-          </Alert.Heading>
-          <p>{message}</p>
-        </Alert>
-      ) : (
-        <div></div>
-      )}
       <div className="container mt-5">
         <div className="row">
           {/* Sidebar */}
@@ -224,7 +185,7 @@ const ProfilePage = () => {
                   </div>
                   <button
                     className="btn btn-primary mt-3"
-                    onClick={handleUploadPhoto}
+                    onClick={() => handleUploadAvatar(profilePic)}
                   >
                     Cập nhật
                   </button>
@@ -248,7 +209,7 @@ const ProfilePage = () => {
                   <input
                     type="email"
                     className="form-control"
-                    value={email && email}
+                    value={user.email && user.email}
                     disabled
                   />
                 </div>
@@ -304,7 +265,7 @@ const ProfilePage = () => {
                   )}
                 </div>
 
-                <button className="btn btn-primary" onClick={handleSaveChanges}>
+                <button className="btn btn-primary" onClick={onFinish}>
                   Lưu thay đổi
                 </button>
 
@@ -317,7 +278,7 @@ const ProfilePage = () => {
                   <input
                     type="email"
                     className="form-control"
-                    value={phone && phone}
+                    value={user.phone && user.phone}
                     disabled
                   />
                 </div>
