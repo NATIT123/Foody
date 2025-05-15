@@ -9,6 +9,8 @@ import LoginModal from "../Login/LoginModal";
 import ImageModal from "../../components/Gallery/ImageModal";
 import ImageGallery from "../../components/Gallery/VideosAndImagesPage";
 import CommentsSection from "../../components/Comment/CommentsSection";
+import { useDispatch } from "react-redux";
+import { doAddFoodAction } from "../../redux/order/orderSlice";
 const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
 
@@ -360,6 +362,11 @@ const Slide = ({
     }
   };
 
+  const dispatch = useDispatch();
+  const handleAddToCart = (quantity, food) => {
+    dispatch(doAddFoodAction({ quantity, detail: food, _id: food._id }));
+  };
+
   return (
     <div className="container my-4">
       <div className="row">
@@ -460,7 +467,9 @@ const Slide = ({
                         </div>
                         <button className="btn btn-outline-danger btn-sm ms-auto">
                           {" "}
-                          <FaPlus />{" "}
+                          <FaPlus
+                            onClick={() => handleAddToCart(1, item)}
+                          />{" "}
                         </button>
                       </div>
                     </div>

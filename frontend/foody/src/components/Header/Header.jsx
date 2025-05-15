@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Popover, Empty } from "antd";
 import { FiShoppingCart } from "react-icons/fi";
 import { useData } from "../../context/DataContext";
+import { useDispatch, useSelector } from "react-redux";
 function Header({
   selectedSubCategories,
   setSelectedSubCategories,
@@ -36,24 +37,22 @@ function Header({
   const dropdownRef = useRef(null);
   const dropdownRefSearch = useRef(null);
   const [restaurantSearch, setRestaurantSearch] = useState([]);
-  const carts = [];
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const carts = useSelector((state) => state.order.carts);
   const contentPopover = () => {
     return (
       <div className="pop-cart-body">
         <div className="pop-cart-content">
-          {carts?.map((book, index) => {
+          {carts?.map((food) => {
             return (
-              <div className="book" key={`book-${index}`}>
-                <img
-                  src={`${process.env.REACT_APP_BASE_URL}/images/book/${book?.detail?.thumbnail}`}
-                />
-                <div>{book?.detail?.mainText}</div>
+              <div className="book" key={food?.detail_id}>
+                <img src={food.detail.image} alt={food?.detail.name || ""} />
+                <div>{food?.detail?.name}</div>
                 <div className="price">
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(book?.detail?.price ?? 0)}
+                  {food?.detail.priceDiscount === "empty"
+                    ? food.detail.priceOriginal
+                    : food.detail.priceDiscount}
                 </div>
               </div>
             );
@@ -711,24 +710,33 @@ function Header({
                 Đăng nhập
               </a>
             )}
-
-            <li className="navigation__item">
-              <Popover
-                className="popover-carts"
-                placement="topRight"
-                rootClassName="popover-carts"
-                title={"Sản phẩm mới thêm"}
-                content={contentPopover}
-                arrow={true}
-              >
-                <Badge count={carts?.length ?? 0} size={"small"} showZero>
-                  <FiShoppingCart className="icon-cart" />
-                </Badge>
-              </Popover>
-            </li>
+            <nav className="page-header__bottom">
+              <ul id="navigation" className="navigation">
+                <li className="navigation__item">
+                  <Popover
+                    className="popover-carts"
+                    placement="topRight"
+                    rootClassName="popover-carts"
+                    title={"Sản phẩm mới thêm"}
+                    content={contentPopover}
+                    arrow={true}
+                  >
+                    <Badge count={carts?.length ?? 0} size={"small"} showZero>
+                      <FiShoppingCart className="icon-cart" />
+                    </Badge>
+                  </Popover>
+                </li>
+              </ul>
+            </nav>
 
             {/* Bell Icon */}
-            <div style={{ position: "relative", display: "inline-block" }}>
+            <div
+              style={{
+                position: "relative",
+                display: "inline-block",
+                marginLeft: "10px",
+              }}
+            >
               {/* Biểu tượng chuông */}
               <FaBell
                 style={{
