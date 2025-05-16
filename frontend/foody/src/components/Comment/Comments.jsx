@@ -1,27 +1,31 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
+import { callFetchListComment } from "../../services/api";
+import { toast } from "react-toastify";
 const Comments = () => {
   const [activeTab, setActiveTab] = useState("new"); // State for active tab
   const [currentPage, setCurrentPage] = useState(1); // Current page state
   const [comments, setComments] = useState([]);
   const itemsPerPage = 10; // Số bình luận hiển thị trên mỗi trang
+  const getAllComments = async () => {
+    try {
+      const res = await callFetchListComment();
 
+      if (res?.data?.status !== "fail" && res?.data?.status !== "error") {
+        setComments(res.data.data);
+      } else {
+        toast.error(
+          "Failed to fetch comments:",
+          res.data.message || "Unknown error"
+        );
+      }
+    } catch (err) {
+      toast.error("Error fetching comments:", err.message || err);
+    }
+  };
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/comment/getAllComment`, {
-      method: "GET",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          if (data.status !== "fail" && data.status !== "error") {
-            setComments(data.data.data);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching comments:", error);
-      });
+    getAllComments();
   }, []);
 
   // Calculate pagination

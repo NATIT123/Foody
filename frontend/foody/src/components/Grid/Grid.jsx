@@ -10,7 +10,17 @@ import Comments from "../Comment/Comments";
 import Blogs from "../Blog/Blogs";
 import LoginModal from "../Login/LoginModal";
 import Modal from "../Comment/Modal";
-import { useData } from "../../context/DataContext";
+import { useAppSelector } from "../../redux/hooks";
+import {
+  callFetchFavoriteRestaurantByUserId,
+  callfetchFavoriteRestaurantsEat,
+  callFetchListRestaurant,
+  callfetchMostViewed,
+  callFetchNearestRestaurant,
+  callFetchRestaurantsByRate,
+  callFetchTopDeals,
+} from "../../services/api";
+import { toast } from "react-toastify";
 const categoriesEat = ["Mới nhất", "Lượt xem", "Phổ biến", "Đã lưu"];
 
 const categories = ["Mới nhất", "Gần tôi", "Đã lưu", "Đánh giá"];
@@ -99,7 +109,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 const Grid = () => {
   const navigate = useNavigate(); // Hook điều hướng
   const [itemsEat, setItemEat] = useState([]);
-  const { state } = useData();
   const [activeCategoryEat, setActiveCategoryEat] = useState(categories[0]);
   const [activeCategory, setActiveCategory] = useState(categories[0]);
   const [filtersState, setFiltersState] = useState(filters);
@@ -112,9 +121,14 @@ const Grid = () => {
   const [currentPageEat, setCurrentPageEat] = useState(1);
   const [currentItems, setCurrentItems] = useState([]); // Dữ liệu sau khi lọc
   const [showLoginModal, setShowLoginModal] = useState(false);
-
+  const user = useAppSelector((state) => state.account.user);
+  const isLoading = useAppSelector((state) => state.account.loading);
+  const selectedCity = useAppSelector((state) => state.resource.selectedCity);
+  const selectedCategory = useAppSelector(
+    (state) => state.resource.selectedCategory
+  );
   const handleShowModalLogin = () => {
-    if (!state.loading && !state.user) {
+    if (!isLoading && !user) {
       setShowLoginModal(true);
       return;
     }
@@ -125,123 +139,88 @@ const Grid = () => {
     navigate("/login");
   };
 
-  const fetchRestaurants = useCallback(() => {
+  const fetchRestaurants = useCallback(async () => {
     setCurrentItems([]);
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
-      {
-        method: "POST",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({
-          selectedCity: state.selectedCity?._id || "",
-          selectedCategory: state.selectedCategory?._id || "",
-          subCategory: filtersState[0],
-          cuisines: filtersState[1],
-          district: filtersState[2],
-        }),
+    try {
+      const res = await callFetchListRestaurant(currentPage, {
+        selectedCity: selectedCity?._id || "",
+        selectedCategory: selectedCategory?._id || "",
+        subCategory: filtersState[0],
+        cuisines: filtersState[1],
+        district: filtersState[2],
+      });
+      if (res.status === "success") {
+        setTotalPages(res.data.totalPages);
+        setCurrentItems(res.data.data);
       }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          setTotalPages(data.totalPages);
-          setCurrentItems(data.data.data);
-        }
-      })
-      .catch((error) => console.error("Error fetching restaurants:", error));
-  }, [currentPage, state.selectedCity, state.selectedCategory, filtersState]);
+    } catch (err) {
+      toast.error("Error fetching restaurants:");
+    }
+  }, [currentPage, selectedCity, selectedCategory, filtersState]);
 
-  const fetchFavoriteRestaurants = useCallback(() => {
+  const fetchFavoriteRestaurants = useCallback(async () => {
     setCurrentItems([]);
-    if (!state.user || !state.user._id) return;
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPage}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-        body: JSON.stringify({
-          subCategory: filtersState[0],
-          cuisines: filtersState[1],
-          district: filtersState[2],
-        }),
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.data) {
-          setTotalPages(data.totalPages);
-          setCurrentItems(data.data.data);
+    if (user) {
+      try {
+        const res = await callFetchFavoriteRestaurantByUserId(
+          user._id,
+          currentPage,
+          {
+            subCategory: filtersState[0],
+            cuisines: filtersState[1],
+            district: filtersState[2],
+          }
+        );
+        if (res.status === "success") {
+          setTotalPages(res.data.totalPages);
+          setCurrentItems(res.data.data);
         }
-      })
-      .catch((error) =>
-        console.error("Error fetching favorite restaurants:", error)
-      );
-  }, [currentPage, state, filtersState]);
+      } catch (err) {
+        toast.error("Error fetching restaurants:");
+      }
+    }
+  }, [currentPage, filtersState, user]);
 
   const fetchNearestRestaurants = useCallback(() => {
     setCurrentItems([]);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        fetch(
-          `${process.env.REACT_APP_BASE_URL}/restaurant/getNearestRestaurants?page=${currentPage}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              subCategory: filtersState[0],
-              cuisines: filtersState[1],
-              district: filtersState[2],
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              maxDistance: 1000,
-            }),
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data?.data) {
-              setTotalPages(data.totalPages);
-              setCurrentItems(data.data.data);
-            }
-          })
-          .catch((error) =>
-            console.error("Error fetching nearest restaurants:", error)
-          );
-      },
-      (error) => console.error("Lỗi lấy vị trí:", error)
-    );
-  }, [currentPage, filtersState]);
-
-  const fetchRateRestaurants = useCallback(() => {
-    setCurrentItems([]);
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/fetchRestaurantsByRate?page=${currentPage}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          selectedCity: state.selectedCity?._id || "",
-          selectedCategory: state.selectedCategory?._id || "",
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      try {
+        const res = await callFetchNearestRestaurant(currentPage, {
           subCategory: filtersState[0],
           cuisines: filtersState[1],
           district: filtersState[2],
-        }),
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.data) {
-          setTotalPages(data.totalPages);
-          setCurrentItems(data.data.data);
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          maxDistance: 1000,
+        });
+        if (res.status === "success") {
+          setTotalPages(res.data.totalPages);
+          setCurrentItems(res.data.data);
         }
-      })
-      .catch((error) =>
-        console.error("Error fetching nearest restaurants:", error)
-      );
-  }, [currentPage, state, filtersState]);
+      } catch (err) {
+        toast.error("Error fetching restaurants:");
+      }
+    });
+  }, [currentPage, filtersState]);
+
+  const fetchRateRestaurants = useCallback(async () => {
+    setCurrentItems([]);
+    try {
+      const res = await callFetchRestaurantsByRate(currentPage, {
+        selectedCity: selectedCity?._id || "",
+        selectedCategory: selectedCategory?._id || "",
+        subCategory: filtersState[0],
+        cuisines: filtersState[1],
+        district: filtersState[2],
+      });
+      if (res.status === "success") {
+        setTotalPages(res.data.totalPages);
+        setCurrentItems(res.data.data);
+      }
+    } catch (err) {
+      toast.error("Error fetching restaurants:");
+    }
+  }, [currentPage, selectedCategory, selectedCity, filtersState]);
 
   useEffect(() => {
     if (activeCategory === categories[0]) {
@@ -258,124 +237,91 @@ const Grid = () => {
     filtersState,
     activeCategory,
     currentPage,
-    state.selectedCity,
-    state.selectedCategory,
+    selectedCity,
+    selectedCategory,
   ]);
 
   // Fetch API lấy danh sách restaurant
 
-  const fetchAllRestaurants = useCallback(() => {
+  const fetchAllRestaurants = useCallback(async () => {
     setItemEat([]);
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPageEat}`,
-      {
-        method: "POST",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({
-          selectedCity: state.selectedCity?._id || "",
-          selectedCategory: state.selectedCategory?._id || "",
-          subCategory: filtersState[0],
-          cuisines: filtersState[1],
-          district: filtersState[2],
-        }),
+    try {
+      const res = await callFetchListRestaurant(currentPageEat, {
+        selectedCity: selectedCity?._id || "",
+        selectedCategory: selectedCategory?._id || "",
+        subCategory: filtersState[0],
+        cuisines: filtersState[1],
+        district: filtersState[2],
+      });
+      if (res.status === "success") {
+        setTotalPagesEat(res.data.totalPages);
+        setItemEat(res.data.data);
       }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          setTotalPagesEat(data.totalPages);
-          setItemEat(data.data.data);
-        }
-      })
-      .catch((error) => console.error("Error fetching restaurants:", error));
-  }, [
-    currentPageEat,
-    state.selectedCategory,
-    state.selectedCity,
-    filtersState,
-  ]);
+    } catch (err) {
+      toast.error("Error fetching restaurants:");
+    }
+  }, [currentPageEat, selectedCategory, selectedCity, filtersState]);
 
-  const fetchTopDeals = useCallback(() => {
+  const fetchTopDeals = useCallback(async () => {
     setItemEat([]);
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantTopDeals?page=${currentPageEat}`,
-      {
-        method: "POST",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({
-          selectedCity: state.selectedCity?._id || "",
-          selectedCategory: state.selectedCategory?._id || "",
-          subCategory: filtersState[0],
-          cuisines: filtersState[1],
-          district: filtersState[2],
-        }),
+    try {
+      const res = await callFetchTopDeals(currentPageEat, {
+        selectedCity: selectedCity?._id || "",
+        selectedCategory: selectedCategory?._id || "",
+        subCategory: filtersState[0],
+        cuisines: filtersState[1],
+        district: filtersState[2],
+      });
+      if (res.status === "success") {
+        setTotalPagesEat(res.data.totalPages);
+        setItemEat(res.data.data);
       }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.data) {
-          setTotalPagesEat(data.totalPages);
-          setItemEat(data.data.data);
-        }
-      })
-      .catch((error) => console.error("Error fetching restaurants:", error));
-  }, [currentPageEat, state, filtersState]);
+    } catch (err) {
+      toast.error("Error fetching restaurants:");
+    }
+  }, [currentPageEat, selectedCategory, selectedCity, filtersState]);
 
-  const fetchMostViewed = useCallback(() => {
+  const fetchMostViewed = useCallback(async () => {
     setItemEat([]);
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByViews?page=${currentPageEat}`,
-      {
-        method: "POST",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({
-          selectedCity: state.selectedCity?._id || "",
-          selectedCategory: state.selectedCategory?._id || "",
-          subCategory: filtersState[0],
-          cuisines: filtersState[1],
-          district: filtersState[2],
-        }),
+    try {
+      const res = await callfetchMostViewed(currentPageEat, {
+        selectedCity: selectedCity?._id || "",
+        selectedCategory: selectedCategory?._id || "",
+        subCategory: filtersState[0],
+        cuisines: filtersState[1],
+        district: filtersState[2],
+      });
+      if (res.status === "success") {
+        setTotalPagesEat(res.data.totalPages);
+        setItemEat(res.data.data);
       }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.data) {
-          setTotalPagesEat(data.totalPages);
-          setItemEat(data.data.data);
-        }
-      })
-      .catch((error) => console.error("Error fetching restaurants:", error));
-  }, [currentPageEat, state, filtersState]);
+    } catch (err) {
+      toast.error("Error fetching restaurants:");
+    }
+  }, [currentPageEat, selectedCity, selectedCategory, filtersState]);
 
-  const fetchFavoriteRestaurantsEat = useCallback(() => {
+  const fetchFavoriteRestaurantsEat = useCallback(async () => {
     setItemEat([]);
-    if (!state.user || !state.user._id) return;
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/favorite/getFavoriteRestaurantByUserId/${state.user._id}?page=${currentPageEat}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-        body: JSON.stringify({
-          subCategory: filtersState[0],
-          cuisines: filtersState[1],
-          district: filtersState[2],
-        }),
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.data) {
-          setTotalPagesEat(data.totalPages);
-          setItemEat(data.data.data);
+    if (user) {
+      try {
+        const res = await callfetchFavoriteRestaurantsEat(
+          user._id,
+          currentPageEat,
+          {
+            subCategory: filtersState[0],
+            cuisines: filtersState[1],
+            district: filtersState[2],
+          }
+        );
+        if (res.status === "success") {
+          setTotalPagesEat(res.data.totalPages);
+          setItemEat(res.data.data);
         }
-      })
-      .catch((error) =>
-        console.error("Error fetching favorite restaurants:", error)
-      );
-  }, [currentPageEat, state, filtersState]);
+      } catch (err) {
+        toast.error("Error fetching restaurants:");
+      }
+    }
+  }, [currentPageEat, user, filtersState]);
 
   useEffect(() => {
     if (activeCategoryEat === categoriesEat[0]) {
@@ -392,8 +338,8 @@ const Grid = () => {
     activeCategoryEat,
     currentPageEat,
     filtersState,
-    state.selectedCity,
-    state.selectedCategory,
+    selectedCity,
+    selectedCategory,
   ]);
 
   const handleShowModal = (item) => {

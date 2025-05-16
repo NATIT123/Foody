@@ -11,7 +11,6 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { Badge, Popover, Empty } from "antd";
 import { FiShoppingCart } from "react-icons/fi";
-import { useData } from "../../context/DataContext";
 import { useAppSelector, useAppDispatch } from "../../redux/hooks";
 import { doLogoutAction } from "../../redux/account/accountSlice";
 import { Form } from "react-bootstrap";
@@ -27,8 +26,11 @@ import {
   setSelectedCategory,
   setSelectedCity,
 } from "../../redux/resource/resourceDataSlice";
+import {
+  fetchNotifications,
+  markAllNotificationsAsRead,
+} from "../../redux/notification/notificationSlice";
 function Header(props) {
-  const { unreadExists, state, markAllNotificationsRead } = useData();
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
   const [activeTab, setActiveTab] = useState("Khu vực");
@@ -61,6 +63,12 @@ function Header(props) {
   const selectedDistricts = useAppSelector(
     (state) => state.resourceFilter.selectedDistricts
   );
+  const notifications = useAppSelector(
+    (state) => state.notification.notifications
+  );
+  const unreadExists = useAppSelector(
+    (state) => state.notification.unreadExists
+  );
   useEffect(() => {
     const body = document.querySelector("body");
     if (body) body.setAttribute("data-bs-theme", mode);
@@ -91,6 +99,12 @@ function Header(props) {
       })
     );
   }, []);
+
+  useEffect(() => {
+    if (user && user._id) {
+      dispatch(fetchNotifications(user._id));
+    }
+  }, [user, dispatch]);
 
   useEffect(() => {
     if (selectedCity) {
@@ -228,22 +242,11 @@ function Header(props) {
     dispatch(setSelectedSubCategories(updatedSubCategories));
   };
 
-  const { notifications } = state;
   const handleToggleNotifications = () => {
-    if (!state.loading && !state.user) {
-      console.log("Không có user, fetch không chạy.");
-      return;
+    if (showNotifications && unreadExists && user) {
+      dispatch(markAllNotificationsAsRead(user._id));
     }
 
-    if (!state.user || !state.user._id) {
-      console.log("User ID không hợp lệ.");
-      return;
-    }
-    if (showNotifications && unreadExists) {
-      markAllNotificationsRead();
-    }
-
-    // Đảo trạng thái show/hide thông báo
     setShowNotifications(!showNotifications);
   };
 

@@ -166,3 +166,95 @@ export const callFetchDashboard = () => {
 export const callFetchListOrder = (query) => {
   return axios.get(`/api/v1/order?${query}`);
 };
+
+export const callFetchNotification = (id) => {
+  return axios.get(`/notification/getNotificationsByUserId/${id}`);
+};
+
+export const callMarkAllNotificationAsRead = (id) => {
+  return axios.get(`/notification/makeAll/${id}`);
+};
+
+export const callFetchListRestaurant = (currentPage, payload) => {
+  return axios.post(
+    `/restaurant/getAllRestaurants?page=${currentPage}`,
+    payload
+  );
+};
+
+export const callFetchFavoriteRestaurantByUserId = (
+  userId,
+  currentPage,
+  payload
+) => {
+  return axios.post(
+    `/favorite/getFavoriteRestaurantByUserId/${userId}?page=${currentPage}`,
+    payload
+  );
+};
+
+export const callFetchNearestRestaurant = (currentPage, payload) => {
+  return axios.post(
+    `/restaurant/getNearestRestaurants?page=${currentPage}`,
+    payload
+  );
+};
+
+export const callFetchRestaurantsByRate = (currentPage, payload) => {
+  return axios.post(
+    `/restaurant/fetchRestaurantsByRate?page=${currentPage}`,
+    payload
+  );
+};
+
+export const callFetchTopDeals = (currentPage, payload) => {
+  return axios.post(
+    `/restaurant/getRestaurantTopDeals?page=${currentPage}`,
+    payload
+  );
+};
+
+export const callfetchMostViewed = (currentPage, payload) => {
+  return axios.post(
+    `/restaurant/getRestaurantByViews?page=${currentPage}`,
+    payload
+  );
+};
+
+export const callfetchFavoriteRestaurantsEat = (
+  userId,
+  currentPage,
+  payload
+) => {
+  return axios.post(
+    `/favorite/getFavoriteRestaurantByUserId/${userId}?page=${currentPage}`,
+    payload
+  );
+};
+
+export const callAddNotification = (notification) => {
+  return axios.post(`/notification/addNotification`, notification);
+};
+
+export const callAddComment = (userId, restaurantId, commentData) => {
+  return axios.post(
+    `/comment/addComment/user/${userId}/restaurant/${restaurantId}`,
+    commentData
+  );
+};
+
+export const callFetchListComment = () => {
+  return axios.get("/comment/getAllComment");
+};
+
+export const callLikeComment = (commentId, userId) => {
+  return axios.get(`/comment/like/${commentId}/${userId}`);
+};
+
+export const callReplyComment = (commentId, payload) => {
+  return axios.post(`/comment/reply/${commentId}`, payload);
+};
+
+export const callAddAlbum = (payload) => {
+  return axios.post("/album/addAlbum", payload);
+};

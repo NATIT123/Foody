@@ -1,5 +1,4 @@
-import React from "react";
-import { useData } from "../../context/DataContext";
+import { useAppSelector } from "../../redux/hooks";
 const CategoryFilters = ({
   categories,
   activeCategory,
@@ -8,7 +7,12 @@ const CategoryFilters = ({
   filtersState,
   setFiltersState,
 }) => {
-  const { state } = useData();
+  const subCategories = useAppSelector(
+    (state) => state.resourceFilter.subCategories
+  );
+
+  const cuisines = useAppSelector((state) => state.resource.cuisines);
+  const districts = useAppSelector((state) => state.resourceFilter.districts);
 
   return (
     <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between flex-wrap mb-3 bg-white p-3 border">
@@ -51,24 +55,27 @@ const CategoryFilters = ({
           >
             <option>{filter}</option>
             {filter === "- Danh mục -" &&
-              state.subCategories &&
-              state.subCategories.map((option, index) => (
+              subCategories &&
+              subCategories.length > 0 &&
+              subCategories.map((option, index) => (
                 <option key={index} value={option._id}>
                   {option.name}
                 </option>
               ))}
             ?
             {filter === "- Ẩm thực -" &&
-              state.cuisines &&
-              state.cuisines.map((option, index) => (
+              cuisines &&
+              cuisines.length > 0 &&
+              cuisines.map((option, index) => (
                 <option key={index} value={option._id}>
                   {option.name}
                 </option>
               ))}
             :
             {filter === "- Quận/Huyện -" &&
-              state.districts &&
-              state.districts.map((option, index) => (
+              districts &&
+              districts.length > 0 &&
+              districts.map((option, index) => (
                 <option key={index} value={option._id}>
                   {option.name}
                 </option>

@@ -2,14 +2,14 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import CommentModal from "./CommentModal";
 import LoginModal from "../Login/LoginModal";
-import { useData } from "../../context/DataContext";
-
+import { useAppSelector } from "../../redux/hooks";
+import { callLikeComment, callReplyComment } from "../../services/api";
 const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
   const navigate = useNavigate(); // Hook điều hướng
-  const { state } = useData();
   const [activeTab, setActiveTab] = useState("latest"); // State for active tab
   const [myComments, setMyComments] = useState([]);
-
+  const user = useAppSelector((state) => state.account.user);
+  const isLoading = useAppSelector((state) => state.account.isLoading);
   const restaurant = useMemo(() => {
     return (
       currentItems.find((el) => el._id.toString() === item._id.toString()) ||
@@ -23,9 +23,9 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
   ]);
 
   useEffect(() => {
-    if (!state.loading && state.user) {
+    if (!isLoading && user) {
       const filteredComments = restaurant.comments.filter(
-        (el) => el.user._id.toString() === state.user._id.toString()
+        (el) => el.user._id.toString() === user._id.toString()
       );
       setMyComments(filteredComments);
 
@@ -37,7 +37,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
         )
       );
     }
-  }, [item.comments, item.commentCount, state.user, state.loading, restaurant]);
+  }, [item.comments, item.commentCount, user, isLoading, restaurant]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [ratings, setRatings] = useState([]);
@@ -47,14 +47,14 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
   };
 
   const handleShowModalLogin = () => {
-    if (!state.loading && !state.user) {
+    if (!isLoading && !user) {
       setShowLoginModal(true);
       return;
     }
   };
 
   const handleShowModalComment = () => {
-    if (!state.loading && !state.user) {
+    if (!isLoading && !user) {
       setShowLoginModal(true);
       return;
     }
@@ -80,36 +80,27 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
       setReplies(inititalReplies);
       const userLikedComments = new Set(
         restaurant?.comments
-          .filter((comment) => comment.numberOfLikes?.includes(state.user?._id))
+          .filter((comment) => comment.numberOfLikes?.includes(user?._id))
           .map((comment) => comment._id)
       );
       setLikedComments(userLikedComments);
     }
-  }, [restaurant?.comments, state.user?._id]);
+  }, [restaurant?.comments, user?._id]);
 
   const isLike = (comment) => likedComments.has(comment);
 
   const handleLike = async (commentId) => {
-    if (!state.user) {
+    if (!user) {
       setShowLoginModal(true);
       return;
     }
 
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_BASE_URL}/comment/like/${commentId}/${state.user._id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${state.accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const res = await callLikeComment(commentId, user._id); // dùng axios
+      const data = res.data;
 
-      const data = await response.json();
-
-      if (response.ok && data.status === "success") {
+      if (res.status === 200 && data.status === "success") {
+        // Cập nhật số lượt like
         setLikes((prevLikes) => {
           const currentLikes = prevLikes[commentId] || 0;
           return {
@@ -119,6 +110,8 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
               : currentLikes + 1,
           };
         });
+
+        // Cập nhật trạng thái liked/unliked
         setLikedComments((prevLikedComments) => {
           const newLikedComments = new Set(prevLikedComments);
           if (data.data) {
@@ -129,6 +122,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
           return newLikedComments;
         });
 
+        // Cập nhật số like thực tế trong currentItems
         setCurrentItems((prevCurrent) => {
           return prevCurrent.map((current) =>
             current._id.toString() === item._id.toString()
@@ -140,12 +134,11 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                           ...comment,
                           numberOfLikes: data.data
                             ? comment?.numberOfLikes.filter(
-                                (id) =>
-                                  id.toString() !== state.user._id.toString()
+                                (id) => id.toString() !== user._id.toString()
                               ) || []
                             : [
                                 ...(comment?.numberOfLikes || []),
-                                state.user._id.toString(),
+                                user._id.toString(),
                               ],
                         }
                       : comment
@@ -155,15 +148,15 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
           );
         });
       } else {
-        console.error("Error liking comment", data.message);
+        console.error("Error liking comment:", data.message);
       }
     } catch (error) {
-      console.error("Error liking comment", error);
+      console.error("Error liking comment:", error.message || error);
     }
   };
 
   const handleReplyClick = (commentId) => {
-    if (!state.user) {
+    if (!user) {
       setShowLoginModal(true);
       return;
     }
@@ -176,70 +169,64 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
 
   const handleReplySubmit = async (commentId) => {
     if (!replyText[commentId]?.trim()) return;
-    if (state.user._id) {
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_BASE_URL}/comment/reply/${commentId}`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${state.accessToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              content: replyText[commentId],
-              fullname: state.user.fullname,
-              photo: state.user.photo,
-            }),
-          }
+    if (!user?._id) return;
+
+    const payload = {
+      content: replyText[commentId],
+      fullname: user.fullname,
+      photo: user.photo,
+    };
+
+    try {
+      const res = await callReplyComment(commentId, payload);
+      const data = res.data;
+
+      if (res.status === 200 && data.status === "success") {
+        const newReply = {
+          id: data.data._id,
+          user: {
+            fullname: user.fullname || "Bạn",
+            photo: user.photo,
+          },
+          content: data.data.content,
+          createdAt: data.data.createdAt,
+        };
+
+        // Cập nhật replies theo commentId
+        setReplies((prevReplies) => ({
+          ...prevReplies,
+          [commentId]: [...(prevReplies[commentId] || []), newReply],
+        }));
+
+        // Cập nhật replies trong currentItems
+        setCurrentItems((prevCurrent) =>
+          prevCurrent.map((current) =>
+            current._id.toString() === item._id.toString()
+              ? {
+                  ...current,
+                  comments: current.comments.map((comment) =>
+                    comment._id.toString() === commentId.toString()
+                      ? {
+                          ...comment,
+                          replies: [newReply, ...(comment.replies || [])],
+                        }
+                      : comment
+                  ),
+                }
+              : current
+          )
         );
 
-        const data = await response.json();
-
-        if (response.ok && data.status === "success") {
-          const newReply = {
-            id: data.data._id,
-            user: {
-              fullname: state.user?.fullname || "Bạn",
-              photo: state.user?.photo,
-            },
-            content: data.data.content,
-            createdAt: data.data.createdAt,
-          };
-
-          setReplies((prevReplies) => ({
-            ...prevReplies,
-            [commentId]: [...(prevReplies[commentId] || []), newReply],
-          }));
-
-          setCurrentItems((prevCurrent) => {
-            return prevCurrent.map((current) =>
-              current._id.toString() === item._id.toString()
-                ? {
-                    ...current,
-                    comments: current.comments.map((comment) =>
-                      comment._id.toString() === commentId.toString()
-                        ? {
-                            ...comment,
-                            replies: [newReply, ...comment.replies],
-                          }
-                        : comment
-                    ),
-                  }
-                : current
-            );
-          });
-
-          setReplyText((prevText) => ({
-            ...prevText,
-            [commentId]: "",
-          }));
-        } else {
-          console.error("Error adding reply:", data.message);
-        }
-      } catch (error) {
-        console.error("Error adding reply:", error);
+        // Reset nội dung ô reply
+        setReplyText((prevText) => ({
+          ...prevText,
+          [commentId]: "",
+        }));
+      } else {
+        console.error("Error adding reply:", data.message);
       }
+    } catch (error) {
+      console.error("Error adding reply:", error.message || error);
     }
   };
 

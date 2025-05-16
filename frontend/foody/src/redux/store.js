@@ -1,10 +1,10 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import counterReducer from "../redux/counter/counterSlice";
 import accountReducer from "../redux/account/accountSlice";
 import orderReducer from "../redux/order/orderSlice";
 import themeReducer from "./theme/theme.slice";
 import resourceReducer from "./resource/resourceDataSlice";
 import resourceFilterReducer from "./resource/resourceFilterSlice";
+import notificationReducer from "./notification/notificationSlice";
 import {
   persistStore,
   persistReducer,
@@ -26,12 +26,12 @@ const persistConfig = {
 };
 
 const rootReducer = combineReducers({
-  counter: counterReducer,
   account: accountReducer,
   app: themeReducer,
   order: orderReducer,
   resource: resourceReducer,
   resourceFilter: resourceFilterReducer,
+  notification: notificationReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -111,7 +111,6 @@ export const DataProvider = ({ children }) => {
         .then((response) => response.json())
         .then((data) => {
           if (data?.status !== "error" && data?.status !== "fail") {
-            console.log(state.notifications);
             const newData = {
               active: false,
               _id: data.data.data._id,

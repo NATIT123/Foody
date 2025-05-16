@@ -11,7 +11,7 @@ const initialState = {
 };
 
 const resourceSlice = createSlice({
-  name: "resources",
+  name: "resource",
   initialState,
   reducers: {
     setSelectedCity: (state, action) => {
