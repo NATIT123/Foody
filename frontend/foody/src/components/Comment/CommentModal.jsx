@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { useData } from "../../context/DataContext";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { toast } from "react-toastify";
+import { addNotification } from "../../redux/notification/notificationSlice";
+import { callAddComment } from "../../services/api";
 const CommentModal = ({
   show,
   onClose,
@@ -11,23 +14,26 @@ const CommentModal = ({
   const [title, setTitle] = useState(restaurant.name);
   const [description, setDescription] = useState("");
   const [rate, setRate] = useState(1); // Default rate as 1
-  const { state, addNotification } = useData();
-  const handleSubmit = (name) => {
-    const formatDate = () => {
-      const now = new Date();
-      const day = String(now.getDate()).padStart(2, "0");
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const year = now.getFullYear();
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
+  const user = useAppSelector((state) => state.account.user);
+  const isLoading = useAppSelector((state) => state.account.loading);
+  const dispatch = useAppDispatch();
+  const formatDate = () => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
 
-      return `${day}/${month}/${year} ${hours}:${minutes}`;
-    };
-
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  };
+  const handleSubmit = async (name) => {
     if (!title || !description || !rate) {
-      console.log("Please input ");
+      console.log("Please input all required fields");
       return;
     }
+
+    if (!user || !restaurant || isLoading) return;
 
     const commentData = {
       title,
@@ -35,77 +41,73 @@ const CommentModal = ({
       description,
       rate,
     };
-    if (!state.loading && !state.user) return;
-    if (!restaurant) return;
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/comment/addComment/user/${state.user._id}/restaurant/${restaurant._id}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify(commentData),
+
+    try {
+      const res = await callAddComment(user._id, restaurant._id, commentData);
+      const data = res.data;
+
+      if (
+        data?.data &&
+        data.data.status !== "fail" &&
+        data.data.status !== "error" &&
+        data.data.status !== 400
+      ) {
+        const commentId = data.data.data;
+
+        const newComment = {
+          ...commentData,
+          type: "Via Web",
+          _id: commentId,
+          user: [
+            {
+              _id: user._id,
+              fullname: user.fullname,
+              photo: user.photo,
+            },
+          ],
+        };
+
+        setMyComments([newComment, ...myComments]);
+
+        setCurrentItems((prevItems) =>
+          prevItems.map((el) =>
+            el._id.toString() === restaurant._id.toString()
+              ? {
+                  ...el,
+                  comments: [
+                    {
+                      ...commentData,
+                      type: "Via Web",
+                      _id: commentId,
+                      user: {
+                        _id: user._id,
+                        fullname: user.fullname,
+                        photo: user.photo,
+                      },
+                    },
+                    ...el.comments,
+                  ],
+                  commentCount: el.commentCount + 1,
+                }
+              : el
+          )
+        );
+
+        dispatch(
+          addNotification({
+            message: `Add comment restaurant ${name} successfully.`,
+            userId: user._id,
+          })
+        );
+        toast.success(`Add comment restaurant ${name} successfully.`);
       }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.data) {
-          if (
-            data.data.status !== "fail" &&
-            data.data.status !== "error" &&
-            data.data.status !== 400
-          ) {
-            setMyComments([
-              {
-                ...commentData,
-                type: "Via Web",
-                _id: data.data.data,
-                user: [
-                  {
-                    _id: state.user._id,
-                    fullname: state.user.fullname,
-                    photo: state.user.photo,
-                  },
-                ],
-              },
-              ...myComments,
-            ]);
-
-            setCurrentItems((prevItems) =>
-              prevItems.map((el) =>
-                el._id.toString() === restaurant._id.toString()
-                  ? {
-                      ...el,
-                      comments: [
-                        {
-                          ...commentData,
-                          type: "Via Web",
-                          _id: data.data.data,
-                          user: {
-                            _id: state.user._id,
-                            fullname: state.user.fullname,
-                            photo: state.user.photo,
-                          },
-                        },
-                        ...el.comments,
-                      ],
-                      commentCount: el.commentCount + 1,
-                    }
-                  : el
-              )
-            );
-            addNotification(`Đã lưu bình luận về nhà hàng ${name} thành công`);
-
-            console.log("Success");
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching restaurants:", error);
-      });
+    } catch (err) {
+      console.error("Error adding comment:", err);
+      toast.error("Error adding comment.");
+    }
 
     setDescription(""); // Reset description
-    setRate(1); // Reset rate to default
+    setRate(1); // Reset rate
     onClose(); // Close modal
   };
 

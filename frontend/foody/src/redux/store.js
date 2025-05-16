@@ -1,8 +1,10 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import counterReducer from '../redux/counter/counterSlice';
-import accountReducer from '../redux/account/accountSlice';
-import orderReducer from '../redux/order/orderSlice';
-
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import accountReducer from "../redux/account/accountSlice";
+import orderReducer from "../redux/order/orderSlice";
+import themeReducer from "./theme/theme.slice";
+import resourceReducer from "./resource/resourceDataSlice";
+import resourceFilterReducer from "./resource/resourceFilterSlice";
+import notificationReducer from "./notification/notificationSlice";
 import {
   persistStore,
   persistReducer,
@@ -12,25 +14,29 @@ import {
   PERSIST,
   PURGE,
   REGISTER,
-} from 'redux-persist'
-import storage from 'redux-persist/lib/storage';
+} from "redux-persist";
+import storage from "redux-persist/lib/storage";
 
 const persistConfig = {
-  key: 'root',
+  key: "root",
   version: 1,
   storage,
-  blacklist: ['account'] // account will not be persisted
-}
+  blacklist: ["account"],
+  whilelist: ["app", "resource"],
+};
 
 const rootReducer = combineReducers({
-  counter: counterReducer,
   account: accountReducer,
-  order: orderReducer
+  app: themeReducer,
+  order: orderReducer,
+  resource: resourceReducer,
+  resourceFilter: resourceFilterReducer,
+  notification: notificationReducer,
 });
 
-const persistedReducer = persistReducer(persistConfig, rootReducer)
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-const store = configureStore({
+export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -38,8 +44,9 @@ const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
-})
+});
 
-let persistor = persistStore(store);
+export const persistor = persistStore(store);
 
-export { store, persistor };
+export const getAppState = () => store.getState();
+export const appDispatch = store.dispatch;

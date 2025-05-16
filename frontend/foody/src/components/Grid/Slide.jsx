@@ -1,14 +1,22 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "../../css/Slide.css";
 import { useNavigate } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { FaPlus } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useData } from "../../context/DataContext";
 import LoginModal from "../Login/LoginModal";
 import ImageModal from "../../components/Gallery/ImageModal";
 import ImageGallery from "../../components/Gallery/VideosAndImagesPage";
 import CommentsSection from "../../components/Comment/CommentsSection";
+import { doAddFoodAction } from "../../redux/order/orderSlice";
+import { toast } from "react-toastify";
+import {
+  callAddComment,
+  callLikeComment,
+  callReplyComment,
+} from "../../services/api";
+import { useAppSelector, useAppDispatch } from "../../redux/hooks";
+import { addNotification } from "../../redux/notification/notificationSlice";
 const MapModal = ({ currentRestaurant, isVisible, onClose }) => {
   if (!isVisible) return null; // Don't render the modal if not visible
 
@@ -66,7 +74,6 @@ const Slide = ({
   currentAlbum,
   currentRestaurant,
 }) => {
-  const { state, addNotification } = useData();
   const [activeSection, setActiveSection] = useState("Trang chủ");
   const [isMapVisible, setIsMapVisible] = useState(false);
   const navigate = useNavigate(); // Hook điều hướng
@@ -84,6 +91,8 @@ const Slide = ({
 
   const [likes, setLikes] = useState({});
   const [likedComments, setLikedComments] = useState(new Set());
+  const user = useAppSelector((state) => state.account.user);
+  const isLoading = useAppSelector((state) => state.account.loading);
   useEffect(() => {
     const initialLikes = {};
     const inititalReplies = {};
@@ -96,36 +105,26 @@ const Slide = ({
       setReplies(inititalReplies);
       const userLikedComments = new Set(
         currentComment
-          .filter((comment) => comment.numberOfLikes.includes(state.user?._id))
+          .filter((comment) => comment.numberOfLikes.includes(user?._id))
           .map((comment) => comment._id)
       );
       setLikedComments(userLikedComments);
     }
-  }, [currentComment, state.user?._id]);
+  }, [currentComment, user?._id]);
 
   const isLike = (comment) => likedComments.has(comment);
 
   const handleLike = async (commentId) => {
-    if (!state.user) {
+    if (!user) {
       setShowModalLogin(true);
       return;
     }
 
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_BASE_URL}/comment/like/${commentId}/${state.user._id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${state.accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const res = await callLikeComment(commentId, user._id);
+      const data = res.data;
 
-      const data = await response.json();
-
-      if (response.ok && data.status === "success") {
+      if (res.status === 200 && data.status === "success") {
         setLikes((prevLikes) => {
           const currentLikes = prevLikes[commentId] || 0;
           return {
@@ -135,6 +134,7 @@ const Slide = ({
               : currentLikes + 1,
           };
         });
+
         setLikedComments((prevLikedComments) => {
           const newLikedComments = new Set(prevLikedComments);
           if (data.data) {
@@ -145,15 +145,15 @@ const Slide = ({
           return newLikedComments;
         });
       } else {
-        console.error("Error liking comment", data.message);
+        toast.error("Error liking comment:", data.message);
       }
     } catch (error) {
-      console.error("Error liking comment", error);
+      toast.error("Error liking comment:", error);
     }
   };
 
   const handleReplyClick = (commentId) => {
-    if (!state.user) {
+    if (!user) {
       setShowModalLogin(true);
       return;
     }
@@ -165,33 +165,26 @@ const Slide = ({
   };
 
   const handleReplySubmit = async (commentId) => {
-    if (!replyText[commentId]?.trim()) return;
-    if (state.user._id) {
+    const reply = replyText[commentId]?.trim();
+    if (!reply) return;
+
+    if (user._id) {
+      const payload = {
+        content: reply,
+        fullname: user.fullname,
+        photo: user.photo,
+      };
+
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_BASE_URL}/comment/reply/${commentId}`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${state.accessToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              content: replyText[commentId],
-              fullname: state.user.fullname,
-              photo: state.user.photo,
-            }),
-          }
-        );
+        const res = await callReplyComment(commentId, payload);
+        const data = res.data;
 
-        const data = await response.json();
-
-        if (response.ok && data.status === "success") {
+        if (res.status === 200 && data.status === "success") {
           const newReply = {
             id: data.data._id,
             user: {
-              fullname: state.user?.fullname || "Bạn",
-              photo: state.user?.photo,
+              fullname: user?.fullname || "Bạn",
+              photo: user?.photo,
             },
             content: data.data.content,
             createdAt: data.data.createdAt,
@@ -207,10 +200,11 @@ const Slide = ({
             [commentId]: "",
           }));
         } else {
-          console.error("Error adding reply:", data.message);
+          toast.error(`Error adding reply: ${data.message}`);
         }
       } catch (error) {
-        console.error("Error adding reply:", error);
+        toast.error("Error adding reply");
+        console.error("Reply error:", error);
       }
     }
   };
@@ -241,11 +235,11 @@ const Slide = ({
     setTitle(currentRestaurant.name);
     setTotalRate(Math.floor(total));
   }, [currentRestaurant]);
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const formatDate = () => {
       const now = new Date();
       const day = String(now.getDate()).padStart(2, "0");
-      const month = String(now.getMonth() + 1).padStart(2, "0"); // Tháng tính từ 0-11
+      const month = String(now.getMonth() + 1).padStart(2, "0");
       const year = now.getFullYear();
       const hours = String(now.getHours()).padStart(2, "0");
       const minutes = String(now.getMinutes()).padStart(2, "0");
@@ -254,7 +248,7 @@ const Slide = ({
     };
 
     if (!title || !description || !rate) {
-      console.log("Please input ");
+      toast.error("Please input all fields.");
       return;
     }
 
@@ -264,54 +258,54 @@ const Slide = ({
       description,
       rate,
     };
-    if (!state.loading && !state.user) return;
-    if (!currentRestaurant) return;
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/comment/addComment/user/${state.user._id}/restaurant/${currentRestaurant._id}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify(commentData),
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.data) {
-          if (
-            data.data.status !== "fail" &&
-            data.data.status !== "error" &&
-            data.data.status !== 400
-          ) {
-            setCurrentComment([
-              {
-                ...commentData,
-                type: "Via Web",
-                _id: data.data.data,
-                user: [
-                  {
-                    fullname: state.user.fullname,
-                    photo: state.user.photo,
-                  },
-                ],
-                userId: state.user._id,
-              },
-              ...currentComment,
-            ]);
-            addNotification(
-              `Đã lưu bình luận về nhà hàng ${currentRestaurant.name} thành công`
-            );
-            console.log("Success");
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching restaurants:", error);
-      });
 
-    setDescription(""); // Reset description
-    setRate(1); // Reset rate to default
+    if (isLoading && !user) return;
+    if (!currentRestaurant) return;
+
+    try {
+      const res = await callAddComment(
+        user._id,
+        currentRestaurant._id,
+        commentData
+      );
+      const data = res.data;
+
+      if (
+        data?.status !== "fail" &&
+        data?.status !== "error" &&
+        data?.status !== 400
+      ) {
+        setCurrentComment([
+          {
+            ...commentData,
+            type: "Via Web",
+            _id: data.data,
+            user: [
+              {
+                fullname: user.fullname,
+                photo: user.photo,
+              },
+            ],
+            userId: user._id,
+          },
+          ...currentComment,
+        ]);
+        dispatch(
+          addNotification({
+            message: `Add comment restaurant ${currentRestaurant.name} successfully.`,
+            userId: user._id,
+          })
+        );
+        toast.success(
+          `Add comment restaurant ${currentRestaurant.name} successfully.`
+        );
+      }
+    } catch (error) {
+      toast.error("Error adding comment:", error);
+    }
+
+    setDescription("");
+    setRate(1);
     setShowModalComment(false);
   };
   const handleLogin = () => {
@@ -345,19 +339,24 @@ const Slide = ({
   };
 
   const handleImage = () => {
-    if (!state.loading && !state.user) {
+    if (!isLoading && !user) {
       setShowModalLogin(true);
-    } else if (!state.loading && state.user) {
+    } else if (!isLoading && user) {
       setShowModalImage(true);
     }
   };
 
   const handleComment = () => {
-    if (!state.loading && !state.user) {
+    if (!isLoading && !user) {
       setShowModalLogin(true);
-    } else if (!state.loading && state.user) {
+    } else if (!isLoading && user) {
       setShowModalComment(true);
     }
+  };
+
+  const dispatch = useAppDispatch();
+  const handleAddToCart = (quantity, food) => {
+    dispatch(doAddFoodAction({ quantity, detail: food, _id: food._id }));
   };
 
   return (
@@ -460,7 +459,9 @@ const Slide = ({
                         </div>
                         <button className="btn btn-outline-danger btn-sm ms-auto">
                           {" "}
-                          <FaPlus />{" "}
+                          <FaPlus
+                            onClick={() => handleAddToCart(1, item)}
+                          />{" "}
                         </button>
                       </div>
                     </div>

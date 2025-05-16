@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useData } from "../../context/DataContext";
 import LoginModal from "../Login/LoginModal";
+import { useAppSelector } from "../../redux/hooks";
 const CommentsSection = ({
   handleReplySubmit,
   replies,
@@ -11,7 +11,6 @@ const CommentsSection = ({
   handleLike,
   currentComments,
 }) => {
-  const { state } = useData();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("latest");
   const [myComments, setMyComments] = useState([]);
@@ -22,6 +21,8 @@ const CommentsSection = ({
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [openCommentId, setOpenCommentId] = useState(null);
   const [replyText, setReplyText] = useState({}); // Lưu nội dung phản hồi
+  const user = useAppSelector((state) => state.account.user);
+  const isLoading = useAppSelector((state) => state.account.loading);
   const formatDate = (isoString) => {
     const date = new Date(isoString);
     return new Intl.DateTimeFormat("vi-VN", {
@@ -37,11 +38,10 @@ const CommentsSection = ({
       .replace(",", "");
   };
   useEffect(() => {
-    if (!state.loading && state.user) {
+    if (!isLoading && user) {
       const filteredComments = currentComments.filter(
-        (el) => el.user[0]._id.toString() === state.user._id.toString()
+        (el) => el.user[0]._id.toString() === user._id.toString()
       );
-      console.log(filteredComments);
       setMyComments(filteredComments);
       setTabs((prevTabs) =>
         prevTabs.map((el) =>
@@ -51,7 +51,7 @@ const CommentsSection = ({
         )
       );
     }
-  }, [currentComments, state.user, state.loading]);
+  }, [currentComments, user, isLoading]);
 
   const isLike = (comment) => likedComments.has(comment);
 
@@ -62,7 +62,7 @@ const CommentsSection = ({
   }, [activeTab, tabs]);
 
   const handleShowModalLogin = () => {
-    if (!state.loading && !state.user) {
+    if (!isLoading && !user) {
       setShowLoginModal(true);
       return;
     }
@@ -74,7 +74,7 @@ const CommentsSection = ({
   };
 
   const handleReplyClick = (commentId) => {
-    if (!state.user) {
+    if (!user) {
       setShowLoginModal(true);
       return;
     }

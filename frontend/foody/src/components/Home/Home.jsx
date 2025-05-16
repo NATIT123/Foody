@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate } from "react-router-dom";
 import "../../App.css";
-import { useData } from "../../context/DataContext";
 import Grid from "../Grid/Grid";
 import ChatBox from "../ChatBox/ChatBox";
 const DeliveryCategories = [
@@ -90,28 +88,11 @@ const items = [
 ];
 
 const Index = () => {
-  const { state } = useData();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (state.loading) return; // Chờ loading hoàn tất
-
-    if (state.user && state.user.role !== "user") {
-      const timeout = setTimeout(() => {
-        if (state.user.role === "admin" || state.user.role === "owner")
-          navigate("/dashboard");
-      }, 1000);
-
-      return () => clearTimeout(timeout); // Xóa timeout nếu component unmount hoặc state thay đổi
-    }
-  }, [state.loading, state.user, navigate]);
   const [activeTab, setActiveTab] = useState("Deal hôm nay"); // State for active tab
   const [showDropdown, setShowDropdown] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerRow = 4; // Số lượng mục mỗi dòng
   const itemsPerPage = itemsPerRow * 2; // Hiển thị 2 dòng (8 mục)
-  const [selectedCuisines, setSelectedCuisines] = useState([]);
-  const [selectedDistricts, setSelectedDistricts] = useState([]);
-  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
 
   useEffect(() => {
     document.title = `Địa điểm ăn uống, ẩm thực`;
@@ -136,15 +117,6 @@ const Index = () => {
 
   return (
     <div>
-      {/* <Header
-        selectedSubCategories={selectedSubCategories}
-        setSelectedSubCategories={setSelectedSubCategories}
-        selectedCuisines={selectedCuisines}
-        setSelectedCuisines={setSelectedCuisines}
-        selectedDistricts={selectedDistricts}
-        setSelectedDistricts={setSelectedDistricts}
-      /> */}
-
       <div
         className="container py-4 mt-2"
         style={{

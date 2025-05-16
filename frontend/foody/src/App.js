@@ -14,6 +14,12 @@ import HistoryPage from "./pages/history/HistoryPage";
 import LayoutUser from "./components/LayoutUser/LayoutUser";
 import NotFound from "./components/NotFound";
 import AdminPage from "./pages/admin";
+import { useEffect } from "react";
+import { callFetchAccount } from "./services/api";
+import { useAppDispatch, useAppSelector } from "./redux/hooks";
+import { doGetAccountAction } from "./redux/account/accountSlice";
+import Loading from "./components/Loading";
+import ProtectedRoute from "./components/ProtectedRoute";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -22,24 +28,102 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "details/:id", element: <DetailPage /> },
-      { path: "profile", element: <ProfilePage /> },
-      { path: "member/:id", element: <Member /> },
-      { path: "forgot", element: <ForgotPasswordPage /> },
-      { path: "order", element: <Order /> },
-      { path: "history", element: <HistoryPage /> },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "member/:id",
+        element: (
+          <ProtectedRoute>
+            <Member />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "forgot",
+        element: (
+          <ProtectedRoute>
+            <ForgotPasswordPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "order",
+        element: (
+          <ProtectedRoute>
+            <Order />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "history",
+        element: (
+          <ProtectedRoute>
+            <HistoryPage />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
   { path: "/changePassword/:resetToken", element: <ChangePasswordPage /> },
-  { path: "/dashboard", element: <AdminPage /> },
+  {
+    path: "/dashboard",
+    index: true,
+    element: (
+      <ProtectedRoute>
+        <AdminPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    future: {
+      v7_startTransition: true,
+    },
+  },
 ]);
 
 const App = () => {
+  const dispatch = useAppDispatch();
+  const isLoading = useAppSelector((state) => state.account.isLoading);
+  const getAccount = async () => {
+    if (
+      window.location.pathname === "/login" ||
+      window.location.pathname === "/register"
+    )
+      return;
+    if (localStorage.getItem("access_token")) {
+      const res = await callFetchAccount();
+      if (res && res.data) {
+        dispatch(doGetAccountAction(res.data));
+      }
+    } else {
+      dispatch(doGetAccountAction({ data: {} }));
+    }
+  };
+  useEffect(() => {
+    getAccount();
+  }, []);
   return (
-    <DataProvider>
-      <RouterProvider router={router} />
-    </DataProvider>
+    <>
+      {isLoading === false ||
+      window.location.pathname === "/login" ||
+      window.location.pathname === "/register" ||
+      window.location.pathname === "/" ||
+      window.location.pathname.startsWith("/book") ? (
+        <DataProvider>
+          <RouterProvider router={router} />
+        </DataProvider>
+      ) : (
+        <Loading />
+      )}
+    </>
   );
 };
 

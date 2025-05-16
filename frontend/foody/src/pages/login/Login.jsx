@@ -1,36 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // For navigation
 import "bootstrap/dist/css/bootstrap.min.css";
-import Alert from "react-bootstrap/Alert";
 import { MdAttachEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useData } from "../../context/DataContext";
+import { callLogin } from "../../services/api";
+import { useAppDispatch } from "../../redux/hooks";
+import { doLoginAction } from "../../redux/account/accountSlice";
+import { notification } from "antd";
 const LoginPage = () => {
   const [email, setEmail] = useState(""); // To store email input
   const [password, setPassword] = useState(""); // To store password input
   const navigate = useNavigate(); // For navigation to the home page
   const [isSaved, setIsSaved] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [message, setMessage] = useState("");
-  const { state, setAccessToken } = useData();
+
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     document.title = "Đăng nhập";
   }, []);
 
-  useEffect(() => {
-    if (!state.loading && state.user) {
-      if (state.user.role === "admin" || state.user.role === "owner")
-        navigate("/dashboard");
-      if (state.user.role === "user") {
-        navigate("/");
-      }
-    }
-  }, [navigate, state.user, state.loading]);
-
-  const [status, setStatus] = useState("");
   useEffect(() => {
     const savedEmail = localStorage.getItem("email");
     if (savedEmail) setEmail(savedEmail);
@@ -39,52 +29,33 @@ const LoginPage = () => {
   const handleChecked = (event) => {
     setIsSaved(event.target.checked);
   };
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault(); // Prevent page reload
 
     // Basic validation (you can replace this with an actual API call)
     if (email && password) {
+      console.log(email, password);
       // Redirect to home page
-      fetch(`${process.env.REACT_APP_BASE_URL}/user/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            if (isSaved) {
-              localStorage.setItem("email", email);
-            }
-            setMessage(data.message);
-            setShowModal(true);
-            setStatus(data.status);
-            if (data.status !== "fail" && data.status !== "error") {
-              setAccessToken(data.access_token);
-
-              setShowModal(false);
-              console.log(data);
-              if (
-                data.data.user.role === "admin" ||
-                data.data.user.role === "owner"
-              ) {
-                navigate("/dashboard");
-              } else {
-                navigate("/");
-              }
-              toast.success("Login Successfully");
-            }
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching users:", error);
+      const res = await callLogin(email, password);
+      if (res?.data) {
+        if (isSaved) {
+          localStorage.setItem("email", email);
+        }
+        console.log(res);
+        localStorage.setItem("access_token", res.access_token);
+        dispatch(doLoginAction(res.data));
+        toast.success("Login Successfully");
+        navigate("/");
+      } else {
+        notification.error({
+          message: "Có lỗi xảy ra",
+          description:
+            res.message && Array.isArray(res.message)
+              ? res.message[0]
+              : res.message,
+          duration: 5,
         });
-    } else {
-      setStatus("fail");
-      setMessage("Vui lòng nhập đầy đủ thông tin đăng nhập.");
-      setShowModal(true);
+      }
     }
   };
 
@@ -105,29 +76,6 @@ const LoginPage = () => {
         className="p-4 rounded shadow-sm bg-white"
         style={{ width: "400px", maxWidth: "90%" }}
       >
-        <>
-          {showModal ? (
-            <Alert
-              className="d-flex flex-column align-items-center text-center"
-              variant={`${
-                status === "fail" || status === "error" || status === 400
-                  ? "danger"
-                  : "success"
-              }`}
-              onClick={() => setShowModal(false)}
-              dismissible
-            >
-              <Alert.Heading>
-                {status === "fail" || status === "error" || status === 400
-                  ? "Error"
-                  : "Success"}
-              </Alert.Heading>
-              <p>{message}</p>
-            </Alert>
-          ) : (
-            <div></div>
-          )}
-        </>
         <h4 className="text-center mb-4">Đăng nhập </h4>
         <form onSubmit={handleLogin}>
           <div className="mb-3">

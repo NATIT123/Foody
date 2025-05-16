@@ -1,39 +1,43 @@
-import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const Blogs = () => {
-  const [activeTab, setActiveTab] = useState('food'); // Active tab state
+  const [activeTab, setActiveTab] = useState("food"); // Active tab state
   const [currentPage, setCurrentPage] = useState(1); // Current page state
   const itemsPerPage = 3; // Số lượng blog hiển thị trên mỗi trang
 
   const blogs = [
     {
-      title: 'Top 5 Món Ăn Truyền Thống...',
-      date: '2022/09/28',
-      time: '17:00',
-      views: '12.0K',
-      thumbnail: 'https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw8bk1jcfrob07@resize_ss320x320',
+      title: "Top 5 Món Ăn Truyền Thống...",
+      date: "2022/09/28",
+      time: "17:00",
+      views: "12.0K",
+      thumbnail:
+        "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw8bk1jcfrob07@resize_ss320x320",
     },
     {
-      title: 'Ăn xuyên màn đêm với Top...',
-      date: '2022/09/28',
-      time: '16:53',
-      views: '10.0K',
-      thumbnail: 'https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw8bk1jcfrob07@resize_ss320x320',
+      title: "Ăn xuyên màn đêm với Top...",
+      date: "2022/09/28",
+      time: "16:53",
+      views: "10.0K",
+      thumbnail:
+        "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw8bk1jcfrob07@resize_ss320x320",
     },
     {
-      title: 'Foodtour Hội An trong một b...',
-      date: '2022/09/28',
-      time: '15:22',
-      views: '7.7K',
-      thumbnail: 'https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw8bk1jcfrob07@resize_ss320x320',
+      title: "Foodtour Hội An trong một b...",
+      date: "2022/09/28",
+      time: "15:22",
+      views: "7.7K",
+      thumbnail:
+        "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw8bk1jcfrob07@resize_ss320x320",
     },
     {
-      title: 'Hè Này Chưa Có Dịp Đi Đà N...',
-      date: '2022/09/28',
-      time: '14:29',
-      views: '7.6K',
-      thumbnail: 'https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw8bk1jcfrob07@resize_ss320x320',
+      title: "Hè Này Chưa Có Dịp Đi Đà N...",
+      date: "2022/09/28",
+      time: "14:29",
+      views: "7.6K",
+      thumbnail:
+        "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw8bk1jcfrob07@resize_ss320x320",
     },
   ];
 
@@ -55,30 +59,38 @@ const Blogs = () => {
       {/* Tabs */}
       <div className="d-flex align-items-center mb-4">
         <button
-          className={`btn ${activeTab === 'food' ? 'btn-primary' : 'btn-outline-primary'} me-2`}
-          onClick={() => setActiveTab('food')}
+          className={`btn ${
+            activeTab === "food" ? "btn-primary" : "btn-outline-primary"
+          } me-2`}
+          onClick={() => setActiveTab("food")}
         >
           Ăn uống
         </button>
         <button
-          className={`btn ${activeTab === 'events' ? 'btn-primary' : 'btn-outline-primary'} me-2`}
-          onClick={() => setActiveTab('events')}
+          className={`btn ${
+            activeTab === "events" ? "btn-primary" : "btn-outline-primary"
+          } me-2`}
+          onClick={() => setActiveTab("events")}
         >
           Sự kiện xung quanh
         </button>
         <button
-          className={`btn ${activeTab === 'experience' ? 'btn-primary' : 'btn-outline-primary'} me-2`}
-          onClick={() => setActiveTab('experience')}
+          className={`btn ${
+            activeTab === "experience" ? "btn-primary" : "btn-outline-primary"
+          } me-2`}
+          onClick={() => setActiveTab("experience")}
         >
           Kinh nghiệm
         </button>
         <button
-          className={`btn ${activeTab === 'partners' ? 'btn-primary' : 'btn-outline-primary'}`}
-          onClick={() => setActiveTab('partners')}
+          className={`btn ${
+            activeTab === "partners" ? "btn-primary" : "btn-outline-primary"
+          }`}
+          onClick={() => setActiveTab("partners")}
         >
           Quán Đối Tác
         </button>
-        <select className="form-select ms-auto" style={{ width: '150px' }}>
+        <select className="form-select ms-auto" style={{ width: "150px" }}>
           <option value="latest">Mới nhất</option>
           <option value="popular">Phổ biến</option>
         </select>
@@ -91,33 +103,33 @@ const Blogs = () => {
             <div
               className="card shadow-sm border-0"
               style={{
-                borderRadius: '12px',
-                overflow: 'hidden',
-                transition: 'transform 0.3s ease',
+                borderRadius: "12px",
+                overflow: "hidden",
+                transition: "transform 0.3s ease",
               }}
             >
               <img
                 src={blog.thumbnail}
                 alt={blog.title}
                 className="card-img-top"
-                style={{ height: '180px', objectFit: 'cover' }}
+                style={{ height: "180px", objectFit: "cover" }}
               />
               <div className="card-body">
                 <h6
                   className="card-title text-truncate mb-2"
-                  style={{ fontWeight: 'bold', fontSize: '16px' }}
+                  style={{ fontWeight: "bold", fontSize: "16px" }}
                 >
                   {blog.title}
                 </h6>
                 <p
                   className="card-text text-muted mb-0"
-                  style={{ fontSize: '14px' }}
+                  style={{ fontSize: "14px" }}
                 >
                   {blog.date} - {blog.time}
                 </p>
                 <p
                   className="card-text text-muted"
-                  style={{ fontSize: '14px', marginBottom: '0' }}
+                  style={{ fontSize: "14px", marginBottom: "0" }}
                 >
                   {blog.views} lượt xem
                 </p>

@@ -36,7 +36,9 @@
     "react-redux": "^7.2.9",
     "react-router-dom": "^6.28.1",
     "react-scripts": "5.0.1",
+    "react-spinners": "^0.17.0",
     "react-toastify": "^7.0.0",
+    "redux-persist": "^6.0.0",
     "styled-components": "^6.1.14",
     "web-vitals": "^4.2.4"
   },

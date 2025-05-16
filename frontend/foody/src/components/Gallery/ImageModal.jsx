@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import { useData } from "../../context/DataContext";
+import { useState } from "react";
+import { useAppSelector } from "../../redux/hooks";
+import { toast } from "react-toastify";
+import { callAddAlbum } from "../../services/api";
 const ImageModal = ({ restaurant, item, onClose, setItem }) => {
-  const { state } = useData();
   const [newImage, setNewImage] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
-
+  const user = useAppSelector((state) => state.account.user);
+  const isLoading = useAppSelector((state) => state.account.loading);
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -13,41 +15,34 @@ const ImageModal = ({ restaurant, item, onClose, setItem }) => {
     }
   };
 
-  const handleConfirmUpload = () => {
-    if (!state.loading && !state.user) return;
-    if (selectedImage) {
-      const formData = new FormData();
-      formData.append("image", newImage);
-      formData.append("userId", state.user._id);
-      formData.append("restaurantId", restaurant._id);
-      fetch(`${process.env.REACT_APP_BASE_URL}/album/addAlbum`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              setItem([{ image: selectedImage }, ...item]);
-              console.log("Success");
-            }
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+  const handleConfirmUpload = async () => {
+    if (!isLoading || !user || !selectedImage) return;
 
-      setSelectedImage(null);
-      setNewImage(null);
-      onClose();
+    const formData = new FormData();
+    formData.append("image", newImage);
+    formData.append("userId", user._id);
+    formData.append("restaurantId", restaurant._id);
+
+    try {
+      const res = await callAddAlbum(formData);
+      const data = res.data;
+
+      if (
+        res.status === 200 &&
+        data.status !== "fail" &&
+        data.status !== "error" &&
+        data.status !== 400
+      ) {
+        setItem([{ image: selectedImage }, ...item]);
+        toast.success("Upload image successfully.");
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error.message || error);
     }
+
+    setSelectedImage(null);
+    setNewImage(null);
+    onClose();
   };
 
   return (

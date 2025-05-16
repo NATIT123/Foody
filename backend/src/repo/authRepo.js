@@ -253,7 +253,7 @@ class AuthRepository {
 
       ///Update user document
       ///Filter out unwanted fields names that are not allowed to be updated
-      const filterBody = filterObj(req.body, "fullName", "address");
+      const filterBody = filterObj(req.body, "address");
       const updateUser = await this.userModel.findByIdAndUpdate(
         req.params.id,
         filterBody,
