@@ -98,10 +98,13 @@ const App = () => {
       window.location.pathname === "/register"
     )
       return;
-
-    const res = await callFetchAccount();
-    if (res && res.data) {
-      dispatch(doGetAccountAction(res.data));
+    if (localStorage.getItem("access_token")) {
+      const res = await callFetchAccount();
+      if (res && res.data) {
+        dispatch(doGetAccountAction(res.data));
+      }
+    } else {
+      dispatch(doGetAccountAction({ data: {} }));
     }
   };
   useEffect(() => {

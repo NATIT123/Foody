@@ -3,6 +3,8 @@ import counterReducer from "../redux/counter/counterSlice";
 import accountReducer from "../redux/account/accountSlice";
 import orderReducer from "../redux/order/orderSlice";
 import themeReducer from "./theme/theme.slice";
+import resourceReducer from "./resource/resourceDataSlice";
+import resourceFilterReducer from "./resource/resourceFilterSlice";
 import {
   persistStore,
   persistReducer,
@@ -20,6 +22,7 @@ const persistConfig = {
   version: 1,
   storage,
   blacklist: ["account"],
+  whilelist: ["app", "resource"],
 };
 
 const rootReducer = combineReducers({
@@ -27,6 +30,8 @@ const rootReducer = combineReducers({
   account: accountReducer,
   app: themeReducer,
   order: orderReducer,
+  resource: resourceReducer,
+  resourceFilter: resourceFilterReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

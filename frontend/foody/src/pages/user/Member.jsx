@@ -1,25 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import "../../css/Member.css";
 import ImagesAndVideosPage from "../../components/Gallery/VideosAndImagesPage";
-import { useParams } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import Friends from "../../components/User/Friends";
 import Collection from "../../components/User/Collection";
+import { useAppSelector } from "../../redux/hooks";
 
 const Member = () => {
   const { state } = useData();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (state.user && !state.loading) {
-      if (state.user.role === "admin" || state.user.role === "owner")
-        navigate("/dashboard");
-    }
-  }, [navigate, state.user, state.loading]);
+
   const [comments, setComments] = useState([]);
   const [items, setItems] = useState([]);
   const [activeSection, setActiveSection] = useState("hoatdong"); // State for tracking active section
-  const { id } = useParams();
+  const user = useAppSelector((state) => state.account.user);
   const [selectedCuisines, setSelectedCuisines] = useState([]);
   const [selectedDistricts, setSelectedDistricts] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
@@ -32,12 +25,11 @@ const Member = () => {
   }, []);
 
   useEffect(() => {
-    if (!state.accessToken) return;
     fetchUserDetails();
-  }, [state.accessToken]);
+  }, []);
 
   const fetchUserDetails = () => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/user/getUserDetails/${id}`, {
+    fetch(`${process.env.REACT_APP_BASE_URL}/user/getUserDetails/${user._id}`, {
       method: "GET",
       headers: { Authorization: `Bearer ${state.accessToken}` },
     })

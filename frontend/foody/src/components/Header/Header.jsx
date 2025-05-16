@@ -14,25 +14,23 @@ import { FiShoppingCart } from "react-icons/fi";
 import { useData } from "../../context/DataContext";
 import { useAppSelector, useAppDispatch } from "../../redux/hooks";
 import { doLogoutAction } from "../../redux/account/accountSlice";
-function Header({
-  selectedSubCategories,
-  setSelectedSubCategories,
-  setSelectedDistricts,
-  selectedDistricts,
-  selectedCuisines,
+import { Form } from "react-bootstrap";
+import { changeMode } from "../../redux/theme/theme.slice";
+import { fetchResource } from "../../utils/fetchResource";
+import {
   setSelectedCuisines,
-}) {
-  const {
-    unreadExists,
-    state,
-    logout,
-    setSelectedCity,
-    setSelectedCategory,
-    markAllNotificationsRead,
-  } = useData();
+  setSelectedDistricts,
+  setSelectedSubCategories,
+  resetFilters,
+} from "../../redux/resource/resourceFilterSlice";
+import {
+  setSelectedCategory,
+  setSelectedCity,
+} from "../../redux/resource/resourceDataSlice";
+function Header(props) {
+  const { unreadExists, state, markAllNotificationsRead } = useData();
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [activeTab, setActiveTab] = useState("Khu vực");
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -42,6 +40,80 @@ function Header({
   const dispatch = useAppDispatch();
   const carts = useAppSelector((state) => state.order.carts);
   const user = useAppSelector((state) => state.account.user);
+  const mode = useAppSelector((state) => state.app.mode);
+  const cities = useAppSelector((state) => state.resource.cities);
+  const categories = useAppSelector((state) => state.resource.categories);
+  const cuisines = useAppSelector((state) => state.resource.cuisines);
+  const selectedCity = useAppSelector((state) => state.resource.selectedCity);
+  const selectedCategory = useAppSelector(
+    (state) => state.resource.selectedCategory
+  );
+  const districts = useAppSelector((state) => state.resourceFilter.districts);
+  const subCategories = useAppSelector(
+    (state) => state.resourceFilter.subCategories
+  );
+  const selectedCuisines = useAppSelector(
+    (state) => state.resourceFilter.selectedCuisines
+  );
+  const selectedSubCategories = useAppSelector(
+    (state) => state.resourceFilter.selectedSubCategories
+  );
+  const selectedDistricts = useAppSelector(
+    (state) => state.resourceFilter.selectedDistricts
+  );
+  useEffect(() => {
+    const body = document.querySelector("body");
+    if (body) body.setAttribute("data-bs-theme", mode);
+  }, [mode]);
+
+  useEffect(() => {
+    dispatch(
+      fetchResource({
+        url: `${process.env.REACT_APP_BASE_URL}/city/getAllCity`,
+        type: "cities",
+        cacheKey: "cities",
+      })
+    );
+
+    dispatch(
+      fetchResource({
+        url: `${process.env.REACT_APP_BASE_URL}/category/getAllCategory`,
+        type: "categories",
+        cacheKey: "categories",
+      })
+    );
+
+    dispatch(
+      fetchResource({
+        url: `${process.env.REACT_APP_BASE_URL}/cuisines/getAllCuisines`,
+        type: "cuisines",
+        cacheKey: "cuisines",
+      })
+    );
+  }, []);
+
+  useEffect(() => {
+    if (selectedCity) {
+      dispatch(
+        fetchResource({
+          url: `${process.env.REACT_APP_BASE_URL}/district/getDistrictsByCity/${selectedCity._id}`,
+          type: "districts",
+        })
+      );
+    }
+  }, [selectedCity]);
+
+  // Fetch SubCategories khi Category thay đổi
+  useEffect(() => {
+    if (selectedCategory) {
+      dispatch(
+        fetchResource({
+          url: `${process.env.REACT_APP_BASE_URL}/subCategory/getSubCategoryByCategory/${selectedCategory._id}`,
+          type: "subCategories",
+        })
+      );
+    }
+  }, [selectedCategory]);
   const contentPopover = () => {
     return (
       <div className="pop-cart-body">
@@ -86,15 +158,15 @@ function Header({
 
   useEffect(() => {
     fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByFields?searchQuery=${searchQuery}`,
+      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByFields?searchQuery=${props.searchQuery}`,
       {
         method: "POST",
         headers: {
           "Content-type": "application/json",
         },
         body: JSON.stringify({
-          selectedCity: state.selectedCity?._id || "",
-          selectedCategory: state.selectedCategory?._id || "",
+          selectedCity: selectedCity?._id || "",
+          selectedCategory: selectedCategory?._id || "",
           subCategory: selectedSubCategories,
           cuisines: selectedCuisines,
           district: selectedDistricts,
@@ -111,42 +183,51 @@ function Header({
         console.error("Error fetching restaurants:", error);
       });
   }, [
-    searchQuery,
+    props.searchQuery,
     selectedCuisines,
     selectedDistricts,
     selectedSubCategories,
-    state.selectedCategory,
-    state.selectedCity,
+    selectedCategory,
+    selectedCity,
   ]);
   const handleSelectRestaurant = (restaurant) => {
-    setSearchQuery(restaurant.name); // Gán tên nhà hàng vào ô tìm kiếm
+    props.setSearchQuery(restaurant.name); // Gán tên nhà hàng vào ô tìm kiếm
     setShowDropdown(false); // Đóng dropdown sau khi chọn
   };
 
   // Xử lý toggle chọn/bỏ chọn quận/huyện
   const toggleDistrict = (districtId) => {
-    setSelectedDistricts((prev) =>
-      prev.includes(districtId)
-        ? prev.filter((id) => id !== districtId)
-        : [...prev, districtId]
-    );
+    const currentDistricts = selectedDistricts || [];
+    const isSelected = currentDistricts.includes(districtId);
+    const updatedDistricts = isSelected
+      ? currentDistricts.filter((id) => id !== districtId)
+      : [...currentDistricts, districtId];
+
+    dispatch(setSelectedDistricts(updatedDistricts));
   };
 
   const toggleCuisines = (cuisinesId) => {
-    setSelectedCuisines((prev) =>
-      prev.includes(cuisinesId)
-        ? prev.filter((id) => id !== cuisinesId)
-        : [...prev, cuisinesId]
-    );
+    const currentCuisines = selectedCuisines || [];
+    const isSelected = currentCuisines.includes(cuisinesId);
+    const updatedCuisines = isSelected
+      ? currentCuisines.filter((id) => id !== cuisinesId)
+      : [...currentCuisines, cuisinesId];
+
+    console.log(updatedCuisines);
+
+    dispatch(setSelectedCuisines(updatedCuisines));
   };
 
   const toggleSubCategories = (subCategoryId) => {
-    setSelectedSubCategories((prev) =>
-      prev.includes(subCategoryId)
-        ? prev.filter((id) => id !== subCategoryId)
-        : [...prev, subCategoryId]
-    );
+    const currentSubCategories = selectedSubCategories || [];
+    const isSelected = currentSubCategories.includes(subCategoryId);
+    const updatedSubCategories = isSelected
+      ? currentSubCategories.filter((id) => id !== subCategoryId)
+      : [...currentSubCategories, subCategoryId];
+
+    dispatch(setSelectedSubCategories(updatedSubCategories));
   };
+
   const { notifications } = state;
   const handleToggleNotifications = () => {
     if (!state.loading && !state.user) {
@@ -222,7 +303,7 @@ function Header({
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  {state.selectedCity && state.selectedCity.name}{" "}
+                  {selectedCity && selectedCity.name}{" "}
                 </button>
                 <ul
                   className="dropdown-menu"
@@ -232,16 +313,19 @@ function Header({
                     overflowY: "auto", // Thanh cuộn dọc nếu nội dung vượt quá chiều cao
                   }}
                 >
-                  {state.cities &&
-                    state.cities.map((city) => (
+                  {cities &&
+                    cities.length > 0 &&
+                    cities.map((city) => (
                       <li key={city._id}>
                         <button
                           className="dropdown-item"
                           onClick={() =>
-                            setSelectedCity({
-                              _id: city._id,
-                              name: city.name,
-                            })
+                            dispatch(
+                              setSelectedCity({
+                                _id: city._id,
+                                name: city.name,
+                              })
+                            )
                           }
                         >
                           {city.name}
@@ -260,23 +344,26 @@ function Header({
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  {state.selectedCategory && state.selectedCategory.name}{" "}
+                  {selectedCategory && selectedCategory.name}{" "}
                   {/* Hiển thị tên category được chọn */}
                 </button>
                 <ul
                   className="dropdown-menu"
                   aria-labelledby="dropdownCategory"
                 >
-                  {state.categories &&
-                    state.categories.map((category) => (
+                  {categories &&
+                    categories.length > 0 &&
+                    categories.map((category) => (
                       <li key={category._id}>
                         <button
                           className="dropdown-item"
                           onClick={() =>
-                            setSelectedCategory({
-                              _id: category._id,
-                              name: category.name,
-                            })
+                            dispatch(
+                              setSelectedCategory({
+                                _id: category._id,
+                                name: category.name,
+                              })
+                            )
                           }
                         >
                           {category.name}
@@ -300,9 +387,9 @@ function Header({
                 type="text"
                 className="form-control"
                 placeholder="Địa điểm, tên nhà hàng ..."
-                value={searchQuery}
+                value={props.searchQuery}
                 onFocus={() => setShowDropdown(true)}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => props.setSearchQuery(e.target.value)}
                 style={{
                   borderRadius: "8px 0 0 8px",
                   border: "1px solid #ddd",
@@ -474,8 +561,9 @@ function Header({
                     <div className="col-12 col-md-8">
                       {activeTab === "Khu vực" && (
                         <div className="row mb-3">
-                          {state.districts &&
-                            state.districts.map((district) => (
+                          {districts &&
+                            districts.length > 0 &&
+                            districts.map((district) => (
                               <div
                                 key={district._id}
                                 className="col-6 col-sm-6 col-md-6 mb-2"
@@ -512,8 +600,9 @@ function Header({
                       )}
                       {activeTab === "Ẩm thực" && (
                         <div className="row mb-3">
-                          {state.cuisines &&
-                            state.cuisines.map((food, index) => (
+                          {cuisines &&
+                            cuisines.length > 0 &&
+                            cuisines.map((food, index) => (
                               <div
                                 key={index}
                                 className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
@@ -548,8 +637,9 @@ function Header({
                       )}
                       {activeTab === "Phân loại" && (
                         <div className="row">
-                          {state.subCategories &&
-                            state.subCategories.map((subCategory, index) => (
+                          {subCategories &&
+                            subCategories.length > 0 &&
+                            subCategories.map((subCategory, index) => (
                               <div
                                 key={subCategory._id}
                                 className="col-6 col-sm-6 col-md-6 col-lg-4 mb-2"
@@ -615,9 +705,7 @@ function Header({
                         transition: "all 0.3s ease",
                       }}
                       onClick={() => {
-                        setSelectedDistricts([]);
-                        setSelectedCuisines([]);
-                        setSelectedSubCategories([]);
+                        dispatch(resetFilters());
                       }}
                       onMouseOver={(e) =>
                         (e.target.style.backgroundColor = "red")
@@ -639,7 +727,7 @@ function Header({
             className="col-12 col-md-4 d-flex justify-content-md-end justify-content-center align-items-center"
             style={{ gap: "10px" }}
           >
-            {user ? (
+            {user != null ? (
               <div className="dropdown">
                 {/* Display user email */}
                 <button
@@ -700,7 +788,7 @@ function Header({
                       onClick={() => {
                         toast.success("Logout Successfully");
                         dispatch(doLogoutAction());
-                        logout();
+                        navigate("/");
                       }}
                     >
                       Đăng xuất
@@ -713,6 +801,18 @@ function Header({
                 Đăng nhập
               </a>
             )}
+            <Form>
+              <Form.Check
+                onChange={(e) =>
+                  dispatch(
+                    changeMode(e.target.checked === true ? "dark" : "light")
+                  )
+                }
+                defaultChecked={mode === "light" ? false : true}
+                type="switch"
+                id="custom-switch"
+              />
+            </Form>
             <nav className="page-header__bottom">
               <ul id="navigation" className="navigation">
                 <li className="navigation__item">
