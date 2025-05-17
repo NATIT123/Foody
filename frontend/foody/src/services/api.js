@@ -258,3 +258,23 @@ export const callReplyComment = (commentId, payload) => {
 export const callAddAlbum = (payload) => {
   return axios.post("/album/addAlbum", payload);
 };
+
+export const callAddFavoriteRestaurant = (payload) => {
+  return axios.post("/favorite/addFavoriteRestaurant", payload);
+};
+export const callSavedRestaurant = (userId) => {
+  return axios.get(`/favorite/getSavedRestaurantByUserId/${userId}`);
+};
+
+export const callFetchRestaunrantsPending = (currentPage) => {
+  return axios.get(`/restaurant/getRestaunrantsPending?page=${currentPage}`);
+};
+
+export const callFindRestaurantsPendingByFields = (
+  currentPage,
+  searchQuery
+) => {
+  return axios.get(
+    `/restaurant/findRestaurantsPendingByFields?page=${currentPage}&searchQuery=${searchQuery}`
+  );
+};

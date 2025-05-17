@@ -5,6 +5,9 @@ import themeReducer from "./theme/theme.slice";
 import resourceReducer from "./resource/resourceDataSlice";
 import resourceFilterReducer from "./resource/resourceFilterSlice";
 import notificationReducer from "./notification/notificationSlice";
+import userReducer from "./user/userSlice";
+import restaurantReducer from "./restaurant/restaurantSlice";
+import foodReducer from "./food/foodSlice";
 import {
   persistStore,
   persistReducer,
@@ -32,6 +35,9 @@ const rootReducer = combineReducers({
   resource: resourceReducer,
   resourceFilter: resourceFilterReducer,
   notification: notificationReducer,
+  user: userReducer,
+  restaurant: restaurantReducer,
+  food: foodReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

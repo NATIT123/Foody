@@ -1,6 +1,4 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-
-import { DataProvider } from "./context/DataContext"; // import DataProvider
 import Home from "./components/Home/Home";
 import DetailPage from "./pages/user/DetailPage";
 import ProfilePage from "./pages/user/ProfilePage";
@@ -74,7 +72,7 @@ const router = createBrowserRouter([
   { path: "/register", element: <RegisterPage /> },
   { path: "/changePassword/:resetToken", element: <ChangePasswordPage /> },
   {
-    path: "/dashboard",
+    path: "/admin",
     index: true,
     element: (
       <ProtectedRoute>
@@ -116,10 +114,8 @@ const App = () => {
       window.location.pathname === "/login" ||
       window.location.pathname === "/register" ||
       window.location.pathname === "/" ||
-      window.location.pathname.startsWith("/book") ? (
-        <DataProvider>
-          <RouterProvider router={router} />
-        </DataProvider>
+      window.location.pathname.startsWith("/details") ? (
+        <RouterProvider router={router} />
       ) : (
         <Loading />
       )}
