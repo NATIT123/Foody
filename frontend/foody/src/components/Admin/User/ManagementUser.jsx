@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
-import { useData } from "../../../context/DataContext";
 import { useNavigate } from "react-router-dom"; // For navigation
 import { debounce } from "lodash";
 import { toast } from "react-toastify";
+import { useAppSelector, useAppDispatch } from "../../../redux/hooks";
+import { addNotification } from "../../../redux/notification/notificationSlice";
+import {
+  createNewUser,
+  deleteUser,
+  fetchListUsers,
+  fetchUserByFields,
+  updateUser,
+} from "../../../redux/user/userSlice";
 const UserManagement = ({ searchQuery }) => {
-  const [users, setUsers] = useState([]);
-  const navigate = useNavigate(); // For navigation to the home page
   const [email, setEmail] = useState("");
   const [id, setId] = useState("");
   const [fullname, setFullName] = useState("");
@@ -18,8 +24,10 @@ const UserManagement = ({ searchQuery }) => {
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const { state, addNotification } = useData();
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+  const user = useAppSelector((state) => state.account.user);
+  const dispatch = useAppDispatch();
+  const users = useAppSelector((state) => state.user.listUsers);
 
   useEffect(() => {
     const handler = debounce(() => {
@@ -31,64 +39,26 @@ const UserManagement = ({ searchQuery }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (debouncedSearchQuery && state.user.role === "admin") {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/user/findUsersByFields?page=${currentPage}&searchQuery=${debouncedSearchQuery}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${state.accessToken}` },
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.data?.data) {
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              setTotalPages(data.totalPages);
-              setUsers(data.data.data);
-            }
-          } else if (data.status === 401 || data.status === 403) {
-            navigate("/"); // Chỉ navigate nếu lỗi xác thực
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching users:", error);
-        });
+    if (debouncedSearchQuery && user.role === "admin") {
+      try {
+        const result = dispatch(
+          fetchUserByFields(currentPage, searchQuery)
+        ).unwrap();
+        setTotalPages(result.totalPages);
+      } catch (err) {
+        toast.error("Error fetching users");
+      }
     }
-  }, [debouncedSearchQuery, currentPage]);
+  }, [debouncedSearchQuery, user, dispatch, currentPage]);
 
   useEffect(() => {
-    if (!state.accessToken) return;
-    if (state.user?.role !== "admin") return;
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/user/getAllUsers?page=${currentPage}`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${state.accessToken}` },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data?.data) {
-          if (
-            data.status !== "fail" &&
-            data.status !== "error" &&
-            data.status !== 400
-          ) {
-            setTotalPages(data.totalPages);
-            setUsers(data.data.data);
-          }
-        } else if (data.status === 401 || data.status === 403) {
-          navigate("/"); // Chỉ navigate nếu lỗi xác thực
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching users:", error);
-      });
-  }, [state.accessToken, currentPage]); // Loại bỏ `navigate` khỏi dependency nếu không cần thiết
+    try {
+      const res = dispatch(fetchListUsers());
+      setTotalPages(res.totalPages);
+    } catch (err) {
+      toast.error("Error fetching users");
+    }
+  }, [dispatch, currentPage]); // Loại bỏ `navigate` khỏi dependency nếu không cần thiết
 
   const handleAddUser = () => {
     setShowModal(true);
@@ -110,32 +80,18 @@ const UserManagement = ({ searchQuery }) => {
     }
   };
 
-  const deleteUser = () => {
-    if (!state.accessToken) return;
-    fetch(`${process.env.REACT_APP_BASE_URL}/user/deleteUser/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${state.accessToken}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          if (
-            data.status !== "fail" &&
-            data.status !== "error" &&
-            data.status !== 400
-          ) {
-            setUsers(users.filter((user) => user._id !== id));
-            addNotification(`Delete user ${fullname} successfully`);
-            toast.success("Delete user successfully");
-          }
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const deleteUserNow = () => {
+    try {
+      dispatch(deleteUser(id));
+      dispatch(
+        addNotification(`Delete user ${fullname} successfully`),
+        user._id
+      );
+      addNotification(`Delete user ${fullname} successfully`);
+      toast.success("Delete user successfully");
+    } catch (err) {
+      toast.error("Error delete user");
+    }
     setShowModalDelete(false);
   };
 
@@ -171,37 +127,19 @@ const UserManagement = ({ searchQuery }) => {
         photo,
         role,
       };
-      if (!state.accessToken) return;
-      fetch(`${process.env.REACT_APP_BASE_URL}/user/updateUser/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-        body: JSON.stringify(newUser),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              setUsers(
-                users.map((user) => (user._id === id ? { ...newUser } : user))
-              );
-              addNotification(`Update user ${fullname} successfully`);
-              toast.success("Update user successfully");
-            }
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      try {
+        dispatch(updateUser(id, newUser));
+        dispatch(
+          addNotification(`Update user ${fullname} successfully`, user._id)
+        );
+
+        toast.success("Update user successfully");
+      } catch (err) {
+        toast.error("Error update user");
+      }
     } else {
       if (!email || !address || !phone || !fullname || !role) {
-        console.log("Please fill input");
+        toast.error("Please fill input");
         return;
       }
       // Add new user
@@ -215,33 +153,16 @@ const UserManagement = ({ searchQuery }) => {
         confirmPassword: "Password123",
         role,
       };
-      if (!state.accessToken) return;
-      fetch(`${process.env.REACT_APP_BASE_URL}/user/addUser`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-        body: JSON.stringify(newUser),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              newUser["_id"] = data.data.data;
-              setUsers([newUser, ...users]);
-              addNotification(`Add user ${fullname} successfully`);
-              toast.success("Add user successfully");
-            }
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      try {
+        dispatch(createNewUser(newUser));
+        dispatch(
+          addNotification(`Add user ${fullname} successfully`, user._id)
+        );
+
+        toast.success("Add user successfully");
+      } catch (err) {
+        toast.error("Error add user");
+      }
     }
     setShowModal(false);
     setRole("user");
@@ -494,7 +415,7 @@ const UserManagement = ({ searchQuery }) => {
                 <button
                   type="button"
                   className="btn btn-danger"
-                  onClick={deleteUser}
+                  onClick={deleteUserNow}
                 >
                   Delete
                 </button>

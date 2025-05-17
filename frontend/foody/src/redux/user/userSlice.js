@@ -1,99 +1,161 @@
-import { createAction, createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  callCreateUser,
+  callDeleteUser,
+  callFetchListUser,
+  callFetchUserByFields,
+  callUpdateUser,
+} from "../../services/api";
 
+// Thunks
+export const fetchListUsers = createAsyncThunk("users/fetchList", async () => {
+  const response = await callFetchListUser();
+  const data = await response.json();
+  return data;
+});
+
+export const createNewUser = createAsyncThunk(
+  "users/createNewUser",
+  async (newUser, thunkAPI) => {
+    const response = await callCreateUser(newUser);
+    const data = response.data;
+    if (data && data.id) {
+      thunkAPI.dispatch(fetchListUsers());
+    }
+    return data;
+  }
+);
+
+export const fetchUserByFields = createAsyncThunk(
+  "users/fetchUserByFields",
+  async (currentPage, searchQuery, thunkAPI) => {
+    const response = await callFetchUserByFields(currentPage, searchQuery);
+    const data = response.data;
+    if (data && data.id) {
+      thunkAPI.dispatch(fetchListUsers());
+    }
+    return data;
+  }
+);
+
+export const updateUser = createAsyncThunk(
+  "users/updateUser",
+  async (userId, user, thunkAPI) => {
+    const response = await callUpdateUser(userId, user);
+    const data = await response.json();
+    if (data && data.id) {
+      thunkAPI.dispatch(fetchListUsers());
+    }
+    return data;
+  }
+);
+
+export const deleteUser = createAsyncThunk(
+  "users/deleteUser",
+  async (userId, thunkAPI) => {
+    await callDeleteUser(userId);
+    thunkAPI.dispatch(fetchListUsers());
+    return { id: userId };
+  }
+);
+
+// Initial state
 const initialState = {
+  listUsers: [],
   isPending: false,
   isError: false,
-  data: [],
-  errors: [],
   isCreating: false,
   isCreateSuccess: false,
   isUpdating: false,
-  isUpdatingSucess: false,
+  isUpdatingSuccess: false,
   isDelete: false,
   isDeleteSuccess: false,
 };
-
-// Actions
-export const fetchUserPending = createAction("fetchUserPending");
-export const fetchUserSuccess = createAction("fetchUserSuccess");
-export const fetchUserFailed = createAction("fetchUserFailed");
-
-export const createUserPending = createAction("createUserPending");
-export const createUserSucess = createAction("createUserSuccess");
-export const createUserFailed = createAction("createUserFailed");
-
-export const updateUserPending = createAction("updateUserPending");
-export const updateUserSuccess = createAction("updateUserSuccess");
-export const updateUserFailed = createAction("updateUserFailed");
-
-export const deleteUserPending = createAction("deleteUserPending");
-export const deleteUserSuccess = createAction("deleteUserSuccess");
-export const deleteUserFailed = createAction("deleteUserFailed");
 
 // Slice
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    resetUserState: (state) => {
+      state.isCreateSuccess = false;
+      state.isUpdatingSuccess = false;
+      state.isDeleteSuccess = false;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserPending, (state) => {
+      // Fetch users
+      .addCase(fetchListUsers.pending, (state) => {
         state.isPending = true;
         state.isError = false;
       })
-      .addCase(fetchUserSuccess, (state, action) => {
+      .addCase(fetchListUsers.fulfilled, (state, action) => {
         state.isPending = false;
-        state.isError = false;
-        state.data = action.payload;
+        state.listUsers = action.payload;
       })
-      .addCase(fetchUserFailed, (state) => {
+      .addCase(fetchListUsers.rejected, (state) => {
         state.isPending = false;
         state.isError = true;
       })
-      .addCase(createUserPending, (state) => {
+
+      .addCase(fetchUserByFields.pending, (state) => {
+        state.isPending = true;
+        state.isError = false;
+      })
+      .addCase(fetchUserByFields.fulfilled, (state, action) => {
+        state.isPending = false;
+        state.listUsers = action.payload;
+      })
+      .addCase(fetchUserByFields.rejected, (state) => {
+        state.isPending = false;
+        state.isError = true;
+      })
+
+      // Create user
+      .addCase(createNewUser.pending, (state) => {
         state.isCreating = true;
         state.isCreateSuccess = false;
       })
-      .addCase(createUserSucess, (state, action) => {
+      .addCase(createNewUser.fulfilled, (state) => {
         state.isCreating = false;
         state.isCreateSuccess = true;
-        state.data = [action.payload, ...state.data];
       })
-      .addCase(createUserFailed, (state) => {
+      .addCase(createNewUser.rejected, (state) => {
         state.isCreating = false;
         state.isCreateSuccess = false;
       })
-      .addCase(updateUserPending, (state) => {
+
+      // Update user
+      .addCase(updateUser.pending, (state) => {
         state.isUpdating = true;
-        state.isUpdatingSucess = false;
+        state.isUpdatingSuccess = false;
       })
-      .addCase(updateUserSuccess, (state, action) => {
+      .addCase(updateUser.fulfilled, (state) => {
         state.isUpdating = false;
-        state.isUpdatingSucess = true;
-        const updatedUser = action.payload;
-        state.data = state.data.map((u) =>
-          u.id === updatedUser.id ? updatedUser : u
-        );
+        state.isUpdatingSuccess = true;
       })
-      .addCase(updateUserFailed, (state) => {
+      .addCase(updateUser.rejected, (state) => {
         state.isUpdating = false;
-        state.isUpdatingSucess = false;
+        state.isUpdatingSuccess = false;
       })
-      .addCase(deleteUserPending, (state) => {
+
+      // Delete user
+      .addCase(deleteUser.pending, (state) => {
         state.isDelete = true;
         state.isDeleteSuccess = false;
       })
-      .addCase(deleteUserSuccess, (state, action) => {
+      .addCase(deleteUser.fulfilled, (state) => {
         state.isDelete = false;
         state.isDeleteSuccess = true;
-        const deletedUser = action.payload;
-        state.data = state.data.filter((u) => u.id !== deletedUser.id);
       })
-      .addCase(deleteUserFailed, (state) => {
+      .addCase(deleteUser.rejected, (state) => {
         state.isDelete = false;
         state.isDeleteSuccess = false;
       });
   },
 });
+
+export const { resetUserState } = userSlice.actions;
 
 export default userSlice.reducer;

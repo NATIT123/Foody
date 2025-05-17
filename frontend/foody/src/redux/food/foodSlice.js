@@ -1,10 +1,59 @@
-import { createAction, createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  callAddFood,
+  callDeleteFood,
+  callFetchFoodsByRestaurant,
+  callUpdateFood,
+} from "../../services/api";
 
+// Async thunks
+export const fetchFoods = createAsyncThunk(
+  "food/fetchFoods",
+  async (restaurantId) => {
+    const res = await callFetchFoodsByRestaurant(restaurantId);
+    const data = res.data;
+    return data;
+  }
+);
+
+export const createFood = createAsyncThunk(
+  "food/createFood",
+  async (newFood, thunkAPI) => {
+    const res = await callAddFood(newFood);
+    const data = res.data;
+    if (data && data.id) {
+      thunkAPI.dispatch(fetchFoods());
+    }
+    return data;
+  }
+);
+
+export const updateFood = createAsyncThunk(
+  "food/updateFood",
+  async (id, food, thunkAPI) => {
+    const res = await callUpdateFood(id, food);
+    const data = res.data;
+    if (data && data.id) {
+      thunkAPI.dispatch(fetchFoods());
+    }
+    return data;
+  }
+);
+
+export const deleteFood = createAsyncThunk(
+  "food/deleteFood",
+  async (foodId, thunkAPI) => {
+    await callDeleteFood(foodId);
+    thunkAPI.dispatch(fetchFoods());
+    return { id: foodId };
+  }
+);
+
+// Initial state
 const initialState = {
+  foods: [],
   isPending: false,
   isError: false,
-  data: [],
-  errors: [],
   isCreating: false,
   isCreateSuccess: false,
   isUpdating: false,
@@ -13,87 +62,77 @@ const initialState = {
   isDeleteSuccess: false,
 };
 
-// Actions
-export const fetchFoodPending = createAction("fetchFoodPending");
-export const fetchFoodSuccess = createAction("fetchFoodSuccess");
-export const fetchFoodFailed = createAction("fetchFoodFailed");
-
-export const createFoodPending = createAction("createFoodPending");
-export const createFoodSuccess = createAction("createFoodSuccess");
-export const createFoodFailed = createAction("createFoodFailed");
-
-export const updateFoodPending = createAction("updateFoodPending");
-export const updateFoodSuccess = createAction("updateFoodSuccess");
-export const updateFoodFailed = createAction("updateFoodFailed");
-
-export const deleteFoodPending = createAction("deleteFoodPending");
-export const deleteFoodSuccess = createAction("deleteFoodSuccess");
-export const deleteFoodFailed = createAction("deleteFoodFailed");
-
 // Slice
 const foodSlice = createSlice({
   name: "food",
   initialState,
-  reducers: {},
+  reducers: {
+    resetFoodState: (state) => {
+      state.isCreateSuccess = false;
+      state.isUpdatingSuccess = false;
+      state.isDeleteSuccess = false;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchFoodPending, (state) => {
+      // Fetch foods
+      .addCase(fetchFoods.pending, (state) => {
         state.isPending = true;
         state.isError = false;
       })
-      .addCase(fetchFoodSuccess, (state, action) => {
+      .addCase(fetchFoods.fulfilled, (state, action) => {
         state.isPending = false;
-        state.isError = false;
-        state.data = action.payload;
+        state.foods = action.payload;
       })
-      .addCase(fetchFoodFailed, (state) => {
+      .addCase(fetchFoods.rejected, (state) => {
         state.isPending = false;
         state.isError = true;
       })
-      .addCase(createFoodPending, (state) => {
+
+      // Create food
+      .addCase(createFood.pending, (state) => {
         state.isCreating = true;
         state.isCreateSuccess = false;
       })
-      .addCase(createFoodSuccess, (state, action) => {
+      .addCase(createFood.fulfilled, (state, action) => {
         state.isCreating = false;
         state.isCreateSuccess = true;
-        state.data = [action.payload, ...state.data];
       })
-      .addCase(createFoodFailed, (state) => {
+      .addCase(createFood.rejected, (state) => {
         state.isCreating = false;
         state.isCreateSuccess = false;
       })
-      .addCase(updateFoodPending, (state) => {
+
+      // Update food
+      .addCase(updateFood.pending, (state) => {
         state.isUpdating = true;
         state.isUpdatingSuccess = false;
       })
-      .addCase(updateFoodSuccess, (state, action) => {
+      .addCase(updateFood.fulfilled, (state, action) => {
         state.isUpdating = false;
         state.isUpdatingSuccess = true;
-        const updatedFood = action.payload;
-        state.data = state.data.map((f) =>
-          f.id === updatedFood.id ? updatedFood : f
-        );
       })
-      .addCase(updateFoodFailed, (state) => {
+      .addCase(updateFood.rejected, (state) => {
         state.isUpdating = false;
         state.isUpdatingSuccess = false;
       })
-      .addCase(deleteFoodPending, (state) => {
+
+      // Delete food
+      .addCase(deleteFood.pending, (state) => {
         state.isDelete = true;
         state.isDeleteSuccess = false;
       })
-      .addCase(deleteFoodSuccess, (state, action) => {
+      .addCase(deleteFood.fulfilled, (state, action) => {
         state.isDelete = false;
         state.isDeleteSuccess = true;
-        const deletedFood = action.payload;
-        state.data = state.data.filter((f) => f.id !== deletedFood.id);
       })
-      .addCase(deleteFoodFailed, (state) => {
+      .addCase(deleteFood.rejected, (state) => {
         state.isDelete = false;
         state.isDeleteSuccess = false;
       });
   },
 });
+
+export const { resetFoodState } = foodSlice.actions;
 
 export default foodSlice.reducer;

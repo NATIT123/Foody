@@ -1,12 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // For navigation
-import { useData } from "../../../context/DataContext";
+import { useState, useEffect } from "react";
 import FoodModal from "./FoodModal";
 import { debounce } from "lodash";
 import { toast } from "react-toastify";
+import { addNotification } from "../../../redux/notification/notificationSlice";
+import { useAppSelector, useAppDispatch } from "../../../redux/hooks";
+import {
+  callFetchDistrictsByCity,
+  callFetchOwners,
+  callFetchSubCategories,
+} from "../../../services/api";
+import {
+  createRestaurant,
+  fetchOwnerRestaurants,
+  fetchRestaurants,
+  fetchRestaurantsByFields,
+  updateRestaurant,
+  deleteRestaurant,
+  fetchRestaurantsOwnerByFields,
+} from "../../../redux/restaurant/restaurantSlice";
 const RestaurantManagement = ({ searchQuery }) => {
-  const [restaurants, setRestaurants] = useState([]);
-  const navigate = useNavigate(); // For navigation to the home page
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState(""); // "add", "edit", "view"
   const [formData, setFormData] = useState({});
@@ -14,140 +26,61 @@ const RestaurantManagement = ({ searchQuery }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [foodData, setFoodData] = useState([]);
   const [restaurant, setRestaurant] = useState({});
   const [owners, setOwners] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
-  const [cuisines, setCuisines] = useState([]);
-  const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
-  const handleUpdateFood = (updatedFood) => {
-    setFoodData((prev) => {
-      const exist = prev.findIndex((food) => food._id === updatedFood._id);
-      if (exist !== -1) {
-        return prev.map((food) =>
-          food._id === updatedFood._id ? updatedFood : food
-        );
-      } else {
-        return [updatedFood, ...prev];
-      }
-    });
-  };
-
-  const handleDeleteFood = (deletedFood) => {
-    setFoodData((prev) => {
-      return prev.filter((food) => food._id !== deletedFood);
-    });
-  };
-
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.account.user);
+  const restaurants = useAppSelector((state) => state.restaurant.restaurants);
+  const cuisines = useAppSelector((state) => state.resource.cuisines);
+  const cities = useAppSelector((state) => state.resource.cities);
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_BASE_URL}/subCategory/getSubCategoryByCategorySpecific`
-        );
-        const data = await response.json();
-        if (data.status === "success") {
+        const response = await callFetchSubCategories();
+        const data = response.data;
+        if (response.status === "success") {
           setSubCategories(data.data.data);
         }
       } catch (error) {
-        console.error("Fetch owners error:", error);
+        toast.error("Fetch owners error:", error);
       }
     };
 
     fetchSubCategories();
-  }, []);
-  useEffect(() => {
+
     const fetchOwners = async () => {
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_BASE_URL}/user/findUsersByRole`
-        );
-        const data = await response.json();
-        if (data.status === "success") {
+        const response = await callFetchOwners();
+        const data = response.data;
+        if (response.status === "success") {
           setOwners(data.data);
         }
       } catch (error) {
-        console.error("Fetch owners error:", error);
+        toast.error("Fetch owners error:", error);
       }
     };
 
     fetchOwners();
   }, []);
   useEffect(() => {
-    const fetchCuisines = async () => {
+    if (user?.role === "admin") {
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_BASE_URL}/cuisines/getAllCuisines`
-        );
-        const data = await response.json();
-        if (data.status === "success") {
-          setCuisines(data.data.data);
-        }
-      } catch (error) {
-        console.error("Fetch owners error:", error);
+        const result = dispatch(fetchRestaurants(currentPage)).unwrap();
+        setTotalPages(result.totalPages);
+      } catch (err) {
+        toast.error("Error is encounterd");
       }
-    };
-
-    fetchCuisines();
-  }, []);
-  const { state, addNotification } = useData();
-  useEffect(() => {
-    if (state.user?.role === "admin") {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/restaurant/getAllRestaurants?page=${currentPage}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data && data.data && Array.isArray(data.data.data)) {
-            if (!["fail", "error", 400].includes(data.status)) {
-              setTotalPages(data.totalPages);
-              setRestaurants(data.data.data);
-            }
-          } else {
-            console.error("Invalid API response:", data);
-            navigate("/");
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching restaurants:", error);
-          if (error.response && [401, 403].includes(error.response.status)) {
-            navigate("/");
-          }
-        });
-    } else if (state.user?.role === "owner") {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/restaurant/getOwnerRestaurants/${state.user?._id}?page=${currentPage}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${state.accessToken}` },
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data && data.data && Array.isArray(data.data.data)) {
-            if (!["fail", "error", 400].includes(data.status)) {
-              setTotalPages(data.totalPages);
-              setRestaurants(data.data.data);
-            }
-          } else {
-            console.error("Invalid API response:", data);
-            navigate("/");
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching restaurants:", error);
-          if (error.response && [401, 403].includes(error.response.status)) {
-            navigate("/");
-          }
-        });
+    } else if (user?.role === "owner") {
+      try {
+        dispatch(fetchOwnerRestaurants(user?._id, currentPage));
+      } catch (err) {
+        toast.error("Error is encounterd");
+      }
     }
-  }, [currentPage]);
+  }, [currentPage, user]);
 
   useEffect(() => {
     const handler = debounce(() => {
@@ -160,120 +93,51 @@ const RestaurantManagement = ({ searchQuery }) => {
 
   useEffect(() => {
     if (debouncedSearchQuery) {
-      if (state.user.role === "admin") {
-        fetch(
-          `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsByFields?page=${currentPage}&searchQuery=${debouncedSearchQuery}`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${state.accessToken}` },
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.data?.data) {
-              if (
-                data.status !== "fail" &&
-                data.status !== "error" &&
-                data.status !== 400
-              ) {
-                setTotalPages(data.totalPages);
-                setRestaurants(data.data.data);
-              }
-            }
-          })
-          .catch((error) => {
-            console.error("Error fetching users:", error);
-          });
-      } else if (state.user?.role === "owner") {
-        fetch(
-          `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsOwnerByFields/${state.user._id}?page=${currentPage}&searchQuery=${debouncedSearchQuery}`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${state.accessToken}` },
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.data?.data) {
-              if (
-                data.status !== "fail" &&
-                data.status !== "error" &&
-                data.status !== 400
-              ) {
-                setTotalPages(data.totalPages);
-                setRestaurants(data.data.data);
-              }
-            }
-          })
-          .catch((error) => {
-            console.error("Error fetching users:", error);
-          });
+      if (user.role === "admin") {
+        try {
+          const result = dispatch(
+            fetchRestaurantsByFields(currentPage, searchQuery)
+          ).unwrap();
+          setTotalPages(result.totalPages);
+        } catch (err) {
+          toast.error("Error is encounterd");
+        }
+      } else if (user?.role === "owner") {
+        try {
+          const result = dispatch(
+            fetchRestaurantsOwnerByFields(currentPage, searchQuery)
+          ).unwrap();
+          setTotalPages(result.totalPages);
+        } catch (err) {
+          toast.error("Error is encounterd");
+        }
       }
     }
-  }, [debouncedSearchQuery, currentPage]);
+  }, [debouncedSearchQuery, currentPage, user]);
 
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/city/getAllCity`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "success") {
-          setCities(data.data.data);
-        }
-      })
-      .catch((error) => console.log("Fetch error: ", error));
-  }, []);
-
-  const fetchDistrictsByCity = (cityId) => {
+  const fetchDistrictsByCity = async (cityId) => {
     if (!cityId) {
       setDistricts([]);
       return;
     }
 
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/district/getDistrictsByCity/${cityId}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "success") {
-          setDistricts(data.data.data);
-        }
-      })
-      .catch((error) => console.log("Fetch error: ", error));
+    try {
+      const result = await callFetchDistrictsByCity(cityId);
+      if (result.status === "success") {
+        setDistricts(result.data.data);
+      }
+    } catch (err) {
+      toast.error("Error is encounterd");
+    }
   };
 
   const handleOpenModal = (mode, restaurant = null) => {
-    if (mode === "food") {
-      setShowModal(true);
-      if (restaurant) {
-        fetch(
-          `${process.env.REACT_APP_BASE_URL}/food/getFoodsByRestaurant/${restaurant._id}`,
-          {
-            method: "GET",
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data) {
-              if (
-                data.status !== "error" &&
-                data.status !== "fail" &&
-                data.status !== 400
-              ) {
-                setRestaurant(restaurant);
-                setFoodData(data.data.data);
-              }
-            }
-          })
-          .catch((error) => {
-            console.error("Error fetching restaurants:", error);
-          });
-      }
-      return;
-    }
     setModalMode(mode);
     setIsModalOpen(true);
+    if (mode === "food") {
+      setRestaurant(restaurant);
+    }
     if (restaurant) {
-      console.log(restaurant);
       setFormData({ ...restaurant, imagePreview: restaurant.image });
     }
   };
@@ -298,39 +162,18 @@ const RestaurantManagement = ({ searchQuery }) => {
     }
   };
 
-  const deleteRestaurant = () => {
-    if (!state.accessToken) return;
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/deleteRestaurant/${formData._id}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          if (
-            data.status !== "fail" &&
-            data.status !== "error" &&
-            data.status !== 400
-          ) {
-            setRestaurants(
-              restaurants.filter(
-                (restaurant) => restaurant._id !== formData._id
-              )
-            );
-            addNotification(`Bạn đã xóa nhà hàng ${formData.name} thành công`);
-            toast.success("Delete restaurant successfully");
-          }
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const deleteRestaurantNow = () => {
+    try {
+      dispatch(deleteRestaurant(formData._id));
+      dispatch(addNotification());
+      addNotification(
+        `You have successfully deleted the restaurant ${formData.name}`
+      );
+      toast.success(`Delete restaurant ${formData.name} successfully`);
+    } catch (err) {
+      toast.error("Error is encouterd");
+    }
+
     setShowModalDelete(false);
     setFormData({});
   };
@@ -352,56 +195,21 @@ const RestaurantManagement = ({ searchQuery }) => {
       formDataToSend.append("subCategoryId", formData.subCategoryId);
       formDataToSend.append("cuisinesId", formData.cuisinesId);
       formDataToSend.append("districtId", formData.districtId);
-      const updatedRestaurant = {
-        name: formData.name,
-        address: formData.address,
-        timeOpen: formData.timeOpen,
-        priceRange: formData.priceRange,
-        ownerId: formData.ownerId,
-        cuisinesId: formData.cuisinesId,
-        subCategoryId: formData.subCategoryId,
-        districtId: formData.districtId,
-      };
-      if (!state.accessToken) return;
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/restaurant/updateRestaurant/${formData._id}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${state.accessToken}`,
-          },
-          body: formDataToSend,
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              setRestaurants(
-                restaurants.map((restaurant) =>
-                  restaurant._id === formData._id
-                    ? {
-                        ...updatedRestaurant,
-                        image: data.data.image,
-                        _id: data.data._id.toString(),
-                      }
-                    : restaurant
-                )
-              );
-              addNotification(
-                `Bạn đã sửa nhà hàng ${formData.name} thành công`
-              );
-              toast.success("Update restaurant successfully");
-            }
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      try {
+        dispatch(updateRestaurant(formData._id, formDataToSend));
+        dispatch(
+          addNotification(
+            `You have successfully edited the restaurant ${formData.name}`,
+            user._id
+          )
+        );
+
+        toast.success(
+          `You have successfully edited the restaurant ${formData.name}`
+        );
+      } catch (err) {
+        toast.error("Error is encouterd");
+      }
     } else if (modalMode === "add") {
       let status = "approved";
       let ownerId = formData.ownerId;
@@ -411,61 +219,29 @@ const RestaurantManagement = ({ searchQuery }) => {
       formDataToSend.append("timeOpen", formData.timeOpen);
       formDataToSend.append("priceRange", formData.priceRange);
       formDataToSend.append("image", formData.image);
-      if (state.user?.role === "owner") ownerId = state.user?._id.toString();
+      if (user?.role === "owner") ownerId = user?._id.toString();
       formDataToSend.append("ownerId", ownerId);
       formDataToSend.append("subCategoryId", formData.subCategoryId);
       formDataToSend.append("cuisinesId", formData.cuisinesId);
       formDataToSend.append("districtId", formData.districtId);
-      if (state.user?.role === "owner") status = "pending";
+      if (user?.role === "owner") status = "pending";
       formDataToSend.append("status", status);
 
-      const addRestaurant = {
-        name: formData.name,
-        address: formData.address,
-        timeOpen: formData.timeOpen,
-        priceRange: formData.priceRange,
-        ownerId: ownerId,
-        status: status,
-        cuisinesId: formData.cuisinesId,
-        subCategoryId: formData.subCategoryId,
-        districtId: formData.districtId,
-      };
-      if (!state.accessToken) return;
-      fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/addRestaurant`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-        body: formDataToSend,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              if (state.user?.role === "admin") {
-                setRestaurants([
-                  {
-                    ...addRestaurant,
-                    _id: data.restaurant._id.toString(),
-                    image: data.restaurant.image,
-                  },
-                  ...restaurants,
-                ]);
-              }
-              addNotification(
-                `Bạn đã thêm nhà hàng ${formData.name} thành công`
-              );
-              toast.success("Add restaurant successfully");
-            }
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      try {
+        dispatch(createRestaurant(formDataToSend));
+        dispatch(
+          addNotification(
+            `You have successfully added the restaurant ${formData.name}`,
+            user._id
+          )
+        );
+
+        toast.success(
+          `You have successfully added the restaurant ${formData.name}`
+        );
+      } catch (err) {
+        toast.error("Error is encouterd");
+      }
     }
     handleCloseModal();
   };
@@ -567,7 +343,7 @@ const RestaurantManagement = ({ searchQuery }) => {
                       >
                         Edit
                       </button>
-                      {state.user?.role === "admin" && (
+                      {user?.role === "admin" && (
                         <button
                           className="btn btn-danger btn-sm me-2"
                           onClick={() => handleDeleteRestaurant(restaurant)}
@@ -575,7 +351,7 @@ const RestaurantManagement = ({ searchQuery }) => {
                           Delete
                         </button>
                       )}
-                      {state.user?.role === "owner" && (
+                      {user?.role === "owner" && (
                         <button
                           className="btn btn-success btn-sm me-2"
                           onClick={() => handleOpenModal("food", restaurant)}
@@ -621,7 +397,7 @@ const RestaurantManagement = ({ searchQuery }) => {
                 <button
                   type="button"
                   className="btn btn-danger"
-                  onClick={deleteRestaurant}
+                  onClick={deleteRestaurantNow}
                 >
                   Delete
                 </button>
@@ -636,9 +412,6 @@ const RestaurantManagement = ({ searchQuery }) => {
         restaurant={restaurant}
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        foods={foodData}
-        onUpdateFood={handleUpdateFood}
-        onDeleteFood={handleDeleteFood}
       />
       {/* Modal */}
       {isModalOpen && (
@@ -785,7 +558,7 @@ const RestaurantManagement = ({ searchQuery }) => {
                         ))}
                       </select>
                     </div>
-                    {state.user?.role === "admin" && (
+                    {user?.role === "admin" && (
                       <div className="mb-3">
                         <label className="form-label">Owner</label>
                         <select

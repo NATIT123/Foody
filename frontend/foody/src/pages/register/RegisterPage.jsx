@@ -7,10 +7,9 @@ import { FaUser } from "react-icons/fa";
 import { FaRegAddressBook } from "react-icons/fa";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { RiLockPasswordFill } from "react-icons/ri";
-import Alert from "react-bootstrap/Alert";
-import { useData } from "../../context/DataContext";
+import { toast } from "react-toastify";
+import { callRegister } from "../../services/api";
 const RegisterPage = () => {
-  const { state } = useData();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -18,9 +17,6 @@ const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChecked, setIsChecked] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [message, setMessage] = useState("");
-  const [status, setStatus] = useState("");
   const navigate = useNavigate(); // For navigation to the home page
 
   const handleEmailChange = (e) => setEmail(e.target.value);
@@ -37,15 +33,7 @@ const RegisterPage = () => {
     document.title = "Đăng ký";
   }, []);
 
-  useEffect(() => {
-    if (state.user && !state.loading) {
-      console.log(state.user);
-      if (state.user.role === "admin") navigate("/dashboard");
-      if (state.user.role === "user") navigate("/");
-    }
-  }, [navigate, state.user, state.loading]);
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (
       !email ||
@@ -55,49 +43,27 @@ const RegisterPage = () => {
       !password ||
       !confirmPassword
     ) {
-      setStatus("fail");
-      setMessage("Vui lòng nhập đầy đủ thông tin đăng ký.");
-      setShowModal(true);
+      toast.error("Please input fields");
     } else {
       if (!isChecked) {
-        setStatus("fail");
-        setMessage("Vui lòng chấp nhận điều khoản.");
-        setShowModal(true);
+        toast.error("Please accept the terms.");
       } else {
-        fetch(`${process.env.REACT_APP_BASE_URL}/user/signUp`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        try {
+          const res = await callRegister({
             fullname: fullName,
             email,
             password,
             phone,
             address,
             confirmPassword,
-          }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data) {
-              console.log(data);
-              setMessage(data.message);
-              setShowModal(true);
-              setStatus(data.status);
-              if (data.status !== "fail" && data.status !== "error") {
-                localStorage.setItem(
-                  "access_token",
-                  data.access_token || "empty"
-                );
-                navigate("/");
-                setShowModal(false);
-              }
-            }
-          })
-          .catch((error) => {
-            console.error("Error fetching users:", error);
           });
+          if (res.status === "success") {
+            toast.success("Register successully. Please sign in.");
+            navigate("/");
+          }
+        } catch (err) {
+          toast.error("Error register user.");
+        }
       }
     }
   };
@@ -118,29 +84,6 @@ const RegisterPage = () => {
         className="p-4 rounded shadow-sm bg-white"
         style={{ width: "400px", maxWidth: "90%" }}
       >
-        <>
-          {showModal ? (
-            <Alert
-              className="d-flex flex-column align-items-center text-center"
-              variant={`${
-                status === "fail" || status === "error" || status === 400
-                  ? "danger"
-                  : "success"
-              }`}
-              onClick={() => setShowModal(false)}
-              dismissible
-            >
-              <Alert.Heading>
-                {status === "fail" || status === "error" || status === 400
-                  ? "Error"
-                  : "Success"}
-              </Alert.Heading>
-              <p>{message}</p>
-            </Alert>
-          ) : (
-            <div></div>
-          )}
-        </>
         <h4 className="text-center mb-4">Đăng ký tài khoản Foody.vn</h4>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">

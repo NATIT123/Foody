@@ -1,10 +1,92 @@
-import { createAction, createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  callCreateRestaurant,
+  callDeleteRestaurant,
+  callFetchListRestaurant,
+  callFetchOwnerRestaurants,
+  callFetchRestaurantsByFields,
+  callFetchRestaurantsOwnerByFields,
+} from "../../services/api";
 
+// Async Thunks
+export const fetchRestaurants = createAsyncThunk(
+  "restaurant/fetchRestaurants",
+  async (currentPage) => {
+    const res = await callFetchListRestaurant(currentPage);
+    const data = res.data;
+    return data;
+  }
+);
+
+export const fetchOwnerRestaurants = createAsyncThunk(
+  "restaurant/fetchOwnerRestaurants",
+  async (userId, currentPage) => {
+    const res = await callFetchOwnerRestaurants(userId, currentPage);
+    const data = res.data;
+    return data;
+  }
+);
+
+export const fetchRestaurantsByFields = createAsyncThunk(
+  "restaurant/fetchRestaurantsByFields",
+  async (currentPage, searchQuery) => {
+    const res = await callFetchRestaurantsByFields(currentPage, searchQuery);
+    const data = res.data;
+    return data;
+  }
+);
+
+export const fetchRestaurantsOwnerByFields = createAsyncThunk(
+  "restaurant/fetchRestaurantsOwnerByFields",
+  async (userId, currentPage, searchQuery) => {
+    const res = await callFetchRestaurantsOwnerByFields(
+      userId,
+      currentPage,
+      searchQuery
+    );
+    const data = res.data;
+    return data;
+  }
+);
+
+export const createRestaurant = createAsyncThunk(
+  "restaurant/createRestaurant",
+  async (newRestaurant, thunkAPI) => {
+    const res = await callCreateRestaurant(newRestaurant);
+    const data = res.data;
+    if (data && data.id) {
+      thunkAPI.dispatch(fetchRestaurants());
+    }
+    return data;
+  }
+);
+
+export const updateRestaurant = createAsyncThunk(
+  "restaurant/updateRestaurant",
+  async (restaurantId, restaurant, thunkAPI) => {
+    const res = callCreateRestaurant(restaurantId, restaurant);
+    const data = res.data;
+    if (data && data.id) {
+      thunkAPI.dispatch(fetchRestaurants());
+    }
+    return data;
+  }
+);
+
+export const deleteRestaurant = createAsyncThunk(
+  "restaurant/deleteRestaurant",
+  async (restaurantId, thunkAPI) => {
+    await callDeleteRestaurant(restaurantId);
+    thunkAPI.dispatch(fetchRestaurants());
+    return { id: restaurantId };
+  }
+);
+
+// Initial State
 const initialState = {
+  restaurants: [],
   isPending: false,
   isError: false,
-  data: [],
-  errors: [],
   isCreating: false,
   isCreateSuccess: false,
   isUpdating: false,
@@ -13,87 +95,105 @@ const initialState = {
   isDeleteSuccess: false,
 };
 
-// Actions
-export const fetchRestaurantPending = createAction("fetchRestaurantPending");
-export const fetchRestaurantSuccess = createAction("fetchRestaurantSuccess");
-export const fetchRestaurantFailed = createAction("fetchRestaurantFailed");
-
-export const createRestaurantPending = createAction("createRestaurantPending");
-export const createRestaurantSuccess = createAction("createRestaurantSuccess");
-export const createRestaurantFailed = createAction("createRestaurantFailed");
-
-export const updateRestaurantPending = createAction("updateRestaurantPending");
-export const updateRestaurantSuccess = createAction("updateRestaurantSuccess");
-export const updateRestaurantFailed = createAction("updateRestaurantFailed");
-
-export const deleteRestaurantPending = createAction("deleteRestaurantPending");
-export const deleteRestaurantSuccess = createAction("deleteRestaurantSuccess");
-export const deleteRestaurantFailed = createAction("deleteRestaurantFailed");
-
 // Slice
 const restaurantSlice = createSlice({
   name: "restaurant",
   initialState,
-  reducers: {},
+  reducers: {
+    resetRestaurantState: (state) => {
+      state.isCreateSuccess = false;
+      state.isUpdatingSuccess = false;
+      state.isDeleteSuccess = false;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchRestaurantPending, (state) => {
+      // Fetch
+      .addCase(fetchRestaurants.pending, (state) => {
         state.isPending = true;
         state.isError = false;
       })
-      .addCase(fetchRestaurantSuccess, (state, action) => {
+      .addCase(fetchRestaurants.fulfilled, (state, action) => {
         state.isPending = false;
-        state.isError = false;
-        state.data = action.payload;
+        state.restaurants = action.payload;
       })
-      .addCase(fetchRestaurantFailed, (state) => {
+      .addCase(fetchRestaurants.rejected, (state) => {
         state.isPending = false;
         state.isError = true;
       })
-      .addCase(createRestaurantPending, (state) => {
+
+      // Fetch
+      .addCase(fetchOwnerRestaurants.pending, (state) => {
+        state.isPending = true;
+        state.isError = false;
+      })
+      .addCase(fetchOwnerRestaurants.fulfilled, (state, action) => {
+        state.isPending = false;
+        state.restaurants = action.payload;
+      })
+      .addCase(fetchOwnerRestaurants.rejected, (state) => {
+        state.isPending = false;
+        state.isError = true;
+      })
+
+      // Fetch
+      .addCase(fetchRestaurantsByFields.pending, (state) => {
+        state.isPending = true;
+        state.isError = false;
+      })
+      .addCase(fetchRestaurantsByFields.fulfilled, (state, action) => {
+        state.isPending = false;
+        state.restaurants = action.payload;
+      })
+      .addCase(fetchRestaurantsByFields.rejected, (state) => {
+        state.isPending = false;
+        state.isError = true;
+      })
+
+      // Create
+      .addCase(createRestaurant.pending, (state) => {
         state.isCreating = true;
         state.isCreateSuccess = false;
       })
-      .addCase(createRestaurantSuccess, (state, action) => {
+      .addCase(createRestaurant.fulfilled, (state) => {
         state.isCreating = false;
         state.isCreateSuccess = true;
-        state.data = [action.payload, ...state.data];
       })
-      .addCase(createRestaurantFailed, (state) => {
+      .addCase(createRestaurant.rejected, (state) => {
         state.isCreating = false;
         state.isCreateSuccess = false;
       })
-      .addCase(updateRestaurantPending, (state) => {
+
+      // Update
+      .addCase(updateRestaurant.pending, (state) => {
         state.isUpdating = true;
         state.isUpdatingSuccess = false;
       })
-      .addCase(updateRestaurantSuccess, (state, action) => {
+      .addCase(updateRestaurant.fulfilled, (state) => {
         state.isUpdating = false;
         state.isUpdatingSuccess = true;
-        const updatedRestaurant = action.payload;
-        state.data = state.data.map((r) =>
-          r.id === updatedRestaurant.id ? updatedRestaurant : r
-        );
       })
-      .addCase(updateRestaurantFailed, (state) => {
+      .addCase(updateRestaurant.rejected, (state) => {
         state.isUpdating = false;
         state.isUpdatingSuccess = false;
       })
-      .addCase(deleteRestaurantPending, (state) => {
+
+      // Delete
+      .addCase(deleteRestaurant.pending, (state) => {
         state.isDelete = true;
         state.isDeleteSuccess = false;
       })
-      .addCase(deleteRestaurantSuccess, (state, action) => {
+      .addCase(deleteRestaurant.fulfilled, (state) => {
         state.isDelete = false;
         state.isDeleteSuccess = true;
-        const deletedRestaurant = action.payload;
-        state.data = state.data.filter((r) => r.id !== deletedRestaurant.id);
       })
-      .addCase(deleteRestaurantFailed, (state) => {
+      .addCase(deleteRestaurant.rejected, (state) => {
         state.isDelete = false;
         state.isDeleteSuccess = false;
       });
   },
 });
+
+export const { resetRestaurantState } = restaurantSlice.actions;
 
 export default restaurantSlice.reducer;
