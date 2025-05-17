@@ -1,32 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // For navigation
 import "bootstrap/dist/css/bootstrap.min.css";
-import Alert from "react-bootstrap/Alert";
 import { useParams } from "react-router-dom";
 import { TbLockPassword } from "react-icons/tb";
 import { RiLockPasswordFill } from "react-icons/ri";
-import { useData } from "../../context/DataContext";
-
+import { doLogoutAction } from "../../redux/account/accountSlice";
+import { useAppDispatch } from "../../redux/hooks";
+import { callCheckPasswordToken, callResetPassword } from "../../services/api";
+import { toast } from "react-toastify";
 const ChangePasswordPage = () => {
   const { resetToken } = useParams();
-  const { state, logout } = useData();
   const navigate = useNavigate(); // For navigation to the home page
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  useEffect(() => {
-    if (!state.loading && state.user) {
-      if (state.user.role === "admin" || state.user.role === "owner")
-        navigate("/dashboard");
-      if (state.user.role === "user") navigate("/");
-    }
-  }, [navigate, state.user, state.loading]);
-
+  const dispatch = useAppDispatch();
   const handlePasswordChange = (e) => setPassword(e.target.value);
   const handleConfirmPasswordChange = (e) => setConfirmPassword(e.target.value);
-  const [showModal, setShowModal] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const [status, setStatus] = useState("");
 
   useEffect(() => {
     document.title = `Thay đổi mật khẩu`;
@@ -34,82 +23,55 @@ const ChangePasswordPage = () => {
 
   useEffect(() => {
     if (resetToken) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/user/checkPassword/${resetToken}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            if (data.status === "fail" || data.status === "error") {
-              navigate("/forgot");
-            }
+      callCheckPasswordToken(resetToken)
+        .then((res) => {
+          const data = res.data;
+          if (data.status === "fail" || data.status === "error") {
+            navigate("/forgot");
           }
         })
-        .catch((error) => {
-          console.error("Error fetching users:", error);
+        .catch((err) => {
+          toast.error("Error checking token:", err);
           navigate("/forgot");
         });
     }
   }, [resetToken, navigate]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (password && confirmPassword) {
-      if (resetToken) {
-        fetch(
-          `${process.env.REACT_APP_BASE_URL}/user/resetPassword/${resetToken}`,
-          {
-            method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${state.accessToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              password,
-              confirmPassword,
-            }),
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data) {
-              setMessage(data.message);
-              setShowModal(true);
-              setStatus(data.status);
-              if (data.status !== "fail" && data.status !== "error") {
-                setPassword("");
-                setConfirmPassword("");
-                setTimeout(() => {
-                  logout();
-                  navigate("/");
-                }, 3000);
-              } else {
-                navigate("/forgot");
-              }
-            }
-          })
-          .catch((error) => {
-            console.error("Error fetching users:", error);
-            setMessage("Something went wrong, please try again.");
-            setShowModal(true);
-            navigate("/forgot");
-          });
-      } else {
-        setStatus("fail");
-        setShowModal(true);
-        setMessage("Reset token is missing.");
-      }
-    } else {
-      setStatus("fail");
-      setShowModal(true);
-      setMessage("Please enter your password!");
+    if (!password || !confirmPassword) {
+      toast.error("Please enter your password!");
+      return;
     }
+
+    if (!resetToken) {
+      toast.error("Reset token is missing.");
+      return;
+    }
+
+    const payload = { password, confirmPassword };
+
+    callResetPassword(resetToken, payload)
+      .then((res) => {
+        const data = res.data;
+        toast.success(data.message);
+
+        if (data.status !== "fail" && data.status !== "error") {
+          setPassword("");
+          setConfirmPassword("");
+          setTimeout(() => {
+            dispatch(doLogoutAction());
+            navigate("/");
+          }, 3000);
+        } else {
+          navigate("/forgot");
+        }
+      })
+      .catch((err) => {
+        toast.error("Something went wrong, please try again.");
+        navigate("/forgot");
+      });
   };
 
   return (
@@ -117,24 +79,6 @@ const ChangePasswordPage = () => {
       className="d-flex flex-column align-items-center justify-content-center"
       style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}
     >
-      {showModal ? (
-        <Alert
-          className="d-flex flex-column align-items-center text-center"
-          variant={`${
-            status === "fail" || status === "error" ? "danger" : "success"
-          }`}
-          onClick={() => setShowModal(false)}
-          dismissible
-        >
-          <Alert.Heading>
-            {" "}
-            {`${status === "fail" || status === "error" ? "Error" : "Success"}`}
-          </Alert.Heading>
-          <p>{message}</p>
-        </Alert>
-      ) : (
-        <div></div>
-      )}
       <div className="text-center mb-4">
         <img
           src="https://id.foody.vn/Content/images/foody-corp.png"

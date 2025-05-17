@@ -1,6 +1,6 @@
 import { Col, Divider, Form, Radio, Row, message, notification } from "antd";
 import { DeleteTwoTone, LoadingOutlined } from "@ant-design/icons";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppSelector, useAppDispatch } from "../../redux/hooks";
 import { useEffect, useState } from "react";
 import {
   doDeleteItemCartAction,
@@ -12,11 +12,11 @@ import { callPlaceOrder } from "../../services/api";
 const { TextArea } = Input;
 
 const Payment = (props) => {
-  const carts = useSelector((state) => state.order.carts);
+  const carts = useAppSelector((state) => state.order.carts);
   const [totalPrice, setTotalPrice] = useState(0);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [isSubmit, setIsSubmit] = useState(false);
-  const user = useSelector((state) => state.account.user);
+  const user = useAppSelector((state) => state.account.user);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -134,7 +134,7 @@ const Payment = (props) => {
               labelCol={{ span: 24 }}
               label="Tên người nhận"
               name="name"
-              initialValue={user?.fullName}
+              initialValue={user?.fullname}
               rules={[
                 {
                   required: true,

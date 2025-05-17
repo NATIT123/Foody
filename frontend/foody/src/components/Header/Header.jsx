@@ -227,8 +227,6 @@ function Header(props) {
       ? currentCuisines.filter((id) => id !== cuisinesId)
       : [...currentCuisines, cuisinesId];
 
-    console.log(updatedCuisines);
-
     dispatch(setSelectedCuisines(updatedCuisines));
   };
 

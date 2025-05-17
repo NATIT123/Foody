@@ -1,10 +1,24 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaBell } from "react-icons/fa";
-import { useData } from "../../context/DataContext";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import {
+  fetchNotifications,
+  markAllNotificationsAsRead,
+} from "../../redux/notification/notificationSlice";
+import { doLogoutAction } from "../../redux/account/accountSlice";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 const Navbar = ({ searchQuery, setSearchQuery }) => {
-  const { state, markAllNotificationsRead, unreadExists, logout } = useData();
+  const unreadExists = useAppSelector(
+    (state) => state.notification.unreadExists
+  );
+  const user = useAppSelector((state) => state.account.user);
   const [showNotifications, setShowNotifications] = useState(false);
-  const { notifications } = state;
+  const notifications = useAppSelector(
+    (state) => state.notification.notifications
+  );
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const timeAgo = (timestamp) => {
     const givenTime = new Date(timestamp);
     const currentTime = new Date();
@@ -18,18 +32,14 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
 
     return `${Math.floor(timeDifference / 86400)} ngày trước`;
   };
+  useEffect(() => {
+    if (user && user._id) {
+      dispatch(fetchNotifications(user._id));
+    }
+  }, [user, dispatch]);
   const handleToggleNotifications = () => {
-    if (!state.loading && !state.user) {
-      console.log("Không có user, fetch không chạy.");
-      return;
-    }
-
-    if (!state.user || !state.user._id) {
-      console.log("User ID không hợp lệ.");
-      return;
-    }
     if (showNotifications && unreadExists) {
-      markAllNotificationsRead();
+      dispatch(markAllNotificationsAsRead());
     }
 
     // Đảo trạng thái show/hide thông báo
@@ -209,7 +219,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
             )}
           </div>
           {/* User */}
-          {state.user && (
+          {user && (
             <div className="dropdown">
               <button
                 className="btn btn-outline-secondary rounded-circle"
@@ -220,9 +230,9 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
               >
                 <img
                   src={
-                    state.user.photo === "default.jpg"
+                    user.photo === "default.jpg"
                       ? "/images/default.jpg"
-                      : state.user.photo
+                      : user.photo
                   }
                   alt="User Avatar"
                   className="rounded-circle"
@@ -257,7 +267,9 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                   <button
                     className="btn btn-link text-decoration-none text-dark p-0"
                     onClick={() => {
-                      logout();
+                      dispatch(doLogoutAction());
+                      toast.success("Logout successfully.");
+                      navigate("/");
                     }}
                   >
                     Đăng xuất

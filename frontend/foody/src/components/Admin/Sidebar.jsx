@@ -1,7 +1,6 @@
-import { useData } from "../../context/DataContext";
-
+import { useAppSelector } from "../../redux/hooks";
 const Sidebar = ({ setActiveTab }) => {
-  const { state } = useData();
+  const user = useAppSelector((state) => state.account.user);
   return (
     <>
       {/* Sidebar cố định trên màn hình lớn */}
@@ -11,7 +10,7 @@ const Sidebar = ({ setActiveTab }) => {
       >
         {/* Navigation Links */}
         <ul className="nav flex-column mb-auto">
-          {state.user?.role === "admin" && (
+          {user?.role === "admin" && (
             <li className="nav-item">
               <button
                 onClick={() => setActiveTab("dashboard")}
@@ -22,7 +21,7 @@ const Sidebar = ({ setActiveTab }) => {
               </button>
             </li>
           )}
-          {state.user?.role === "admin" && (
+          {user?.role === "admin" && (
             <li className="nav-item">
               <button
                 onClick={() => setActiveTab("Quản lí người dùng")}
@@ -43,7 +42,7 @@ const Sidebar = ({ setActiveTab }) => {
               <span>Quản lí nhà hàng</span>
             </button>
           </li>
-          {state.user?.role === "admin" && (
+          {user?.role === "admin" && (
             <li className="nav-item">
               <button
                 onClick={() => setActiveTab("Xét duyệt nhà hàng")}

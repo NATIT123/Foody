@@ -1,12 +1,7 @@
 import axios from "../utils/axios-customize";
 
-export const callRegister = (fullName, email, password, phone) => {
-  return axios.post("/api/v1/user/register", {
-    fullName,
-    email,
-    password,
-    phone,
-  });
+export const callRegister = (payload) => {
+  return axios.post("user/register", payload);
 };
 
 export const callLogin = (email, password) => {
@@ -32,14 +27,6 @@ export const callCreateAUser = (fullName, password, email, phone) => {
 
 export const callBulkCreateUser = (data) => {
   return axios.post("/api/v1/user/bulk-create", data);
-};
-
-export const callUpdateUser = (_id, fullName, phone) => {
-  return axios.put("/api/v1/user", { _id, fullName, phone });
-};
-
-export const callDeleteUser = (id) => {
-  return axios.delete(`/api/v1/user/${id}`);
 };
 
 ///////////////////////
@@ -257,4 +244,159 @@ export const callReplyComment = (commentId, payload) => {
 
 export const callAddAlbum = (payload) => {
   return axios.post("/album/addAlbum", payload);
+};
+
+export const callAddFavoriteRestaurant = (payload) => {
+  return axios.post("/favorite/addFavoriteRestaurant", payload);
+};
+export const callSavedRestaurant = (userId) => {
+  return axios.get(`/favorite/getSavedRestaurantByUserId/${userId}`);
+};
+
+export const callFetchRestaunrantsPending = (currentPage) => {
+  return axios.get(`/restaurant/getRestaunrantsPending?page=${currentPage}`);
+};
+
+export const callFindRestaurantsPendingByFields = (
+  currentPage,
+  searchQuery
+) => {
+  return axios.get(
+    `/restaurant/findRestaurantsPendingByFields?page=${currentPage}&searchQuery=${searchQuery}`
+  );
+};
+
+export const callUpdateStatus = (restaurantId, status) => {
+  return axios.patch(`/restaurant/updateStatus/${restaurantId}`, status);
+};
+
+export const callAddFood = (payload) => {
+  return axios.post(`/food/addFood`, payload);
+};
+
+export const callUpdateFood = (foodId, payload) => {
+  return axios.patch(`/food/${foodId}`, payload);
+};
+
+export const callDeleteFood = (foodId) => {
+  return axios.delete(`/food/${foodId}`);
+};
+
+export const callFetchFoodsByRestaurant = (id) => {
+  return axios.get(`/food/${id}`);
+};
+
+export const callFetchSubCategories = () => {
+  return axios.get("/subCategory/getSubCategoryByCategorySpecific");
+};
+
+export const callFetchOwners = () => {
+  return axios.get("/user/findUsersByRole");
+};
+
+export const callCreateRestaurant = (payload) => {
+  return axios.post("/restaurant", payload);
+};
+
+export const callUpdateRestaurant = (restaurantId, payload) => {
+  return axios.post(`/restaurant/${restaurantId}`, payload);
+};
+
+export const callDeleteRestaurant = (restaurantId) => {
+  return axios.delete(`/restaurant/${restaurantId}`);
+};
+
+export const callFetchOwnerRestaurants = (userId, currentPage) => {
+  return axios.get(
+    `/restaurant/getOwnerRestaurants/${userId}?page=${currentPage}`
+  );
+};
+
+export const callFetchRestaurantsByFields = (currentPage, searchQuery) => {
+  return axios.get(
+    `/restaurant/findRestaurantsByFields?page=${currentPage}&searchQuery=${searchQuery}`
+  );
+};
+
+export const callFetchDistrictsByCity = (cityId) => {
+  return axios.get(`/district/getDistrictsByCity/${cityId}`);
+};
+
+export const callFetchRestaurantsOwnerByFields = (
+  userId,
+  currentPage,
+  searchQuery
+) => {
+  return axios.get(
+    `/restaurant/findRestaurantsOwnerByFields/${userId}?page=${currentPage}&searchQuery=${searchQuery}`
+  );
+};
+
+export const callCreateUser = (payload) => {
+  return axios.post("/user", payload);
+};
+
+export const callUpdateUser = (UserId, payload) => {
+  return axios.post(`/user/${UserId}`, payload);
+};
+
+export const callDeleteUser = (UserId) => {
+  return axios.delete(`/user/${UserId}`);
+};
+
+export const callFetchUserByFields = (currentPage, searchQuery) => {
+  return axios.get(
+    `/user/findUsersByFields?page=${currentPage}&searchQuery=${searchQuery}`
+  );
+};
+
+export const callFetchUserCount = () => {
+  return axios.get("/user/count");
+};
+
+export const callFetchAlbumCount = () => {
+  return axios.get("/album/count");
+};
+
+export const callFetchRestaurantCount = () => {
+  return axios.get("/restaurant/count");
+};
+export const callFetchCommentCount = () => {
+  return axios.get("/comment/count");
+};
+
+export const callCheckPasswordToken = (resetToken) => {
+  return axios.post(`/user/checkPassword/${resetToken}`);
+};
+
+export const callResetPassword = (resetToken, data) => {
+  return axios.patch(`/user/resetPassword/${resetToken}`, data);
+};
+
+export const callGetRecommendedRestaurants = (params) => {
+  return axios.get("http://127.0.0.1:8005/recommendations", { params });
+};
+
+export const callFetchUserDetails = (userId) => {
+  return axios.get(
+    `${process.env.REACT_APP_BASE_URL}/user/getUserDetails/${userId}`,
+    {}
+  );
+};
+
+export const callFetchAllUserDetails = () => {
+  return axios.get(`user/getAllDetails`);
+};
+
+export const callFetchRestaurantById = (id) =>
+  axios.get(`/restaurant/getRestaurant/${id}`);
+
+export const callFetchCommentsByRestaurant = (id) =>
+  axios.get(`/comment/getCommentsByRestaurant/${id}`);
+
+export const callFetchAlbumsByRestaurant = (id) =>
+  axios.get(`/album/getAlbumsByRestaurant/${id}`);
+
+export const callFoodsByRestaurant = (id) => {
+  return axios.get(`/food/getFoodsByRestaurant/${id}`);
 };

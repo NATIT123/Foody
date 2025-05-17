@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useData } from "../../context/DataContext";
+import { useAppSelector } from "../../redux/hooks";
 const ItemsEat = ({
   items,
   itemsPerPage,
@@ -10,10 +10,10 @@ const ItemsEat = ({
   categoriesEat,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { state } = useData();
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = items.slice(startIndex, startIndex + itemsPerPage);
-
+  const user = useAppSelector((state) => state.account.user);
+  const isLoading = useAppSelector((state) => state.account.loading);
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
@@ -25,13 +25,13 @@ const ItemsEat = ({
   const [showLoginModal, setShowLoginModal] = useState(false);
   useEffect(() => {
     const handleShowModalLogin = () => {
-      if (!state.loading && !state.user) {
+      if (!isLoading && !user) {
         setShowLoginModal(true);
         return;
       }
     };
     handleShowModalLogin();
-  }, [state, setShowLoginModal]);
+  }, [user, isLoading, setShowLoginModal]);
   const handleLogin = () => {
     setShowLoginModal(false);
     navigate("/login");

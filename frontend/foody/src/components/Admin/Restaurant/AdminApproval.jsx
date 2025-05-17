@@ -1,13 +1,20 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { debounce } from "lodash";
-import { useData } from "../../../context/DataContext";
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
+import { addNotification } from "../../../redux/notification/notificationSlice";
+import { toast } from "react-toastify";
+import {
+  callFetchRestaunrantsPending,
+  callFindRestaurantsPendingByFields,
+  callUpdateStatus,
+} from "../../../services/api";
 const AdminRestaurantApproval = ({ searchQuery }) => {
   const [pendingRestaurants, setPendingRestaurants] = useState([]);
-  const { state, addNotification } = useData();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-
+  const dispatch = useAppDispatch();
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+  const user = useAppSelector((state) => state.account.user);
 
   useEffect(() => {
     const handler = debounce(() => {
@@ -18,79 +25,74 @@ const AdminRestaurantApproval = ({ searchQuery }) => {
     return () => handler.cancel();
   }, [searchQuery]);
 
-  useEffect(() => {
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaunrantsPending?page=${currentPage}`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${state.accessToken}` },
+  const getRestaunrantsPending = async () => {
+    try {
+      const res = await callFetchRestaunrantsPending(currentPage);
+      if (res.data.status === "success") {
+        setPendingRestaurants(res.data.data.data);
       }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "success") {
+    } catch (error) {
+      toast.error("Error fetching pending restaurants:", error);
+    }
+  };
+
+  const findRestaurantsPendingByFields = async () => {
+    if (debouncedSearchQuery) {
+      try {
+        const res = await callFindRestaurantsPendingByFields(
+          currentPage,
+          debouncedSearchQuery
+        );
+
+        const data = res.data;
+        if (
+          data.status !== "fail" &&
+          data.status !== "error" &&
+          data.status !== 400 &&
+          data.data?.data
+        ) {
+          setTotalPages(data.totalPages);
           setPendingRestaurants(data.data.data);
         }
-      })
-      .catch((error) =>
-        console.error("Error fetching pending restaurants:", error)
-      );
+      } catch (error) {
+        toast.error("Error fetching restaurants:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    getRestaunrantsPending();
   }, []);
 
   useEffect(() => {
-    if (debouncedSearchQuery) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/restaurant/findRestaurantsPendingByFields?page=${currentPage}&searchQuery=${debouncedSearchQuery}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${state.accessToken}` },
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.data?.data) {
-            if (
-              data.status !== "fail" &&
-              data.status !== "error" &&
-              data.status !== 400
-            ) {
-              setTotalPages(data.totalPages);
-              setPendingRestaurants(data.data.data);
-            }
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching users:", error);
-        });
-    }
+    findRestaurantsPendingByFields();
   }, [debouncedSearchQuery, currentPage]);
 
-  const handleApproval = (restaurantId, status) => {
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/updateStatus/${restaurantId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-        body: JSON.stringify({ status }),
+  const handleApproval = async (restaurantId, status) => {
+    try {
+      const res = await callUpdateStatus(restaurantId, { status });
+      const data = res.data;
+
+      if (data.status === "success") {
+        dispatch(
+          addNotification({
+            message: `You have ${
+              status === "approved" ? "accept" : "deny"
+            } successfully`,
+            userId: user._id,
+          })
+        );
+        toast.success(
+          `You have ${status === "approved" ? "accept" : "deny"} successfully`
+        );
+
+        setPendingRestaurants((prev) =>
+          prev.filter((r) => r._id !== restaurantId)
+        );
       }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "success") {
-          addNotification(
-            `Bạn đã ${
-              status === "approved" ? "chấp nhận" : "từ chối"
-            }  thành công`
-          );
-          setPendingRestaurants(
-            pendingRestaurants.filter((r) => r._id !== restaurantId)
-          );
-        }
-      })
-      .catch((error) => console.error("Error updating status:", error));
+    } catch (error) {
+      toast.error("Error updating status");
+    }
   };
 
   const changePage = (page) => {

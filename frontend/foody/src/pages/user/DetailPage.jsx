@@ -3,22 +3,24 @@ import ProductSuggestion from "../../components/Item/ProductSuggestion";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { IoMapSharp } from "react-icons/io5";
-
-import axios from "axios";
-import { useData } from "../../context/DataContext";
+import { useAppSelector } from "../../redux/hooks";
+import {
+  callFetchAlbumsByRestaurant,
+  callFetchCommentsByRestaurant,
+  callFetchRestaurantById,
+  callFoodsByRestaurant,
+  callGetRecommendedRestaurants,
+} from "../../services/api";
+import { toast } from "react-toastify";
 const DetailPage = () => {
   const { id } = useParams();
-  const { state } = useData();
   const [totalRate, setTotalRate] = useState(0);
-  const [selectedCuisines, setSelectedCuisines] = useState([]);
-  const [selectedDistricts, setSelectedDistricts] = useState([]);
-  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const [currentRestaurant, setCurrentRestaurant] = useState([]); // Dữ liệu sau khi lọc
   const [currentFood, setCurrentFood] = useState([]); // Dữ liệu sau khi lọc
   const [currentComment, setCurrentComment] = useState([]); // Dữ liệu sau khi lọc
   const [currentAlbum, setCurrentAlbum] = useState([]); // Dữ liệu sau khi lọc
   const [suggestRestaurants, setSuggestRestaurants] = useState([]); // Dữ liệu sau khi lọc
-
+  const user = useAppSelector((state) => state.account.user);
   function checkTime(openTime, closeTime) {
     const now = new Date();
     let currentHour = now.getHours();
@@ -70,137 +72,128 @@ const DetailPage = () => {
       }
     }
   }
-
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurant/${id}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data?.data) {
-          setCurrentRestaurant(data.data.data); // Lưu danh sách restaurant vào state
-          const restaurant = data.data.data;
-          let total =
-            restaurant.qualityRate +
-            restaurant.serviceRate +
-            restaurant.locationRate +
-            restaurant.priceRate +
-            restaurant.spaceRate;
-          total /= 5;
+    const fetchRestaurant = async () => {
+      try {
+        const res = await callFetchRestaurantById(id);
+        const data = res.data;
+
+        if (data.data) {
+          setCurrentRestaurant(data.data);
+
+          const r = data.data.data;
+          const total =
+            (r.qualityRate +
+              r.serviceRate +
+              r.locationRate +
+              r.priceRate +
+              r.spaceRate) /
+            5;
+
           setTotalRate(Math.floor(total));
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching provinces:", error);
-      });
+      } catch (err) {
+        toast.error("Error fetching restaurant:", err);
+      }
+    };
+
+    fetchRestaurant();
   }, [id]);
 
+  // Set title
   useEffect(() => {
     if (currentRestaurant.name) {
       document.title = `${currentRestaurant.name} ${currentRestaurant.address}`;
     }
   }, [currentRestaurant]);
 
-  // Fetch API lấy detail restaurant
+  // Fetch food
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/food/getFoodsByRestaurant/${id}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data?.data) {
-          if (data.status === "success") {
-            setCurrentFood(data.data.data); // Lưu danh sách restaurant vào state
-          }
-        }
-      })
+    const fetchFoods = async () => {
+      try {
+        const res = await callFoodsByRestaurant(id);
+        const data = res.data;
 
-      .catch((error) => {
-        console.error("Error fetching provinces:", error);
-      });
+        if (data.status === "success" && data.data) {
+          setCurrentFood(data.data);
+        }
+      } catch (err) {
+        toast.error("Error fetching food:", err);
+      }
+    };
+
+    fetchFoods();
   }, [id]);
 
-  // Fetch API lấy detail restaurant
+  // Fetch comments
   useEffect(() => {
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/comment/getCommentsByRestaurant/${id}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data?.data) {
-          if (data.status === "success") {
-            setCurrentComment(data.data.data); // Lưu danh sách restaurant vào state
-          }
+    const fetchComments = async () => {
+      try {
+        const res = await callFetchCommentsByRestaurant(id);
+        const data = res.data;
+
+        console.log("comment", res);
+
+        if (data.status === "success" && data.data) {
+          setCurrentComment(data.data);
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching restaurants:", error);
-      });
+      } catch (err) {
+        toast.error("Error fetching comments:", err);
+      }
+    };
+
+    fetchComments();
   }, [id]);
 
-  // Fetch API lấy detail restaurant
+  // Fetch albums
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/album/getAlbumsByRestaurant/${id}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.data?.data) {
-          if (data.status === "success") {
-            setCurrentAlbum(data.data.data); // Lưu danh sách restaurant vào state
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching provinces:", error);
-      });
-  }, [id]);
+    const fetchAlbums = async () => {
+      try {
+        const res = await callFetchAlbumsByRestaurant(id);
 
+        const data = res.data;
+
+        if (data.status === "success" && data.data) {
+          setCurrentAlbum(data.data);
+        }
+      } catch (err) {
+        toast.error("Error fetching albums:", err);
+      }
+    };
+
+    fetchAlbums();
+  }, [id]);
   // Fetch API lấy detail restaurant
   useEffect(() => {
-    if (!state.user) return;
+    if (!user || !id) return;
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
 
         try {
-          const response = await axios.get(
-            "http://127.0.0.1:8005/recommendations",
-            {
-              params: {
-                user_id: state.user._id,
-                current_restaurant_id: id,
-                top_n: 5,
-                user_lat: latitude,
-                user_lon: longitude,
-              },
-            }
-          );
+          const res = await callGetRecommendedRestaurants({
+            user_id: user._id,
+            current_restaurant_id: id,
+            top_n: 5,
+            user_lat: latitude,
+            user_lon: longitude,
+          });
 
-          console.log("API gợi ý nhà hàng:", response);
-
-          if (
-            response.data &&
-            response.data.recommended_restaurants.length > 0
-          ) {
-            setSuggestRestaurants(response.data.recommended_restaurants);
+          if (res.data && res.data.recommended_restaurants.length > 0) {
+            setSuggestRestaurants(res.data.recommended_restaurants);
           }
-        } catch (error) {
-          console.error("Lỗi khi gọi API gợi ý nhà hàng:", error);
+        } catch (err) {
+          toast.error("Lỗi khi gọi API gợi ý nhà hàng:", err);
         }
       },
-      (error) => {
-        console.error("Lỗi khi lấy vị trí:", error);
+      (err) => {
+        toast.error("Lỗi khi lấy vị trí:", err);
       }
     );
-  }, [id, state.user]);
-
+  }, [id, user]);
   return (
     <div>
-      {/* <Header
-        selectedSubCategories={selectedSubCategories}
-        setSelectedSubCategories={setSelectedSubCategories}
-        selectedCuisines={selectedCuisines}
-        setSelectedCuisines={setSelectedCuisines}
-        selectedDistricts={selectedDistricts}
-        setSelectedDistricts={setSelectedDistricts}
-      /> */}
-
       <div className="container mt-5">
         <div className="card shadow">
           <div className="row g-0">

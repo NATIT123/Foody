@@ -1,16 +1,15 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal, Button, Card, Form } from "react-bootstrap";
-import { useData } from "../../../context/DataContext";
 import { toast } from "react-toastify";
-
-const FoodModal = ({
-  isOpen,
-  onClose,
-  foods,
-  onUpdateFood,
-  restaurant,
-  onDeleteFood,
-}) => {
+import { useAppSelector, useAppDispatch } from "../../../redux/hooks";
+import {
+  createFood,
+  updateFood,
+  deleteFood,
+  fetchFoods,
+} from "../../../redux/food/foodSlice";
+import Spinner from "react-bootstrap/Spinner";
+const FoodModal = ({ isOpen, onClose, restaurant }) => {
   const [image, setImage] = useState(null);
   const [previewImage, setPreviewImage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -21,7 +20,14 @@ const FoodModal = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false); // For Add Food modal
   const [deleteFoodId, setDeleteFoodId] = useState(null);
-  const { state } = useData();
+  const isCreating = useAppSelector((state) => state.food.isCreating);
+  const isCreateSuccess = useAppSelector((state) => state.food.isCreateSuccess);
+  const isUpdating = useAppSelector((state) => state.food.isUpdating);
+  const isUpdateSuccess = useAppSelector((state) => state.food.isUpdateSuccess);
+  const isDeleting = useAppSelector((state) => state.food.isDeleting);
+  const isDeleteSuccess = useAppSelector((state) => state.food.isDeleteSuccess);
+  const foods = useAppSelector((state) => state.food.foods);
+  const dispatch = useAppDispatch();
   const handleEditClick = (food) => {
     setShowEditModal(true);
     setId(food._id);
@@ -39,24 +45,47 @@ const FoodModal = ({
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteFood = () => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/food/deleteFood/${deleteFoodId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${state.accessToken}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "success") {
-          onDeleteFood(deleteFoodId);
-          toast.success("Food deleted successfully");
-        }
-      })
-      .catch((error) => console.error("Error deleting food:", error));
+  useEffect(() => {
+    dispatch(fetchFoods(restaurant._id));
+  }, []);
 
+  const confirmDeleteFood = () => {
+    if (deleteFoodId) {
+      try {
+        dispatch(deleteFood(deleteFoodId));
+      } catch (error) {
+        toast.error("Error deleting food:", error);
+      }
+    } else {
+      toast.error("Plase choose food to delete");
+    }
     setShowDeleteModal(false);
   };
+
+  useEffect(() => {
+    if (isUpdateSuccess) {
+      setShowEditModal(false);
+      toast.success("Update food successfully. ");
+    }
+  }, [isUpdateSuccess]);
+
+  useEffect(() => {
+    if (isCreateSuccess) {
+      setShowAddModal(false);
+      setPirceDiscount("");
+      setPriceOriginal("");
+      setImage(null);
+      setName("");
+      toast.success("Create new food successfully. ");
+    }
+  }, [isCreateSuccess]);
+
+  useEffect(() => {
+    if (isDeleteSuccess) {
+      setShowDeleteModal(false);
+      toast.success("Delete food successfully. ");
+    }
+  }, [isDeleteSuccess]);
 
   const handleAddFoodClick = () => {
     setShowAddModal(true);
@@ -87,7 +116,6 @@ const FoodModal = ({
     }
   };
 
-  // Save new food item
   const handleSave = (restaurant) => {
     if (!name || !priceOriginal) return;
 
@@ -99,43 +127,17 @@ const FoodModal = ({
     if (image) {
       formData.append("image", image);
     }
-
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/food/${
-        id ? `updateFood/${id}` : "addFood"
-      }`,
-      {
-        headers: {
-          Authorization: `Bearer ${state.accessToken}`,
-        },
-        method: id ? "PATCH" : "POST",
-        body: formData,
+    try {
+      if (id) {
+        dispatch(updateFood(id, formData));
+      } else {
+        dispatch(createFood(formData));
       }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (
-          data &&
-          data.status !== "fail" &&
-          data.status !== "error" &&
-          data.status !== 400
-        ) {
-          const updatedFood = {
-            _id: data.data.food._id,
-            restaurantId: restaurant._id,
-            name,
-            priceOriginal: `${priceOriginal}đ`,
-            priceDiscount: `${priceDiscount}đ`,
-            image: data.data.food.image,
-          };
-          onUpdateFood(updatedFood);
-          toast.success("Food saved successfully");
-        }
-      })
-      .catch((error) => console.error("Error saving food:", error));
-
-    setShowEditModal(false);
-    setShowAddModal(false);
+      setShowEditModal(false);
+      setShowAddModal(false);
+    } catch (err) {
+      toast.error("Something went wrong");
+    }
   };
 
   return (
@@ -252,9 +254,29 @@ const FoodModal = ({
                   onChange={handleChange}
                 />
               </Form.Group>
-              <Button variant="success" onClick={handleSave}>
-                Lưu
-              </Button>
+              {!isUpdating ? (
+                <>
+                  <Button
+                    variant="warning"
+                    onClick={() => setShowEditModal(false)}
+                    className="mr-2"
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={() => handleSave()}>Save</Button>
+                </>
+              ) : (
+                <Button variant="primary" disabled>
+                  <Spinner
+                    as="span"
+                    animation="grow"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  <></>Loading...
+                </Button>
+              )}
             </Form>
           </Modal.Body>
         </Modal>
@@ -316,9 +338,29 @@ const FoodModal = ({
                   onChange={handleChange}
                 />
               </Form.Group>
-              <Button variant="success" onClick={() => handleSave(restaurant)}>
-                Lưu
-              </Button>
+              {!isCreating ? (
+                <>
+                  <Button
+                    variant="warning"
+                    onClick={() => setShowAddModal(false)}
+                    className="mr-2"
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={() => handleSave(restaurant)}>Save</Button>
+                </>
+              ) : (
+                <Button variant="primary" disabled>
+                  <Spinner
+                    as="span"
+                    animation="grow"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  <></>Loading...
+                </Button>
+              )}
             </Form>
           </Modal.Body>
         </Modal>
@@ -343,22 +385,30 @@ const FoodModal = ({
               <div class="modal-body">
                 <p>{`Do you want to delete  `} </p>
               </div>
-
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={confirmDeleteFood}
-                >
-                  Delete
-                </button>
+                {!isDeleting ? (
+                  <>
+                    <Button
+                      variant="warning"
+                      onClick={() => setShowDeleteModal(false)}
+                      className="mr-2"
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={() => confirmDeleteFood()}>Save</Button>
+                  </>
+                ) : (
+                  <Button variant="primary" disabled>
+                    <Spinner
+                      as="span"
+                      animation="grow"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    <></>Loading...
+                  </Button>
+                )}
               </div>
             </div>
           </div>

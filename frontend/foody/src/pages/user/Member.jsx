@@ -1,21 +1,20 @@
 import { useEffect, useState } from "react";
 import "../../css/Member.css";
 import ImagesAndVideosPage from "../../components/Gallery/VideosAndImagesPage";
-import { useData } from "../../context/DataContext";
 import Friends from "../../components/User/Friends";
 import Collection from "../../components/User/Collection";
 import { useAppSelector } from "../../redux/hooks";
+import {
+  callFetchAllUserDetails,
+  callFetchUserDetails,
+} from "../../services/api";
+import { toast } from "react-toastify";
 
 const Member = () => {
-  const { state } = useData();
-
   const [comments, setComments] = useState([]);
   const [items, setItems] = useState([]);
   const [activeSection, setActiveSection] = useState("hoatdong"); // State for tracking active section
   const user = useAppSelector((state) => state.account.user);
-  const [selectedCuisines, setSelectedCuisines] = useState([]);
-  const [selectedDistricts, setSelectedDistricts] = useState([]);
-  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const handleSectionChange = (section) => {
     setActiveSection(section);
   };
@@ -24,61 +23,48 @@ const Member = () => {
     document.title = "Member";
   }, []);
 
-  useEffect(() => {
-    fetchUserDetails();
-  }, []);
+  const fetchUserDetails = async () => {
+    try {
+      const res = await callFetchUserDetails(user._id);
+      const data = res.data;
+      console.log(data);
+      if (
+        data &&
+        data.status !== "fail" &&
+        data.status !== "error" &&
+        data.status !== 400
+      ) {
+        setComments(data.data);
+      }
+    } catch (err) {
+      console.error("Error fetching items:", err);
+    }
+  };
 
-  const fetchUserDetails = () => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/user/getUserDetails/${user._id}`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${state.accessToken}` },
-    })
-      .then((response) => response.json())
-      .then((data) => {
+  useEffect(() => {
+    const fetchAllDetails = async () => {
+      try {
+        const res = await callFetchAllUserDetails();
+        const data = res.data;
+
         if (
           data &&
           data.status !== "fail" &&
           data.status !== "error" &&
-          data.status !== "400"
+          data.status !== 400
         ) {
-          setComments(data.data.data);
+          setItems(data.data.data);
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching items:", error);
-      });
-  };
+      } catch (err) {
+        toast.error("Error fetching comments:", err);
+      }
+    };
 
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_BASE_URL}/user/getAllDetails`, {
-      method: "GET",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          if (
-            data.status !== "fail" &&
-            data.status !== "error" &&
-            data.status !== 400
-          ) {
-            setItems(data.data.data);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching comments:", error);
-      });
+    fetchAllDetails();
+    fetchUserDetails();
   }, []);
   return (
     <div>
-      {/* <Header
-        selectedSubCategories={selectedSubCategories}
-        setSelectedSubCategories={setSelectedSubCategories}
-        selectedCuisines={selectedCuisines}
-        setSelectedCuisines={setSelectedCuisines}
-        selectedDistricts={selectedDistricts}
-        setSelectedDistricts={setSelectedDistricts}
-      /> */}
       <div className="container-fluid py-4">
         <div className="row">
           {/* Sidebar */}
@@ -87,9 +73,9 @@ const Member = () => {
               <div className="profile-section">
                 <img
                   src={
-                    comments.photo === "default.jpg"
+                    comments?.photo === "default.jpg"
                       ? "/images/default.jpg"
-                      : comments.photo
+                      : comments?.photo
                   }
                   alt="Profile"
                   className="profile-img"

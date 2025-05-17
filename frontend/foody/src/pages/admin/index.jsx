@@ -15,8 +15,14 @@ import { useNavigate } from "react-router-dom"; // For navigation
 import ManageUserPage from "./user";
 import ManageRestaurantPage from "./restaurant";
 import AdminRestaurantApproval from "../../components/Admin/Restaurant/AdminApproval";
-import { useData } from "../../context/DataContext";
+import { useAppSelector } from "../../redux/hooks";
 import Sidebar from "../../components/Admin/Sidebar";
+import {
+  callFetchAlbumCount,
+  callFetchCommentCount,
+  callFetchRestaurantCount,
+  callFetchUserCount,
+} from "../../services/api";
 // Đăng ký các thành phần của Chart.js
 ChartJS.register(
   CategoryScale,
@@ -30,77 +36,55 @@ ChartJS.register(
 );
 
 const AdminPage = () => {
-  const { state } = useData();
   const navigate = useNavigate(); // For navigation to the home page
   const [countUsers, setCountUsers] = useState(0);
   const [countRestaurants, setCountRestaurants] = useState(0);
   const [countComments, setCountComments] = useState(0);
   const [countAlbums, setCountAlbums] = useState(0);
-
+  const user = useAppSelector((state) => state.account.user);
   useEffect(() => {
     document.title = `Dashboard`;
   }, []);
 
   useEffect(() => {
-    if (state.loading) return; // Chờ loading hoàn tất
-
-    if (
-      !state.user ||
-      (state.user?.role !== "admin" && state.user?.role !== "owner")
-    ) {
-      const timeout = setTimeout(() => {
-        navigate("/");
-      }, 1000);
-
-      return () => clearTimeout(timeout); // Xóa timeout nếu component unmount hoặc state thay đổi
-    } else {
-      const fetchData = async () => {
-        try {
-          const [usersRes, albumsRes, restaurantsRes, commentsRes] =
-            await Promise.all([
-              fetch(`${process.env.REACT_APP_BASE_URL}/user/count`, {
-                headers: { Authorization: `Bearer ${state.accessToken}` },
-              }),
-              fetch(`${process.env.REACT_APP_BASE_URL}/album/count`, {
-                headers: { Authorization: `Bearer ${state.accessToken}` },
-              }),
-              fetch(`${process.env.REACT_APP_BASE_URL}/restaurant/count`, {
-                headers: { Authorization: `Bearer ${state.accessToken}` },
-              }),
-              fetch(`${process.env.REACT_APP_BASE_URL}/comment/count`, {
-                headers: { Authorization: `Bearer ${state.accessToken}` },
-              }),
-            ]);
-
-          const [users, albums, restaurants, comments] = await Promise.all([
-            usersRes.json(),
-            albumsRes.json(),
-            restaurantsRes.json(),
-            commentsRes.json(),
+    const fetchData = async () => {
+      try {
+        const [usersRes, albumsRes, restaurantsRes, commentsRes] =
+          await Promise.all([
+            callFetchUserCount(),
+            callFetchRestaurantCount(),
+            callFetchAlbumCount(),
+            callFetchCommentCount(),
           ]);
 
-          if (users && albums && restaurants && comments) {
-            setCountUsers(users.results);
-            setCountAlbums(albums.results);
-            setCountRestaurants(restaurants.results);
-            setCountComments(comments.results);
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      };
+        const [users, albums, restaurants, comments] = await Promise.all([
+          usersRes.json(),
+          albumsRes.json(),
+          restaurantsRes.json(),
+          commentsRes.json(),
+        ]);
 
-      fetchData();
-    }
-  }, [state.loading, state.user, navigate]);
+        if (users && albums && restaurants && comments) {
+          setCountUsers(users.results);
+          setCountAlbums(albums.results);
+          setCountRestaurants(restaurants.results);
+          setCountComments(comments.results);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [user, navigate]);
 
   const [activeTab, setActiveTab] = useState("dashboard");
 
   useEffect(() => {
-    if (state.user?.role === "owner") {
+    if (user?.role === "owner") {
       setActiveTab("Quản lí nhà hàng");
     }
-  }, [state.user]);
+  }, [user]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -147,7 +131,7 @@ const AdminPage = () => {
 
         {/* Content */}
         <div className="col-md-9 col-sm-12 p-4">
-          {state.user?.role === "admin" && activeTab === "dashboard" && (
+          {user?.role === "admin" && activeTab === "dashboard" && (
             <div>
               <h2 className="mb-4">Dashboard</h2>
 
@@ -196,12 +180,11 @@ const AdminPage = () => {
               <ManageRestaurantPage searchQuery={searchQuery} />
             </div>
           )}
-          {state.user?.role === "admin" &&
-            activeTab === "Xét duyệt nhà hàng" && (
-              <div>
-                <AdminRestaurantApproval searchQuery={searchQuery} />
-              </div>
-            )}
+          {user?.role === "admin" && activeTab === "Xét duyệt nhà hàng" && (
+            <div>
+              <AdminRestaurantApproval searchQuery={searchQuery} />
+            </div>
+          )}
         </div>
       </div>
     </div>

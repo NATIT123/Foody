@@ -1,95 +1,102 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaComment, FaCamera, FaBookmark } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useData } from "../../context/DataContext";
 import GalleryModal from "../Gallery/GalleryModal";
 import LoginModal from "../Login/LoginModal";
+import { useAppSelector, useAppDispatch } from "../../redux/hooks";
+import { toast } from "react-toastify";
+import {
+  callAddFavoriteRestaurant,
+  callSavedRestaurant,
+} from "../../services/api";
+import { addNotification } from "../../redux/notification/notificationSlice";
 const ItemList = ({ currentItems, handleShowModal }) => {
   const navigate = useNavigate(); // Hook điều hướng
-  const { state, addNotification } = useData();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedItem, setItem] = useState([]);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [savedRestaurant, setSavedRestaunrant] = useState([]);
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.account.user);
+  const isLoading = useAppSelector((state) => state.account.loading);
+  const getSavedRestaurant = async () => {
+    if (user) {
+      try {
+        const res = await callSavedRestaurant(user._id);
+        const data = res.data;
 
-  useEffect(() => {
-    if (!state.loading && !state.user) return;
-    if (state.user) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/favorite/getSavedRestaurantByUserId/${state.user?._id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${state.accessToken}`,
-          },
+        if (
+          res.status !== "error" &&
+          res.status !== "fail" &&
+          res.status !== 400
+        ) {
+          setSavedRestaunrant(data.data);
         }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            if (
-              data.status !== "error" &&
-              data.status !== "fail" &&
-              data.status !== 400
-            ) {
-              setSavedRestaunrant(data.data.data);
-            }
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching restaurants:", error);
-        });
+      } catch (error) {
+        toast.error("Error fetching saved restaurants:", error);
+      }
     }
-  }, [state]);
+  };
+  useEffect(() => {
+    if (!isLoading && !user) return;
+    getSavedRestaurant();
+  }, [isLoading, user]);
   const handleLogin = () => {
     setShowLoginModal(false);
     navigate("/login");
   };
-  const handleOpenSaveModal = (id, name) => {
-    if (!state.loading && !state.user) {
+  const handleOpenSaveModal = async (id, name) => {
+    if (!isLoading && !user) {
       setShowLoginModal(true);
       return;
     }
-    if (state.user) {
-      fetch(
-        `${process.env.REACT_APP_BASE_URL}/favorite/addFavoriteRestaurant`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${state.accessToken}`,
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: state.user._id,
-            restaurantId: id,
-          }),
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (
-            data.status !== "error" &&
-            data.status !== "fail" &&
-            data.status !== 400
-          ) {
-            if (data.data.active) {
-              setSavedRestaunrant([data.data.data, ...savedRestaurant]);
-              addNotification(`Đã lưu nhà hàng ${name} thành công`);
-            } else {
-              setSavedRestaunrant(
-                savedRestaurant.filter((id) => id !== data.data.data)
-              );
-              addNotification(`Đã bỏ lưu nhà hàng ${name} thành công`);
-            }
-            console.log("Success");
+
+    if (user) {
+      const payload = {
+        userId: user._id,
+        restaurantId: id,
+      };
+
+      try {
+        const res = await callAddFavoriteRestaurant(payload);
+        const data = res.data;
+
+        if (
+          data.status !== "error" &&
+          data.status !== "fail" &&
+          data.status !== 400
+        ) {
+          if (data.data.active) {
+            setSavedRestaunrant([data.data.data, ...savedRestaurant]);
+            dispatch(
+              addNotification({
+                message: `Saved restaurant ${name} successfully.`,
+                userId: user._id,
+              })
+            );
+            toast.success(`Saved restaurant ${name} successfully.`);
+          } else {
+            setSavedRestaunrant(
+              savedRestaurant.filter((savedId) => savedId !== data.data.data)
+            );
+            toast.success(`Unsaved restaurant ${name} successfully.`);
+            dispatch(
+              addNotification({
+                message: `Restaurant ${name} successfully unsaved`,
+                userId: user._id,
+              })
+            );
           }
-        })
-        .catch((error) => {
-          console.error("Error fetching restaurants:", error);
-        });
+        } else {
+          toast.error("Failed to save favorite restaurant:", data.message);
+        }
+      } catch (error) {
+        console.error("Error saving favorite restaurant:", error);
+      }
     }
   };
+
   return (
     <div className="row">
       {currentItems && currentItems.length > 0 ? (
