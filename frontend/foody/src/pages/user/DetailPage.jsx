@@ -81,7 +81,7 @@ const DetailPage = () => {
         if (data.data) {
           setCurrentRestaurant(data.data);
 
-          const r = data.data.data;
+          const r = data.data;
           const total =
             (r.qualityRate +
               r.serviceRate +
@@ -114,10 +114,11 @@ const DetailPage = () => {
         const res = await callFoodsByRestaurant(id);
         const data = res.data;
 
-        if (data.status === "success" && data.data) {
+        if (res.status === "success" && data.data) {
           setCurrentFood(data.data);
         }
       } catch (err) {
+        console.log(err);
         toast.error("Error fetching food:", err);
       }
     };
@@ -132,9 +133,7 @@ const DetailPage = () => {
         const res = await callFetchCommentsByRestaurant(id);
         const data = res.data;
 
-        console.log("comment", res);
-
-        if (data.status === "success" && data.data) {
+        if (res.status === "success" && data.data) {
           setCurrentComment(data.data);
         }
       } catch (err) {
@@ -153,7 +152,7 @@ const DetailPage = () => {
 
         const data = res.data;
 
-        if (data.status === "success" && data.data) {
+        if (res.status === "success" && data.data) {
           setCurrentAlbum(data.data);
         }
       } catch (err) {

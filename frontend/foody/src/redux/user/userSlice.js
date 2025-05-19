@@ -8,11 +8,13 @@ import {
 } from "../../services/api";
 
 // Thunks
-export const fetchListUsers = createAsyncThunk("users/fetchList", async () => {
-  const response = await callFetchListUser();
-  const data = await response.json();
-  return data;
-});
+export const fetchListUsers = createAsyncThunk(
+  "users/fetchList",
+  async (currentPage) => {
+    const response = await callFetchListUser(currentPage);
+    return response;
+  }
+);
 
 export const createNewUser = createAsyncThunk(
   "users/createNewUser",
@@ -28,13 +30,9 @@ export const createNewUser = createAsyncThunk(
 
 export const fetchUserByFields = createAsyncThunk(
   "users/fetchUserByFields",
-  async (currentPage, searchQuery, thunkAPI) => {
+  async (currentPage, searchQuery) => {
     const response = await callFetchUserByFields(currentPage, searchQuery);
-    const data = response.data;
-    if (data && data.id) {
-      thunkAPI.dispatch(fetchListUsers());
-    }
-    return data;
+    return response;
   }
 );
 
@@ -92,7 +90,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchListUsers.fulfilled, (state, action) => {
         state.isPending = false;
-        state.listUsers = action.payload;
+        state.listUsers = action.payload.data.data;
       })
       .addCase(fetchListUsers.rejected, (state) => {
         state.isPending = false;
@@ -105,7 +103,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserByFields.fulfilled, (state, action) => {
         state.isPending = false;
-        state.listUsers = action.payload;
+        state.listUsers = action.payload.data.data;
       })
       .addCase(fetchUserByFields.rejected, (state) => {
         state.isPending = false;

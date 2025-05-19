@@ -10,7 +10,7 @@ const initialState = {
     fullname: "",
     role: "",
     photo: "",
-    id: "",
+    _id: "",
   },
   tempPhoto: "",
 };
@@ -49,11 +49,10 @@ export const accountSlide = createSlice({
         fullname: "",
         role: "",
         photo: "",
-        id: "",
+        _id: "",
       };
     },
     doUpdateUserInfoAction: (state, action) => {
-      console.log("Payload", action.payload);
       state.user.photo = action.payload.photo;
       state.user.phone = action.payload.phone;
       state.user.fullname = action.payload.name;

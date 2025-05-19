@@ -16,7 +16,7 @@ const ImageModal = ({ restaurant, item, onClose, setItem }) => {
   };
 
   const handleConfirmUpload = async () => {
-    if (!isLoading || !user || !selectedImage) return;
+    if (isLoading || !user || !selectedImage) return;
 
     const formData = new FormData();
     formData.append("image", newImage);
@@ -25,19 +25,13 @@ const ImageModal = ({ restaurant, item, onClose, setItem }) => {
 
     try {
       const res = await callAddAlbum(formData);
-      const data = res.data;
 
-      if (
-        res.status === 200 &&
-        data.status !== "fail" &&
-        data.status !== "error" &&
-        data.status !== 400
-      ) {
+      if (res.status === "success") {
         setItem([{ image: selectedImage }, ...item]);
         toast.success("Upload image successfully.");
       }
     } catch (error) {
-      console.error("Error uploading image:", error.message || error);
+      toast.error("Error uploading image:", error.message || error);
     }
 
     setSelectedImage(null);

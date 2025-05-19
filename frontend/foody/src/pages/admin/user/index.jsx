@@ -1,9 +1,9 @@
 import UserManagement from "../../../components/Admin/User/ManagementUser";
 
-const ManageUserPage = () => {
+const ManageUserPage = ({ searchQuery }) => {
   return (
     <div className="manage-user-page">
-      <UserManagement />
+      <UserManagement searchQuery={searchQuery} />
     </div>
   );
 };

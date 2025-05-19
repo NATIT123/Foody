@@ -1,9 +1,9 @@
 import RestaurantManagement from "../../../components/Admin/Restaurant/RestaurantManagements";
 
-const ManageRestaurantPage = () => {
+const ManageRestaurantPage = ({ searchQuery }) => {
   return (
     <div>
-      <RestaurantManagement />
+      <RestaurantManagement searchQuery={searchQuery} />
     </div>
   );
 };

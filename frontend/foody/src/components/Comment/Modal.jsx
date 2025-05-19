@@ -4,6 +4,7 @@ import CommentModal from "./CommentModal";
 import LoginModal from "../Login/LoginModal";
 import { useAppSelector } from "../../redux/hooks";
 import { callLikeComment, callReplyComment } from "../../services/api";
+import { toast } from "react-toastify";
 const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
   const navigate = useNavigate(); // Hook điều hướng
   const [activeTab, setActiveTab] = useState("latest"); // State for active tab
@@ -68,7 +69,6 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
   const [likes, setLikes] = useState({});
   const [likedComments, setLikedComments] = useState(new Set());
   useEffect(() => {
-    console.log(restaurant.comments);
     const initialLikes = {};
     const inititalReplies = {};
     if (restaurant?.comments) {
@@ -96,16 +96,16 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
     }
 
     try {
-      const res = await callLikeComment(commentId, user._id); // dùng axios
+      const res = await callLikeComment(commentId, user._id);
       const data = res.data;
-
-      if (res.status === 200 && data.status === "success") {
+      console.log("dara", data);
+      if (res.status === "success") {
         // Cập nhật số lượt like
         setLikes((prevLikes) => {
           const currentLikes = prevLikes[commentId] || 0;
           return {
             ...prevLikes,
-            [commentId]: data.data
+            [commentId]: data
               ? Math.max(currentLikes - 1, 0)
               : currentLikes + 1,
           };
@@ -114,7 +114,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
         // Cập nhật trạng thái liked/unliked
         setLikedComments((prevLikedComments) => {
           const newLikedComments = new Set(prevLikedComments);
-          if (data.data) {
+          if (data != null) {
             newLikedComments.delete(commentId);
           } else {
             newLikedComments.add(commentId);
@@ -132,7 +132,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
                     comment._id.toString() === commentId.toString()
                       ? {
                           ...comment,
-                          numberOfLikes: data.data
+                          numberOfLikes: data
                             ? comment?.numberOfLikes.filter(
                                 (id) => id.toString() !== user._id.toString()
                               ) || []
@@ -147,11 +147,10 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
               : current
           );
         });
-      } else {
-        console.error("Error liking comment:", data.message);
       }
     } catch (error) {
-      console.error("Error liking comment:", error.message || error);
+      console.log(error);
+      toast.error("Error liking comment:", error.message || error);
     }
   };
 
@@ -181,15 +180,15 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
       const res = await callReplyComment(commentId, payload);
       const data = res.data;
 
-      if (res.status === 200 && data.status === "success") {
+      if (res.status === "success") {
         const newReply = {
-          id: data.data._id,
+          id: data,
           user: {
             fullname: user.fullname || "Bạn",
             photo: user.photo,
           },
-          content: data.data.content,
-          createdAt: data.data.createdAt,
+          content: data.content,
+          createdAt: data.createdAt,
         };
 
         // Cập nhật replies theo commentId
@@ -223,10 +222,10 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
           [commentId]: "",
         }));
       } else {
-        console.error("Error adding reply:", data.message);
+        toast.error("Error adding reply:", data.message);
       }
     } catch (error) {
-      console.error("Error adding reply:", error.message || error);
+      toast.error("Error adding reply:", error.message || error);
     }
   };
 

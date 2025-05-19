@@ -1,10 +1,6 @@
-import { useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const ProductSuggestion = ({ suggestRestaurants }) => {
-  useEffect(() => {
-    console.log(suggestRestaurants);
-  }, [suggestRestaurants]);
   return (
     <div className="container">
       <h3 className="text-center text-primary my-4">Nhà hàng liên quan</h3>

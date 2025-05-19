@@ -16,11 +16,6 @@ export const callLogout = () => {
   return axios.post("/api/v1/auth/logout");
 };
 
-export const callFetchListUser = (query) => {
-  // current=1&pageSize=3
-  return axios.get(`/api/v1/user?${query}`);
-};
-
 export const callCreateAUser = (fullName, password, email, phone) => {
   return axios.post("/api/v1/user", { fullName, password, email, phone });
 };
@@ -167,6 +162,10 @@ export const callFetchListRestaurant = (currentPage, payload) => {
     `/restaurant/getAllRestaurants?page=${currentPage}`,
     payload
   );
+};
+
+export const callFetchListUser = (currentPage, payload) => {
+  return axios.get(`/user/getAllUsers?page=${currentPage}`, payload);
 };
 
 export const callFetchFavoriteRestaurantByUserId = (
@@ -399,4 +398,11 @@ export const callFetchAlbumsByRestaurant = (id) =>
 
 export const callFoodsByRestaurant = (id) => {
   return axios.get(`/food/getFoodsByRestaurant/${id}`);
+};
+
+export const callRestaurantsByFields = (payload, searchQuery) => {
+  return axios.post(
+    `/restaurant/getRestaurantByFields?searchQuery=${searchQuery}`,
+    payload
+  );
 };

@@ -49,19 +49,11 @@ const AdminPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [usersRes, albumsRes, restaurantsRes, commentsRes] =
-          await Promise.all([
-            callFetchUserCount(),
-            callFetchRestaurantCount(),
-            callFetchAlbumCount(),
-            callFetchCommentCount(),
-          ]);
-
         const [users, albums, restaurants, comments] = await Promise.all([
-          usersRes.json(),
-          albumsRes.json(),
-          restaurantsRes.json(),
-          commentsRes.json(),
+          callFetchUserCount(),
+          callFetchRestaurantCount(),
+          callFetchAlbumCount(),
+          callFetchCommentCount(),
         ]);
 
         if (users && albums && restaurants && comments) {
@@ -91,7 +83,7 @@ const AdminPage = () => {
   return (
     <div className="container-fluid">
       {/* Navbar */}
-      <Navbar setSearchQuery={setSearchQuery} />
+      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
       <div className="row">
         {/* Sidebar */}

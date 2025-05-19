@@ -15,7 +15,6 @@ const timeAgo = (timestamp) => {
 };
 
 const ImagesAndVideosPage = ({ albums }) => {
-  console.log(albums);
   return (
     <div className="col-md-9 ">
       {/* Content */}

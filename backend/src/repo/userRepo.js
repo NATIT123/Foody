@@ -415,11 +415,13 @@ class UserRepository {
           },
         ]);
 
+        const deeplyFlattened = userDetails.flat();
+
         res.status(200).json({
           message: "Request has been processed successfully",
           status: "success",
-          results: userDetails.length,
-          data: userDetails,
+          results: deeplyFlattened.length,
+          data: deeplyFlattened,
         });
       } catch (error) {
         console.log(error);

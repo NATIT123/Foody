@@ -24,7 +24,7 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  blacklist: ["account"],
+  blacklist: ["account", "user", "resourceFilter", "food", "restaurant"],
   whilelist: ["app", "resource"],
 };
 

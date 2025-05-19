@@ -21,7 +21,7 @@ const ItemList = ({ currentItems, handleShowModal }) => {
   const user = useAppSelector((state) => state.account.user);
   const isLoading = useAppSelector((state) => state.account.loading);
   const getSavedRestaurant = async () => {
-    if (user) {
+    if (!isLoading && user._id) {
       try {
         const res = await callSavedRestaurant(user._id);
         const data = res.data;
@@ -61,14 +61,14 @@ const ItemList = ({ currentItems, handleShowModal }) => {
       try {
         const res = await callAddFavoriteRestaurant(payload);
         const data = res.data;
-
+        console.log(data);
         if (
-          data.status !== "error" &&
-          data.status !== "fail" &&
-          data.status !== 400
+          res.status !== "error" &&
+          res.status !== "fail" &&
+          res.status !== 400
         ) {
-          if (data.data.active) {
-            setSavedRestaunrant([data.data.data, ...savedRestaurant]);
+          if (data.active) {
+            setSavedRestaunrant([data.data, ...savedRestaurant]);
             dispatch(
               addNotification({
                 message: `Saved restaurant ${name} successfully.`,
@@ -78,7 +78,7 @@ const ItemList = ({ currentItems, handleShowModal }) => {
             toast.success(`Saved restaurant ${name} successfully.`);
           } else {
             setSavedRestaunrant(
-              savedRestaurant.filter((savedId) => savedId !== data.data.data)
+              savedRestaurant.filter((savedId) => savedId !== data.data)
             );
             toast.success(`Unsaved restaurant ${name} successfully.`);
             dispatch(

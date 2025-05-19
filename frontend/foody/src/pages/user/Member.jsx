@@ -27,13 +27,7 @@ const Member = () => {
     try {
       const res = await callFetchUserDetails(user._id);
       const data = res.data;
-      console.log(data);
-      if (
-        data &&
-        data.status !== "fail" &&
-        data.status !== "error" &&
-        data.status !== 400
-      ) {
+      if (res.status === "success") {
         setComments(data.data);
       }
     } catch (err) {
@@ -47,13 +41,8 @@ const Member = () => {
         const res = await callFetchAllUserDetails();
         const data = res.data;
 
-        if (
-          data &&
-          data.status !== "fail" &&
-          data.status !== "error" &&
-          data.status !== 400
-        ) {
-          setItems(data.data.data);
+        if (res.status === "success") {
+          setItems(data.data);
         }
       } catch (err) {
         toast.error("Error fetching comments:", err);
