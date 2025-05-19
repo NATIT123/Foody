@@ -67,6 +67,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
           {/* Tìm kiếm */}
           <form className="d-flex flex-grow-1 flex-lg-grow-0">
             <input
+              value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               type="text"
               className="form-control rounded-pill"

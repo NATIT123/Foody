@@ -29,7 +29,7 @@ const CommentModal = ({
   };
   const handleSubmit = async (name) => {
     if (!title || !description || !rate) {
-      console.log("Please input all required fields");
+      toast.error("Please input all required fields");
       return;
     }
 
@@ -45,13 +45,8 @@ const CommentModal = ({
     try {
       const res = await callAddComment(user._id, restaurant._id, commentData);
       const data = res.data;
-
-      if (
-        data?.data &&
-        data.data.status !== "fail" &&
-        data.data.status !== "error" &&
-        data.data.status !== 400
-      ) {
+      console.log("Data", data);
+      if (data?.data && res.status !== "fail" && res.status !== "error") {
         const commentId = data.data.data;
 
         const newComment = {

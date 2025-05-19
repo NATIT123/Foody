@@ -22,11 +22,11 @@ export const addNotification = createAsyncThunk(
       }
 
       return {
-        _id: data.data.data._id,
+        _id: data.data,
         description: message,
         isRead: false,
         userId,
-        createdAt: data.data.createdAt,
+        createdAt: data.createdAt,
         active: false,
       };
     } catch (error) {
@@ -40,14 +40,13 @@ export const fetchNotifications = createAsyncThunk(
   async (userId, { rejectWithValue }) => {
     try {
       const res = await callFetchNotification(userId);
-
-      console.log(res);
+      const data = res.data;
 
       if (res.status === "fail" || res.status === "error") {
         return rejectWithValue(res.message || "Failed to fetch notifications");
       }
 
-      return res.data.data;
+      return data.data;
     } catch (err) {
       return rejectWithValue(err.message || "Fetch error");
     }
@@ -59,8 +58,8 @@ export const markAllNotificationsAsRead = createAsyncThunk(
   async (userId, { rejectWithValue }) => {
     try {
       const res = await callMarkAllNotificationAsRead(userId);
-      const data = await res.json();
-      if (data.status === "fail" || data.status === "error") {
+      const data = res.data;
+      if (res.status === "fail" || res.status === "error") {
         return rejectWithValue(data.message || "Failed to mark all as read");
       }
       return true;
@@ -90,6 +89,7 @@ const notificationSlice = createSlice({
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.notifications = action.payload;
         state.unreadExists = action.payload.some((n) => !n.isRead);
+
         state.loading = false;
       })
       .addCase(fetchNotifications.rejected, (state, action) => {

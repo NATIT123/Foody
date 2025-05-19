@@ -34,14 +34,12 @@ const LoginPage = () => {
 
     // Basic validation (you can replace this with an actual API call)
     if (email && password) {
-      console.log(email, password);
       // Redirect to home page
       const res = await callLogin(email, password);
       if (res?.data) {
         if (isSaved) {
           localStorage.setItem("email", email);
         }
-        console.log(res);
         localStorage.setItem("access_token", res.access_token);
         dispatch(doLoginAction(res.data));
         toast.success("Login Successfully");

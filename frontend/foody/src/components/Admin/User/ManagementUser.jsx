@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // For navigation
 import { debounce } from "lodash";
 import { toast } from "react-toastify";
 import { useAppSelector, useAppDispatch } from "../../../redux/hooks";
@@ -28,7 +27,6 @@ const UserManagement = ({ searchQuery }) => {
   const user = useAppSelector((state) => state.account.user);
   const dispatch = useAppDispatch();
   const users = useAppSelector((state) => state.user.listUsers);
-
   useEffect(() => {
     const handler = debounce(() => {
       setDebouncedSearchQuery(searchQuery);
@@ -40,25 +38,34 @@ const UserManagement = ({ searchQuery }) => {
 
   useEffect(() => {
     if (debouncedSearchQuery && user.role === "admin") {
-      try {
-        const result = dispatch(
-          fetchUserByFields(currentPage, searchQuery)
-        ).unwrap();
-        setTotalPages(result.totalPages);
-      } catch (err) {
-        toast.error("Error fetching users");
-      }
+      const fetchData = async () => {
+        try {
+          const res = await dispatch(
+            fetchUserByFields(currentPage, debouncedSearchQuery)
+          ).unwrap();
+          if (res.status === "success") {
+            setTotalPages(res.totalPages);
+          }
+        } catch (err) {
+          toast.error("Error fetching users");
+        }
+      };
+      fetchData();
     }
   }, [debouncedSearchQuery, user, dispatch, currentPage]);
 
   useEffect(() => {
-    try {
-      const res = dispatch(fetchListUsers());
-      setTotalPages(res.totalPages);
-    } catch (err) {
-      toast.error("Error fetching users");
-    }
-  }, [dispatch, currentPage]); // Loại bỏ `navigate` khỏi dependency nếu không cần thiết
+    const fetchData = async () => {
+      try {
+        const res = await dispatch(fetchListUsers(currentPage)).unwrap();
+        setTotalPages(res.totalPages);
+      } catch (err) {
+        toast.error("Error fetching users");
+      }
+    };
+
+    fetchData();
+  }, [dispatch, currentPage]);
 
   const handleAddUser = () => {
     setShowModal(true);
@@ -287,7 +294,7 @@ const UserManagement = ({ searchQuery }) => {
             </tbody>
           </table>
         </div>
-        {users.length === 0 && (
+        {users?.length === 0 && (
           <p className="text-center text-muted">No users found.</p>
         )}
       </div>

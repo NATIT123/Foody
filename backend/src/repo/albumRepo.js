@@ -107,7 +107,9 @@ class AlbumRepository {
           )
         );
       }
-      const doc = await this.albumModel.find({ restaurantId }).select("image");
+      const doc = await this.albumModel
+        .find({ restaurantId })
+        .select("image createdAt");
       // SEND RESPONSE
       const filteredDoc = doc.filter(
         (album) => !album.image.startsWith("data:image")

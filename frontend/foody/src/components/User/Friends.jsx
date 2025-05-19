@@ -1,5 +1,3 @@
-import React from "react";
-
 const Friends = ({ items }) => {
   return (
     <div className="container ">

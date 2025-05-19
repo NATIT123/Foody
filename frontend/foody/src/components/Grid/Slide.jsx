@@ -96,7 +96,7 @@ const Slide = ({
   useEffect(() => {
     const initialLikes = {};
     const inititalReplies = {};
-    if (currentComment) {
+    if (currentComment.length > 0) {
       currentComment.forEach((comment) => {
         initialLikes[comment._id] = comment.numberOfLikes.length || 0;
         inititalReplies[comment._id] = comment.replies;
@@ -123,13 +123,13 @@ const Slide = ({
     try {
       const res = await callLikeComment(commentId, user._id);
       const data = res.data;
-
-      if (res.status === 200 && data.status === "success") {
+      console.log("Resss", res);
+      if (res.status === "success") {
         setLikes((prevLikes) => {
           const currentLikes = prevLikes[commentId] || 0;
           return {
             ...prevLikes,
-            [commentId]: data.data
+            [commentId]: data
               ? Math.max(currentLikes - 1, 0)
               : currentLikes + 1,
           };
@@ -137,18 +137,16 @@ const Slide = ({
 
         setLikedComments((prevLikedComments) => {
           const newLikedComments = new Set(prevLikedComments);
-          if (data.data) {
+          if (data) {
             newLikedComments.delete(commentId);
           } else {
             newLikedComments.add(commentId);
           }
           return newLikedComments;
         });
-      } else {
-        toast.error("Error liking comment:", data.message);
       }
     } catch (error) {
-      toast.error("Error liking comment:", error);
+      toast.error("Error like comment:", error);
     }
   };
 
@@ -178,29 +176,27 @@ const Slide = ({
       try {
         const res = await callReplyComment(commentId, payload);
         const data = res.data;
-
-        if (res.status === 200 && data.status === "success") {
+        console.log("Reply", res);
+        if (res.status === "success") {
           const newReply = {
-            id: data.data._id,
+            id: user._id,
             user: {
               fullname: user?.fullname || "Bạn",
               photo: user?.photo,
             },
-            content: data.data.content,
-            createdAt: data.data.createdAt,
+            content: data.content,
+            createdAt: data.createdAt,
           };
 
           setReplies((prevReplies) => ({
             ...prevReplies,
-            [commentId]: [...(prevReplies[commentId] || []), newReply],
+            [commentId]: [newReply, ...(prevReplies[commentId] || [])],
           }));
 
           setReplyText((prevText) => ({
             ...prevText,
             [commentId]: "",
           }));
-        } else {
-          toast.error(`Error adding reply: ${data.message}`);
         }
       } catch (error) {
         toast.error("Error adding reply");
@@ -1119,7 +1115,7 @@ const Slide = ({
           />
         )}
         {activeSection === "Ảnh & Video" && (
-          <ImageGallery currentAlbums={currentAlbum} />
+          <ImageGallery albums={currentAlbum} />
         )}
         {activeSection === "Bình luận" && (
           <CommentsSection

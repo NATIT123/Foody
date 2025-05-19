@@ -30,6 +30,7 @@ import {
   fetchNotifications,
   markAllNotificationsAsRead,
 } from "../../redux/notification/notificationSlice";
+import { callRestaurantsByFields } from "../../services/api";
 function Header(props) {
   const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
   const [showFilter, setShowFilter] = useState(false); // Hiển thị dropdown bộ lọc
@@ -69,6 +70,7 @@ function Header(props) {
   const unreadExists = useAppSelector(
     (state) => state.notification.unreadExists
   );
+
   useEffect(() => {
     const body = document.querySelector("body");
     if (body) body.setAttribute("data-bs-theme", mode);
@@ -171,31 +173,24 @@ function Header(props) {
   }, []);
 
   useEffect(() => {
-    fetch(
-      `${process.env.REACT_APP_BASE_URL}/restaurant/getRestaurantByFields?searchQuery=${props.searchQuery}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
+    const fetchRestaurantsByFields = async () => {
+      try {
+        const res = await callRestaurantsByFields(props.searchQuery, {
           selectedCity: selectedCity?._id || "",
           selectedCategory: selectedCategory?._id || "",
           subCategory: selectedSubCategories,
           cuisines: selectedCuisines,
           district: selectedDistricts,
-        }),
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          setRestaurantSearch(data.data.data);
+        });
+        const data = res.data;
+        if (res.status === "success") {
+          setRestaurantSearch(data.data);
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching restaurants:", error);
-      });
+      } catch (err) {
+        toast.error("Error fetching restaurants:", err);
+      }
+    };
+    fetchRestaurantsByFields();
   }, [
     props.searchQuery,
     selectedCuisines,
@@ -241,7 +236,8 @@ function Header(props) {
   };
 
   const handleToggleNotifications = () => {
-    if (showNotifications && unreadExists && user) {
+    console.log("Toogle");
+    if (showNotifications && unreadExists && user._id) {
       dispatch(markAllNotificationsAsRead(user._id));
     }
 
@@ -728,7 +724,7 @@ function Header(props) {
             className="col-12 col-md-4 d-flex justify-content-md-end justify-content-center align-items-center"
             style={{ gap: "10px" }}
           >
-            {user != null ? (
+            {user.email !== "" ? (
               <div className="dropdown">
                 {/* Display user email */}
                 <button
@@ -767,6 +763,20 @@ function Header(props) {
                       Cập nhật tài khoản
                     </a>
                   </li>
+                  {user.role === "admin" && (
+                    <li className="d-flex align-items-center px-3 py-2">
+                      <i
+                        className="bi bi-person-fill-check text-danger me-2"
+                        style={{ fontSize: "16px" }}
+                      ></i>
+                      <a
+                        href={`/admin`}
+                        className="text-decoration-none text-dark"
+                      >
+                        Quản lý admin
+                      </a>
+                    </li>
+                  )}
                   <li className="d-flex align-items-center px-3 py-2">
                     <i
                       className="bi bi-person-video3 text-success me-2"

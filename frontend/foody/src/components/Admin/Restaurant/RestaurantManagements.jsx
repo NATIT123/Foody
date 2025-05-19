@@ -36,6 +36,7 @@ const RestaurantManagement = ({ searchQuery }) => {
   const restaurants = useAppSelector((state) => state.restaurant.restaurants);
   const cuisines = useAppSelector((state) => state.resource.cuisines);
   const cities = useAppSelector((state) => state.resource.cities);
+
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
@@ -67,18 +68,27 @@ const RestaurantManagement = ({ searchQuery }) => {
   }, []);
   useEffect(() => {
     if (user?.role === "admin") {
-      try {
-        const result = dispatch(fetchRestaurants(currentPage)).unwrap();
-        setTotalPages(result.totalPages);
-      } catch (err) {
-        toast.error("Error is encounterd");
-      }
+      const fetchData = async () => {
+        try {
+          const result = await dispatch(fetchRestaurants(currentPage)).unwrap();
+          setTotalPages(result.totalPages);
+        } catch (err) {
+          toast.error("Error is encounterd");
+        }
+      };
+      fetchData();
     } else if (user?.role === "owner") {
-      try {
-        dispatch(fetchOwnerRestaurants(user?._id, currentPage));
-      } catch (err) {
-        toast.error("Error is encounterd");
-      }
+      const fetchRestaurants = async () => {
+        try {
+          const result = await dispatch(
+            fetchOwnerRestaurants(user?._id, currentPage)
+          ).unwrap();
+          setTotalPages(result.totalPages);
+        } catch (err) {
+          toast.error("Error is encounterd");
+        }
+      };
+      fetchRestaurants();
     }
   }, [currentPage, user]);
 
@@ -94,18 +104,21 @@ const RestaurantManagement = ({ searchQuery }) => {
   useEffect(() => {
     if (debouncedSearchQuery) {
       if (user.role === "admin") {
-        try {
-          const result = dispatch(
-            fetchRestaurantsByFields(currentPage, searchQuery)
-          ).unwrap();
-          setTotalPages(result.totalPages);
-        } catch (err) {
-          toast.error("Error is encounterd");
-        }
+        const fetchRestaurants = async () => {
+          try {
+            const result = await dispatch(
+              fetchRestaurantsByFields(currentPage, debouncedSearchQuery)
+            ).unwrap();
+            setTotalPages(result.totalPages);
+          } catch (err) {
+            toast.error("Error is encounterd");
+          }
+        };
+        fetchRestaurants();
       } else if (user?.role === "owner") {
         try {
           const result = dispatch(
-            fetchRestaurantsOwnerByFields(currentPage, searchQuery)
+            fetchRestaurantsOwnerByFields(currentPage, debouncedSearchQuery)
           ).unwrap();
           setTotalPages(result.totalPages);
         } catch (err) {
@@ -113,7 +126,7 @@ const RestaurantManagement = ({ searchQuery }) => {
         }
       }
     }
-  }, [debouncedSearchQuery, currentPage, user]);
+  }, [debouncedSearchQuery, dispatch, currentPage, user]);
 
   const fetchDistrictsByCity = async (cityId) => {
     if (!cityId) {

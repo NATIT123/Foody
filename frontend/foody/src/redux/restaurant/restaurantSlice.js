@@ -13,8 +13,8 @@ export const fetchRestaurants = createAsyncThunk(
   "restaurant/fetchRestaurants",
   async (currentPage) => {
     const res = await callFetchListRestaurant(currentPage);
-    const data = res.data;
-    return data;
+
+    return res;
   }
 );
 
@@ -115,7 +115,7 @@ const restaurantSlice = createSlice({
       })
       .addCase(fetchRestaurants.fulfilled, (state, action) => {
         state.isPending = false;
-        state.restaurants = action.payload;
+        state.restaurants = action.payload.data.data;
       })
       .addCase(fetchRestaurants.rejected, (state) => {
         state.isPending = false;
