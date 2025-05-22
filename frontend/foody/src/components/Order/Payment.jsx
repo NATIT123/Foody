@@ -8,7 +8,10 @@ import {
   doUpdateCartAction,
 } from "../../redux/order/orderSlice";
 import { Input } from "antd";
-import { callPlaceOrder } from "../../services/api";
+import { callFetchListBanks, callPlaceOrder } from "../../services/api";
+import axios from "axios";
+import "../../css/Payment.css";
+import { toast } from "react-toastify";
 const { TextArea } = Input;
 
 const Payment = (props) => {
@@ -18,7 +21,11 @@ const Payment = (props) => {
   const [isSubmit, setIsSubmit] = useState(false);
   const user = useAppSelector((state) => state.account.user);
   const [form] = Form.useForm();
-
+  const paymentMethod = Form.useWatch("paymentMethod", form);
+  const [banks, setBanks] = useState([]);
+  const [selectedBank, setSelectedBank] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [initialBanks, setInitialBanks] = useState([]);
   useEffect(() => {
     if (carts && carts.length > 0) {
       let sum = 0;
@@ -41,6 +48,37 @@ const Payment = (props) => {
       setTotalPrice(0);
     }
   }, [carts]);
+
+  useEffect(() => {
+    const getAllBanks = async () => {
+      try {
+        const res = await callFetchListBanks();
+
+        if (res.status === "success") {
+          setBanks(res.data);
+          setInitialBanks(res.data);
+        }
+      } catch (error) {
+        toast.error("Error fetching banks:", error);
+      }
+    };
+    getAllBanks();
+  }, []);
+
+  useEffect(() => {
+    if (searchKeyword) {
+      const filteredBanks = banks.filter((bank) =>
+        bank.bank_name.toLowerCase().includes(searchKeyword.toLowerCase())
+      );
+      setBanks(filteredBanks);
+    } else {
+      setBanks(initialBanks);
+    }
+  }, [searchKeyword]);
+
+  const handleChange = (e) => {
+    setSelectedBank(e.target.value);
+  };
 
   // const handlePlaceOrder = () => {
   //     if (!address) {
@@ -70,17 +108,47 @@ const Payment = (props) => {
       detail: detailOrder,
     };
 
-    const res = await callPlaceOrder(data);
-    if (res && res.data) {
-      message.success("Đặt hàng thành công !");
-      dispatch(doPlaceOrderAction());
-      props.setCurrentStep(2);
+    if (values.paymentMethod === "vnpay") {
+      // Gọi API tạo thanh toán VNPay
+      try {
+        const res = await axios.post("http://localhost:5000/api/payment", {
+          amountInput: totalPrice,
+          contentPayment: "Thanh toán đơn hàng",
+          productTypeSelect: "other",
+          bankSelect: values.bankCode,
+          langSelect: "vn",
+        });
+
+        if (res.data?.paymentUrl) {
+          window.location.href = res.data.paymentUrl;
+          return;
+        } else {
+          notification.error({
+            message: "Lỗi",
+            description: "Không thể tạo thanh toán VNPay",
+          });
+        }
+      } catch (e) {
+        notification.error({
+          message: "Lỗi",
+          description: "Không thể tạo thanh toán VNPay",
+        });
+      }
     } else {
-      notification.error({
-        message: "Đã có lỗi xảy ra",
-        description: res.message,
-      });
+      // Thanh toán khi nhận hàng
+      const res = await callPlaceOrder(data);
+      if (res && res.data) {
+        message.success("Đặt hàng thành công !");
+        dispatch(doPlaceOrderAction());
+        props.setCurrentStep(2);
+      } else {
+        notification.error({
+          message: "Đã có lỗi xảy ra",
+          description: res.message,
+        });
+      }
     }
+
     setIsSubmit(false);
   };
 
@@ -128,64 +196,104 @@ const Payment = (props) => {
       </Col>
       <Col md={8} xs={24}>
         <div className="order-sum">
-          <Form onFinish={onFinish} form={form}>
+          <Form onFinish={onFinish} form={form} layout="vertical">
+            {paymentMethod === "vnpay" ? (
+              <Form.Item
+                name="bankCode"
+                label="Chọn ngân hàng"
+                rules={[{ required: true, message: "Vui lòng chọn ngân hàng" }]}
+              >
+                <Input
+                  placeholder="Tìm ngân hàng..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  style={{ marginBottom: 16 }}
+                />
+                <Radio.Group
+                  className="bank-list-wrapper"
+                  value={selectedBank}
+                  onChange={handleChange}
+                >
+                  <div className="bank-card-grid">
+                    {banks.map((bank) => (
+                      <Radio
+                        value={bank.bank_code}
+                        key={bank.bank_code}
+                        className="bank-card"
+                      >
+                        <img src={bank.logo_link} alt={bank.bank_name} />
+                        <div>{`${bank.bank_code} - ${bank.bank_name}`}</div>
+                      </Radio>
+                    ))}
+                  </div>
+                </Radio.Group>
+              </Form.Item>
+            ) : (
+              <>
+                <Form.Item
+                  style={{ margin: 0 }}
+                  labelCol={{ span: 24 }}
+                  label="Tên người nhận"
+                  name="name"
+                  initialValue={user?.fullname}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Tên người nhận không được để trống!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  style={{ margin: 0 }}
+                  labelCol={{ span: 24 }}
+                  label="Số điện thoại"
+                  name="phone"
+                  initialValue={user?.phone}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Số điện thoại không được để trống!",
+                    },
+                    {
+                      pattern: /^\d+$/,
+                      message: "Chỉ được nhập số!",
+                    },
+                  ]}
+                >
+                  <Input
+                    onChange={(e) => {
+                      const onlyNums = e.target.value.replace(/\D/g, "");
+                      e.target.value = onlyNums;
+                    }}
+                  />
+                </Form.Item>
+                <Form.Item
+                  style={{ margin: 0 }}
+                  labelCol={{ span: 24 }}
+                  label="Địa chỉ"
+                  name="address"
+                  rules={[
+                    { required: true, message: "Địa chỉ không được để trống!" },
+                  ]}
+                >
+                  <TextArea autoFocus rows={4} />
+                </Form.Item>
+              </>
+            )}
             <Form.Item
-              style={{ margin: 0 }}
-              labelCol={{ span: 24 }}
-              label="Tên người nhận"
-              name="name"
-              initialValue={user?.fullname}
-              rules={[
-                {
-                  required: true,
-                  message: "Tên người nhận không được để trống!",
-                },
-              ]}
+              name="paymentMethod"
+              label="Hình thức thanh toán"
+              initialValue="cod"
+              style={{ marginBottom: 12 }}
             >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              style={{ margin: 0 }}
-              labelCol={{ span: 24 }}
-              label="Số điện thoại"
-              name="phone"
-              initialValue={user?.phone}
-              rules={[
-                {
-                  required: true,
-                  message: "Số điện thoại không được để trống!",
-                },
-                {
-                  pattern: /^\d+$/,
-                  message: "Chỉ được nhập số!",
-                },
-              ]}
-            >
-              <Input
-                onChange={(e) => {
-                  const onlyNums = e.target.value.replace(/\D/g, "");
-                  e.target.value = onlyNums;
-                }}
-              />
-            </Form.Item>
-            <Form.Item
-              style={{ margin: 0 }}
-              labelCol={{ span: 24 }}
-              label="Địa chỉ"
-              name="address"
-              rules={[
-                { required: true, message: "Địa chỉ không được để trống!" },
-              ]}
-            >
-              <TextArea autoFocus rows={4} />
+              <Radio.Group>
+                <Radio value="cod">Thanh toán khi nhận hàng</Radio>
+                <Radio value="vnpay">Thanh toán qua VNPay</Radio>
+              </Radio.Group>
             </Form.Item>
           </Form>
-          <div className="info">
-            <div className="method">
-              <div> Hình thức thanh toán</div>
-              <Radio checked>Thanh toán khi nhận hàng</Radio>
-            </div>
-          </div>
 
           <Divider style={{ margin: "5px 0" }} />
           <div className="calculate">

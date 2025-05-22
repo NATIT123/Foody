@@ -1,0 +1,53 @@
+.bank-list-wrapper {
+  max-height: 400px; /* nhỏ lại */
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.bank-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* nhỏ lại */
+  gap: 12px;
+}
+
+.bank-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  font-size: 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  height: 90%; /* đảm bảo nhỏ gọn */
+}
+
+.bank-card:hover,
+.ant-radio-wrapper-checked .bank-card {
+  border-color: #1890ff;
+  box-shadow: 0 0 6px rgba(24, 144, 255, 0.2);
+  background-color: #f0faff;
+}
+
+.bank-card img {
+  width: 120px;
+  height: 32px;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
+.bank-card div {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* tối đa 2 dòng */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  text-align: center;
+}
