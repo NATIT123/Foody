@@ -44,7 +44,7 @@ import CuisinesModel from "./models/CuisinesModel.js";
 import CoordinateModel from "./models/coordinateModel.js";
 import FavoriteRestaurantModel from "./models/favoriteRestaurantModel.js";
 import NotificationModel from "./models/notificationModel.js";
-import { updateDatabase } from "./config/updateDb.js";
+import bankRoute from "./router/bank.js";
 ///Connect DB
 connectDb();
 
@@ -55,6 +55,8 @@ app.set("views", path.join(__dirname, "views"));
 ///Static Files
 app.use(express.static(path.join(__dirname, "public")));
 
+//Proxy
+app.enable("trust proxy");
 //Cors
 app.use(
   cors({
@@ -181,6 +183,9 @@ importData(CountryModel, "country");
 //Notification
 app.use("/api/v1/notification", notificationRoute);
 importData(NotificationModel, "notifications");
+
+//Bank
+app.use("/api/v1/bank", bankRoute);
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

@@ -406,3 +406,7 @@ export const callRestaurantsByFields = (payload, searchQuery) => {
     payload
   );
 };
+
+export const callFetchListBanks = () => {
+  return axios.get("/bank/getAllBanks");
+};
