@@ -791,6 +791,18 @@ function Header(props) {
                   </li>
                   <li className="d-flex align-items-center px-3 py-2">
                     <i
+                      className="bi bi-cart4  me-2"
+                      style={{ fontSize: "16px" }}
+                    ></i>
+                    <a
+                      href={`/history`}
+                      className="text-decoration-none text-dark"
+                    >
+                      Lịch sử mua hàng
+                    </a>
+                  </li>
+                  <li className="d-flex align-items-center px-3 py-2">
+                    <i
                       className="bi bi-box-arrow-right text-secondary me-2"
                       style={{ fontSize: "16px" }}
                     ></i>

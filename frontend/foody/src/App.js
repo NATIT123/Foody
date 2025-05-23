@@ -12,6 +12,7 @@ import HistoryPage from "./pages/history/HistoryPage";
 import LayoutUser from "./components/LayoutUser/LayoutUser";
 import NotFound from "./components/NotFound";
 import AdminPage from "./pages/admin";
+import PaymentResult from "./pages/order/PaymentResult";
 import { useEffect } from "react";
 import { callFetchAccount } from "./services/api";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
@@ -68,6 +69,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: "/payment-result", element: <PaymentResult /> },
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
   { path: "/changePassword/:resetToken", element: <ChangePasswordPage /> },

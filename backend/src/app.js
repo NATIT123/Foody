@@ -45,6 +45,7 @@ import CoordinateModel from "./models/coordinateModel.js";
 import FavoriteRestaurantModel from "./models/favoriteRestaurantModel.js";
 import NotificationModel from "./models/notificationModel.js";
 import bankRoute from "./router/bank.js";
+import paymentRoute from "./router/payment.js";
 ///Connect DB
 connectDb();
 
@@ -186,6 +187,9 @@ importData(NotificationModel, "notifications");
 
 //Bank
 app.use("/api/v1/bank", bankRoute);
+
+//Payment
+app.use("/api/v1/payment", paymentRoute);
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

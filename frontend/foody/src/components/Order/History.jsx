@@ -4,14 +4,20 @@ import { useEffect, useState } from "react";
 import { callOrderHistory } from "../../services/api";
 import { FORMAT_DATE_DISPLAY } from "../../utils/constant";
 import ReactJson from "react-json-view";
+import { toast } from "react-toastify";
 
 const History = () => {
   const [orderHistory, setOrderHistory] = useState([]);
   useEffect(() => {
     const fetchHistory = async () => {
-      const res = await callOrderHistory();
-      if (res && res.data) {
-        setOrderHistory(res.data);
+      try {
+        const res = await callOrderHistory();
+        if (res && res.status === "success") {
+          console.log(res);
+          setOrderHistory(res.data);
+        }
+      } catch (error) {
+        toast.error(`🚨 ${error.message} .`);
       }
     };
     fetchHistory();
@@ -33,7 +39,7 @@ const History = () => {
     },
     {
       title: "Tổng số tiền",
-      dataIndex: "totalPrice",
+      dataIndex: "totalAmount",
       render: (item, record, index) => {
         return new Intl.NumberFormat("vi-VN", {
           style: "currency",
@@ -50,7 +56,7 @@ const History = () => {
       key: "action",
       render: (_, record) => (
         <ReactJson
-          src={record.detail}
+          src={record.orderItems}
           name={"Chi tiết đơn mua"}
           collapsed={true}
           enableClipboard={false}

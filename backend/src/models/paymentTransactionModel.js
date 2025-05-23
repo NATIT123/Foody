@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const PaymentTransactionSchema = new mongoose.Schema({
-  orderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
+  orderId: { type: mongoose.Schema.Types.ObjectId, ref: "orders" },
   vnp_TxnRef: String,
   vnp_Amount: Number,
   vnp_BankCode: String,
