@@ -102,13 +102,13 @@ export const callFetchBookById = (id) => {
 };
 
 export const callPlaceOrder = (data) => {
-  return axios.post("/api/v1/order", {
-    ...data,
+  return axios.post(`/payment/place-order`, {
+    data,
   });
 };
 
 export const callOrderHistory = () => {
-  return axios.get("/api/v1/history");
+  return axios.get("/payment/history");
 };
 
 export const callUpdateAvatar = (fileImg) => {
@@ -409,4 +409,16 @@ export const callRestaurantsByFields = (payload, searchQuery) => {
 
 export const callFetchListBanks = () => {
   return axios.get("/bank/getAllBanks");
+};
+
+export const callPayment = (payload) => {
+  return axios.post("/payment/payment-url", payload);
+};
+
+export const callVnPayReturn = (queryString) => {
+  return axios.get(`/payment/vnpay-return/${queryString}`);
+};
+
+export const callVnPayIpn = (queryString) => {
+  return axios.get(`/payment/vnpay-ipn/${queryString}`);
 };
