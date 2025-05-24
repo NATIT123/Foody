@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { debounce } from "lodash";
+import Button from "react-bootstrap/Button";
 import { toast } from "react-toastify";
 import { useAppSelector, useAppDispatch } from "../../../redux/hooks";
 import { addNotification } from "../../../redux/notification/notificationSlice";
@@ -10,6 +11,7 @@ import {
   fetchUserByFields,
   updateUser,
 } from "../../../redux/user/userSlice";
+import { Spinner } from "react-bootstrap";
 const UserManagement = ({ searchQuery }) => {
   const [email, setEmail] = useState("");
   const [id, setId] = useState("");
@@ -27,6 +29,41 @@ const UserManagement = ({ searchQuery }) => {
   const user = useAppSelector((state) => state.account.user);
   const dispatch = useAppDispatch();
   const users = useAppSelector((state) => state.user.listUsers);
+  const isCreating = useAppSelector((state) => state.user.isCreating);
+  const isCreateSuccess = useAppSelector((state) => state.user.isCreateSuccess);
+  const isUpdating = useAppSelector((state) => state.user.isUpdating);
+  const isUpdateSuccess = useAppSelector(
+    (state) => state.user.isUpdatingSuccess
+  );
+  const isDelete = useAppSelector((state) => state.user.isDelete);
+  const isDeleteSuccess = useAppSelector((state) => state.user.isDeleteSuccess);
+
+  useEffect(() => {
+    if (isCreateSuccess) {
+      setShowModal(false);
+      setEmail("");
+      setAddress("");
+      setFullName("");
+      setAddress("");
+      setPhone("");
+      toast.success("Add user successfully");
+    }
+  }, [isCreateSuccess]);
+
+  useEffect(() => {
+    if (isUpdateSuccess) {
+      setShowModal(false);
+      toast.success("Update user successfully");
+    }
+  }, [isUpdateSuccess]);
+
+  useEffect(() => {
+    if (isDeleteSuccess) {
+      setShowModal(false);
+      toast.success("Delete user successfully");
+    }
+  }, [isDeleteSuccess]);
+
   useEffect(() => {
     const handler = debounce(() => {
       setDebouncedSearchQuery(searchQuery);
@@ -37,11 +74,14 @@ const UserManagement = ({ searchQuery }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (debouncedSearchQuery && user.role === "admin") {
+    if (user.role === "admin") {
       const fetchData = async () => {
         try {
           const res = await dispatch(
-            fetchUserByFields(currentPage, debouncedSearchQuery)
+            fetchUserByFields({
+              currentPage,
+              searchQuery: debouncedSearchQuery,
+            })
           ).unwrap();
           if (res.status === "success") {
             setTotalPages(res.totalPages);
@@ -94,8 +134,6 @@ const UserManagement = ({ searchQuery }) => {
         addNotification(`Delete user ${fullname} successfully`),
         user._id
       );
-      addNotification(`Delete user ${fullname} successfully`);
-      toast.success("Delete user successfully");
     } catch (err) {
       toast.error("Error delete user");
     }
@@ -121,7 +159,7 @@ const UserManagement = ({ searchQuery }) => {
     if (editId === "Edit") {
       // Update user
       if (!email || !address || !phone || !fullname || !role) {
-        console.log("Please fill input");
+        toast.error("Please fill input");
         return;
       }
       // Add new user
@@ -135,12 +173,10 @@ const UserManagement = ({ searchQuery }) => {
         role,
       };
       try {
-        dispatch(updateUser(id, newUser));
+        dispatch(updateUser({ userId: id, user: newUser, currentPage }));
         dispatch(
           addNotification(`Update user ${fullname} successfully`, user._id)
         );
-
-        toast.success("Update user successfully");
       } catch (err) {
         toast.error("Error update user");
       }
@@ -372,20 +408,29 @@ const UserManagement = ({ searchQuery }) => {
                 </div>
               </div>
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowModal(false)}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleSaveUser}
-                >
-                  Save changes
-                </button>
+                {!isCreating || !isUpdating ? (
+                  <>
+                    <Button
+                      variant="warning"
+                      onClick={() => setShowModal(false)}
+                      className="mr-2"
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={() => handleSaveUser()}>Save</Button>
+                  </>
+                ) : (
+                  <Button variant="primary" disabled>
+                    <Spinner
+                      as="span"
+                      animation="grow"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    <></>Loading...
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -412,20 +457,31 @@ const UserManagement = ({ searchQuery }) => {
               </div>
 
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowModalDelete(false)}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={deleteUserNow}
-                >
-                  Delete
-                </button>
+                {!isDelete ? (
+                  <>
+                    <Button
+                      variant="warning"
+                      onClick={() => setShowModalDelete(false)}
+                      className="mr-2"
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="danger" onClick={() => deleteUserNow()}>
+                      Delete
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="primary" disabled>
+                    <Spinner
+                      as="span"
+                      animation="grow"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    <></>Loading...
+                  </Button>
+                )}
               </div>
             </div>
           </div>

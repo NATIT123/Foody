@@ -47,7 +47,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
   };
   return (
     <header className="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4 py-2">
-      <a href="/" className="navbar-brand fw-bold text-primary">
+      <a href="/admin" className="navbar-brand fw-bold text-primary">
         <i className="bi bi-speedometer2 me-2"></i>My Dashboard
       </a>
       <button
@@ -255,6 +255,15 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                   ></i>
                   <a href="/profile" className="text-decoration-none text-dark">
                     Tài khoản
+                  </a>
+                </li>
+                <li className="d-flex align-items-center px-3 py-2">
+                  <i
+                    className="bi bi-house-door-fill text-success me-2"
+                    style={{ fontSize: "16px" }}
+                  ></i>
+                  <a href="/" className="text-decoration-none text-dark">
+                    Trang chủ
                   </a>
                 </li>
                 <li>

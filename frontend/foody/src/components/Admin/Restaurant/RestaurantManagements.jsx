@@ -18,6 +18,7 @@ import {
   deleteRestaurant,
   fetchRestaurantsOwnerByFields,
 } from "../../../redux/restaurant/restaurantSlice";
+import { Button, Spinner } from "react-bootstrap";
 const RestaurantManagement = ({ searchQuery }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState(""); // "add", "edit", "view"
@@ -36,14 +37,51 @@ const RestaurantManagement = ({ searchQuery }) => {
   const restaurants = useAppSelector((state) => state.restaurant.restaurants);
   const cuisines = useAppSelector((state) => state.resource.cuisines);
   const cities = useAppSelector((state) => state.resource.cities);
+  const isCreating = useAppSelector((state) => state.restaurant.isCreating);
+  const isCreateSuccess = useAppSelector(
+    (state) => state.restaurant.isCreateSuccess
+  );
+  const isUpdating = useAppSelector((state) => state.restaurant.isUpdating);
+  const isUpdateSuccess = useAppSelector(
+    (state) => state.restaurant.isUpdatingSuccess
+  );
+  const isDelete = useAppSelector((state) => state.restaurant.isDelete);
+  const isDeleteSuccess = useAppSelector(
+    (state) => state.restaurant.isDeleteSuccess
+  );
 
+  useEffect(() => {
+    if (isCreateSuccess) {
+      setIsModalOpen(false);
+      toast.success(
+        `You have successfully added the restaurant ${formData.name}`
+      );
+      setFormData({});
+    }
+  }, [isCreateSuccess]);
+
+  useEffect(() => {
+    if (isUpdateSuccess) {
+      setIsModalOpen(false);
+      toast.success(
+        `You have successfully edited the restaurant ${formData.name}`
+      );
+    }
+  }, [isUpdateSuccess]);
+
+  useEffect(() => {
+    if (isDeleteSuccess) {
+      setShowModalDelete(false);
+      toast.success(`Delete restaurant ${formData.name} successfully`);
+    }
+  }, [isDeleteSuccess]);
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
         const response = await callFetchSubCategories();
         const data = response.data;
         if (response.status === "success") {
-          setSubCategories(data.data.data);
+          setSubCategories(data.data);
         }
       } catch (error) {
         toast.error("Fetch owners error:", error);
@@ -57,7 +95,7 @@ const RestaurantManagement = ({ searchQuery }) => {
         const response = await callFetchOwners();
         const data = response.data;
         if (response.status === "success") {
-          setOwners(data.data);
+          setOwners(data);
         }
       } catch (error) {
         toast.error("Fetch owners error:", error);
@@ -81,7 +119,7 @@ const RestaurantManagement = ({ searchQuery }) => {
       const fetchRestaurants = async () => {
         try {
           const result = await dispatch(
-            fetchOwnerRestaurants(user?._id, currentPage)
+            fetchOwnerRestaurants({ userId: user?._id, currentPage })
           ).unwrap();
           setTotalPages(result.totalPages);
         } catch (err) {
@@ -102,28 +140,29 @@ const RestaurantManagement = ({ searchQuery }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (debouncedSearchQuery) {
-      if (user.role === "admin") {
-        const fetchRestaurants = async () => {
-          try {
-            const result = await dispatch(
-              fetchRestaurantsByFields(currentPage, debouncedSearchQuery)
-            ).unwrap();
-            setTotalPages(result.totalPages);
-          } catch (err) {
-            toast.error("Error is encounterd");
-          }
-        };
-        fetchRestaurants();
-      } else if (user?.role === "owner") {
+    if (user.role === "admin") {
+      const fetchRestaurants = async () => {
         try {
-          const result = dispatch(
-            fetchRestaurantsOwnerByFields(currentPage, debouncedSearchQuery)
+          const result = await dispatch(
+            fetchRestaurantsByFields({
+              currentPage,
+              searchQuery: debouncedSearchQuery,
+            })
           ).unwrap();
           setTotalPages(result.totalPages);
         } catch (err) {
           toast.error("Error is encounterd");
         }
+      };
+      fetchRestaurants();
+    } else if (user?.role === "owner") {
+      try {
+        const result = dispatch(
+          fetchRestaurantsOwnerByFields({ currentPage, debouncedSearchQuery })
+        ).unwrap();
+        setTotalPages(result.totalPages);
+      } catch (err) {
+        toast.error("Error is encounterd");
       }
     }
   }, [debouncedSearchQuery, dispatch, currentPage, user]);
@@ -178,11 +217,12 @@ const RestaurantManagement = ({ searchQuery }) => {
   const deleteRestaurantNow = () => {
     try {
       dispatch(deleteRestaurant(formData._id));
-      dispatch(addNotification());
-      addNotification(
-        `You have successfully deleted the restaurant ${formData.name}`
+      dispatch(
+        addNotification({
+          message: `You have successfully deleted the restaurant ${formData.name}`,
+          userId: user._id,
+        })
       );
-      toast.success(`Delete restaurant ${formData.name} successfully`);
     } catch (err) {
       toast.error("Error is encouterd");
     }
@@ -209,16 +249,17 @@ const RestaurantManagement = ({ searchQuery }) => {
       formDataToSend.append("cuisinesId", formData.cuisinesId);
       formDataToSend.append("districtId", formData.districtId);
       try {
-        dispatch(updateRestaurant(formData._id, formDataToSend));
         dispatch(
-          addNotification(
-            `You have successfully edited the restaurant ${formData.name}`,
-            user._id
-          )
+          updateRestaurant({
+            restaurantId: formData._id,
+            restaurant: formDataToSend,
+          })
         );
-
-        toast.success(
-          `You have successfully edited the restaurant ${formData.name}`
+        dispatch(
+          addNotification({
+            message: `You have successfully edited the restaurant ${formData.name}`,
+            userId: user._id,
+          })
         );
       } catch (err) {
         toast.error("Error is encouterd");
@@ -243,14 +284,10 @@ const RestaurantManagement = ({ searchQuery }) => {
       try {
         dispatch(createRestaurant(formDataToSend));
         dispatch(
-          addNotification(
-            `You have successfully added the restaurant ${formData.name}`,
-            user._id
-          )
-        );
-
-        toast.success(
-          `You have successfully added the restaurant ${formData.name}`
+          addNotification({
+            message: `You have successfully added the restaurant ${formData.name}`,
+            userId: user._id,
+          })
         );
       } catch (err) {
         toast.error("Error is encouterd");
@@ -400,20 +437,34 @@ const RestaurantManagement = ({ searchQuery }) => {
               </div>
 
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowModalDelete(false)}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={deleteRestaurantNow}
-                >
-                  Delete
-                </button>
+                {!isDelete ? (
+                  <>
+                    <Button
+                      variant="warning"
+                      onClick={() => setShowModalDelete(false)}
+                      className="mr-2"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => deleteRestaurantNow()}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="primary" disabled>
+                    <Spinner
+                      as="span"
+                      animation="grow"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    <></>Loading...
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -585,11 +636,13 @@ const RestaurantManagement = ({ searchQuery }) => {
                           }
                         >
                           <option value="">Select an owner</option>
-                          {owners.map((owner) => (
-                            <option key={owner._id} value={owner._id}>
-                              {owner.fullname}
-                            </option>
-                          ))}
+                          {owners &&
+                            owners.length > 0 &&
+                            owners.map((owner) => (
+                              <option key={owner._id} value={owner._id}>
+                                {owner.fullname}
+                              </option>
+                            ))}
                         </select>{" "}
                       </div>
                     )}
@@ -618,11 +671,13 @@ const RestaurantManagement = ({ searchQuery }) => {
                         }
                       >
                         <option value="">Select a subcategory</option>
-                        {subCategories.map((category) => (
-                          <option key={category._id} value={category._id}>
-                            {category.name}
-                          </option>
-                        ))}
+                        {subCategories &&
+                          subCategories.length > 0 &&
+                          subCategories.map((category) => (
+                            <option key={category._id} value={category._id}>
+                              {category.name}
+                            </option>
+                          ))}
                       </select>
                     </div>
                     <div className="mb-3">
@@ -678,21 +733,30 @@ const RestaurantManagement = ({ searchQuery }) => {
               </div>
 
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleCloseModal}
-                >
-                  Close
-                </button>
-                {modalMode !== "view" && (
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleSave}
-                  >
-                    Save Changes
-                  </button>
+                {!isCreating || !isUpdating ? (
+                  <>
+                    <Button
+                      variant="warning"
+                      onClick={() => handleCloseModal()}
+                      className="mr-2"
+                    >
+                      Cancel
+                    </Button>
+                    {modalMode !== "view" && (
+                      <Button onClick={() => handleSave()}>Save</Button>
+                    )}
+                  </>
+                ) : (
+                  <Button variant="primary" disabled>
+                    <Spinner
+                      as="span"
+                      animation="grow"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    <></>Loading...
+                  </Button>
                 )}
               </div>
             </div>

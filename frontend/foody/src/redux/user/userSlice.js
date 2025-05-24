@@ -30,21 +30,26 @@ export const createNewUser = createAsyncThunk(
 
 export const fetchUserByFields = createAsyncThunk(
   "users/fetchUserByFields",
-  async (currentPage, searchQuery) => {
-    const response = await callFetchUserByFields(currentPage, searchQuery);
-    return response;
+  async ({ currentPage, searchQuery }, thunkAPI) => {
+    console.log("searchQuery", searchQuery);
+    if (searchQuery === undefined) {
+      thunkAPI.dispatch(fetchListUsers(currentPage));
+    } else {
+      const response = await callFetchUserByFields(currentPage, searchQuery);
+      return response;
+    }
   }
 );
 
 export const updateUser = createAsyncThunk(
   "users/updateUser",
-  async (userId, user, thunkAPI) => {
-    const response = await callUpdateUser(userId, user);
-    const data = await response.json();
-    if (data && data.id) {
-      thunkAPI.dispatch(fetchListUsers());
+  async (args, thunkAPI) => {
+    const response = await callUpdateUser(args.userId, args.user);
+    const data = response.data;
+    if (response.status === "success") {
+      thunkAPI.dispatch(fetchListUsers(args.currentPage));
     }
-    return data;
+    return data.data;
   }
 );
 

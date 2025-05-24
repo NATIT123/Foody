@@ -51,8 +51,8 @@ const AdminPage = () => {
       try {
         const [users, albums, restaurants, comments] = await Promise.all([
           callFetchUserCount(),
-          callFetchRestaurantCount(),
           callFetchAlbumCount(),
+          callFetchRestaurantCount(),
           callFetchCommentCount(),
         ]);
 

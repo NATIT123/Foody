@@ -48,8 +48,16 @@ const History = () => {
       },
     },
     {
+      dataIndex: "status",
       title: "Trạng thái",
-      render: (_, { tags }) => <Tag color={"green"}>Thành công</Tag>,
+      render: (item, { tags }) =>
+        item === "paid" ? (
+          <Tag color={"green"}>Thành công</Tag>
+        ) : item === "pending" ? (
+          <Tag color={"yellow"}>Đang chờ</Tag>
+        ) : (
+          <Tag color={"red"}>Thất bại</Tag>
+        ),
     },
     {
       title: "Chi tiết",

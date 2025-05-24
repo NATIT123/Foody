@@ -164,7 +164,7 @@ router.get(
     try {
       const orders = await Order.find({ userId: req.params.id })
         .where({
-          status: { $ne: "pending" },
+          status: { $ne: "failed" },
         })
         .populate("orderItems.productId", "name price")
         .populate("orderItems.restaurantId", "name")
@@ -183,14 +183,15 @@ router.get(
 
 router.post(
   "/place-order",
+  getMe,
   catchAsync(async (req, res, next) => {
     try {
-      const { amountInput, fullName, address, phoneNumber, orderItems } =
+      const { totalAmount, fullName, address, phoneNumber, orderItems } =
         req.body;
 
       await Order.create({
         userId: req.params.id,
-        totalAmount: amountInput,
+        totalAmount,
         status: "pending",
         fullName,
         address,

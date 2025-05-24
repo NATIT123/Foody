@@ -28,8 +28,9 @@ const AdminRestaurantApproval = ({ searchQuery }) => {
   const getRestaunrantsPending = async () => {
     try {
       const res = await callFetchRestaunrantsPending(currentPage);
-      if (res.data.status === "success") {
-        setPendingRestaurants(res.data.data.data);
+
+      if (res.status === "success") {
+        setPendingRestaurants(res.data.data);
       }
     } catch (error) {
       toast.error("Error fetching pending restaurants:", error);
@@ -45,12 +46,7 @@ const AdminRestaurantApproval = ({ searchQuery }) => {
         );
 
         const data = res.data;
-        if (
-          data.status !== "fail" &&
-          data.status !== "error" &&
-          data.status !== 400 &&
-          data.data?.data
-        ) {
+        if (res.status === "success") {
           setTotalPages(data.totalPages);
           setPendingRestaurants(data.data.data);
         }

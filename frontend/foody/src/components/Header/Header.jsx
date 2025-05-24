@@ -182,8 +182,9 @@ function Header(props) {
           cuisines: selectedCuisines,
           district: selectedDistricts,
         });
-        const data = res.data;
+
         if (res.status === "success") {
+          const data = res.data;
           setRestaurantSearch(data.data);
         }
       } catch (err) {

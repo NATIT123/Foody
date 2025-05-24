@@ -46,7 +46,9 @@ const FoodModal = ({ isOpen, onClose, restaurant }) => {
   };
 
   useEffect(() => {
-    dispatch(fetchFoods(restaurant._id));
+    if (restaurant && restaurant._id) {
+      dispatch(fetchFoods(restaurant._id));
+    }
   }, []);
 
   const confirmDeleteFood = () => {

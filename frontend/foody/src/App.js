@@ -100,7 +100,6 @@ const App = () => {
       return;
     if (localStorage.getItem("access_token")) {
       const res = await callFetchAccount();
-      console.log("Res", res);
       if (res && res.data) {
         dispatch(doGetAccountAction(res.data));
       }

@@ -11,8 +11,11 @@ export const fetchFoods = createAsyncThunk(
   "food/fetchFoods",
   async (restaurantId) => {
     const res = await callFetchFoodsByRestaurant(restaurantId);
-    const data = res.data;
-    return data;
+    if (res.status === "success") {
+      const data = res.data;
+      return data;
+    }
+    return [];
   }
 );
 
