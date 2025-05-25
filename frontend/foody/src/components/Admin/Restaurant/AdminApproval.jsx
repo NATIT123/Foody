@@ -8,6 +8,7 @@ import {
   callFindRestaurantsPendingByFields,
   callUpdateStatus,
 } from "../../../services/api";
+import Loading from "../../Loading";
 const AdminRestaurantApproval = ({ searchQuery }) => {
   const [pendingRestaurants, setPendingRestaurants] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -15,7 +16,7 @@ const AdminRestaurantApproval = ({ searchQuery }) => {
   const dispatch = useAppDispatch();
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const user = useAppSelector((state) => state.account.user);
-
+  const [isPending, setIsPending] = useState(false);
   useEffect(() => {
     const handler = debounce(() => {
       setDebouncedSearchQuery(searchQuery);
@@ -27,9 +28,12 @@ const AdminRestaurantApproval = ({ searchQuery }) => {
 
   const getRestaunrantsPending = async () => {
     try {
+      setIsPending(true);
       const res = await callFetchRestaunrantsPending(currentPage);
-      if (res.data.status === "success") {
-        setPendingRestaurants(res.data.data.data);
+
+      if (res.status === "success") {
+        setIsPending(false);
+        setPendingRestaurants(res.data.data);
       }
     } catch (error) {
       toast.error("Error fetching pending restaurants:", error);
@@ -45,12 +49,7 @@ const AdminRestaurantApproval = ({ searchQuery }) => {
         );
 
         const data = res.data;
-        if (
-          data.status !== "fail" &&
-          data.status !== "error" &&
-          data.status !== 400 &&
-          data.data?.data
-        ) {
+        if (res.status === "success") {
           setTotalPages(data.totalPages);
           setPendingRestaurants(data.data.data);
         }
@@ -142,69 +141,77 @@ const AdminRestaurantApproval = ({ searchQuery }) => {
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4 text-center">Pending Restaurant Approvals</h2>
-      <div className="row">
-        {pendingRestaurants.length > 0 ? (
-          pendingRestaurants.map((restaurant) => (
-            <div className="col-12" key={restaurant._id}>
-              <div className="card mb-3 shadow-sm w-100">
-                <div className="row g-0">
-                  <div className="col-md-4">
-                    <img
-                      src={
-                        restaurant.image || "https://via.placeholder.com/200"
-                      }
-                      alt={restaurant.name}
-                      className="img-fluid rounded-start"
-                      style={{ height: "200px", objectFit: "cover" }}
-                    />
-                  </div>
-                  <div className="col-md-8">
-                    <div className="card-body">
-                      <h5 className="card-title">{restaurant.name}</h5>
-                      <p className="card-text">
-                        <strong>Category:</strong> {restaurant.subCategory}
-                      </p>
-                      <p className="card-text">
-                        <strong>Location:</strong> {restaurant.address}
-                      </p>
-                      <p className="card-text">
-                        <strong>Open Hours:</strong> {restaurant.timeOpen}
-                      </p>
-                      <p className="card-text">
-                        <strong>Price Range:</strong> {restaurant.priceRange}
-                      </p>
-                      <button
-                        className="btn btn-success btn-sm me-2"
-                        onClick={() =>
-                          handleApproval(restaurant._id, "approved")
-                        }
-                      >
-                        Approve
-                      </button>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() =>
-                          handleApproval(restaurant._id, "rejected")
-                        }
-                      >
-                        Reject
-                      </button>
+    <>
+      {isPending ? (
+        <Loading />
+      ) : (
+        <div className="container mt-4">
+          <h2 className="mb-4 text-center">Pending Restaurant Approvals</h2>
+          <div className="row">
+            {pendingRestaurants.length > 0 ? (
+              pendingRestaurants.map((restaurant) => (
+                <div className="col-12" key={restaurant._id}>
+                  <div className="card mb-3 shadow-sm w-100">
+                    <div className="row g-0">
+                      <div className="col-md-4">
+                        <img
+                          src={
+                            restaurant.image ||
+                            "https://via.placeholder.com/200"
+                          }
+                          alt={restaurant.name}
+                          className="img-fluid rounded-start"
+                          style={{ height: "200px", objectFit: "cover" }}
+                        />
+                      </div>
+                      <div className="col-md-8">
+                        <div className="card-body">
+                          <h5 className="card-title">{restaurant.name}</h5>
+                          <p className="card-text">
+                            <strong>Category:</strong> {restaurant.subCategory}
+                          </p>
+                          <p className="card-text">
+                            <strong>Location:</strong> {restaurant.address}
+                          </p>
+                          <p className="card-text">
+                            <strong>Open Hours:</strong> {restaurant.timeOpen}
+                          </p>
+                          <p className="card-text">
+                            <strong>Price Range:</strong>{" "}
+                            {restaurant.priceRange}
+                          </p>
+                          <button
+                            className="btn btn-success btn-sm me-2"
+                            onClick={() =>
+                              handleApproval(restaurant._id, "approved")
+                            }
+                          >
+                            Approve
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() =>
+                              handleApproval(restaurant._id, "rejected")
+                            }
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-center">No restaurants pending approval.</p>
-        )}
-      </div>
-      {pendingRestaurants &&
-        pendingRestaurants.length > 0 &&
-        renderPagination()}
-    </div>
+              ))
+            ) : (
+              <p className="text-center">No restaurants pending approval.</p>
+            )}
+          </div>
+          {pendingRestaurants &&
+            pendingRestaurants.length > 0 &&
+            renderPagination()}
+        </div>
+      )}
+    </>
   );
 };
 

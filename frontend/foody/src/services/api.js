@@ -102,9 +102,7 @@ export const callFetchBookById = (id) => {
 };
 
 export const callPlaceOrder = (data) => {
-  return axios.post(`/payment/place-order`, {
-    data,
-  });
+  return axios.post(`/payment/place-order`, data);
 };
 
 export const callOrderHistory = () => {
@@ -274,11 +272,11 @@ export const callAddFood = (payload) => {
 };
 
 export const callUpdateFood = (foodId, payload) => {
-  return axios.patch(`/food/${foodId}`, payload);
+  return axios.patch(`/food/updateFood/${foodId}`, payload);
 };
 
 export const callDeleteFood = (foodId) => {
-  return axios.delete(`/food/${foodId}`);
+  return axios.delete(`/food/deleteFood/${foodId}`);
 };
 
 export const callFetchFoodsByRestaurant = (id) => {
@@ -336,11 +334,11 @@ export const callCreateUser = (payload) => {
 };
 
 export const callUpdateUser = (UserId, payload) => {
-  return axios.post(`/user/${UserId}`, payload);
+  return axios.patch(`/user/updateUser/${UserId}`, payload);
 };
 
 export const callDeleteUser = (UserId) => {
-  return axios.delete(`/user/${UserId}`);
+  return axios.delete(`/user/deleteUser/${UserId}`);
 };
 
 export const callFetchUserByFields = (currentPage, searchQuery) => {
@@ -400,7 +398,7 @@ export const callFoodsByRestaurant = (id) => {
   return axios.get(`/food/getFoodsByRestaurant/${id}`);
 };
 
-export const callRestaurantsByFields = (payload, searchQuery) => {
+export const callRestaurantsByFields = (searchQuery, payload) => {
   return axios.post(
     `/restaurant/getRestaurantByFields?searchQuery=${searchQuery}`,
     payload
@@ -421,4 +419,18 @@ export const callVnPayReturn = (queryString) => {
 
 export const callVnPayIpn = (queryString) => {
   return axios.get(`/payment/vnpay-ipn/${queryString}`);
+};
+
+export const callFetchPendingOrders = (currentPage) => {
+  return axios.get(`/payment/pending-orders?page=${currentPage}`);
+};
+
+export const callSearchPendingOrders = (currentPage, searchQuery) => {
+  return axios.get(
+    `/payment/search-pending-orders?page=${currentPage}&searchQuery=${searchQuery}`
+  );
+};
+
+export const callUpdateOrderStatus = (orderId, status) => {
+  return axios.patch(`/payment/update-order-status/${orderId}`, status);
 };

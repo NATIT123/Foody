@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { debounce } from "lodash";
+import Button from "react-bootstrap/Button";
 import { toast } from "react-toastify";
 import { useAppSelector, useAppDispatch } from "../../../redux/hooks";
 import { addNotification } from "../../../redux/notification/notificationSlice";
@@ -10,6 +11,8 @@ import {
   fetchUserByFields,
   updateUser,
 } from "../../../redux/user/userSlice";
+import Loading from "../../Loading";
+import { Spinner } from "react-bootstrap";
 const UserManagement = ({ searchQuery }) => {
   const [email, setEmail] = useState("");
   const [id, setId] = useState("");
@@ -27,6 +30,41 @@ const UserManagement = ({ searchQuery }) => {
   const user = useAppSelector((state) => state.account.user);
   const dispatch = useAppDispatch();
   const users = useAppSelector((state) => state.user.listUsers);
+  const isCreating = useAppSelector((state) => state.user.isCreating);
+  const isCreateSuccess = useAppSelector((state) => state.user.isCreateSuccess);
+  const isUpdating = useAppSelector((state) => state.user.isUpdating);
+  const isUpdateSuccess = useAppSelector(
+    (state) => state.user.isUpdatingSuccess
+  );
+  const isDelete = useAppSelector((state) => state.user.isDelete);
+  const isDeleteSuccess = useAppSelector((state) => state.user.isDeleteSuccess);
+  const isPending = useAppSelector((state) => state.user.isPending);
+  useEffect(() => {
+    if (isCreateSuccess) {
+      setShowModal(false);
+      setEmail("");
+      setAddress("");
+      setFullName("");
+      setAddress("");
+      setPhone("");
+      toast.success("Add user successfully");
+    }
+  }, [isCreateSuccess]);
+
+  useEffect(() => {
+    if (isUpdateSuccess) {
+      setShowModal(false);
+      toast.success("Update user successfully");
+    }
+  }, [isUpdateSuccess]);
+
+  useEffect(() => {
+    if (isDeleteSuccess) {
+      setShowModal(false);
+      toast.success("Delete user successfully");
+    }
+  }, [isDeleteSuccess]);
+
   useEffect(() => {
     const handler = debounce(() => {
       setDebouncedSearchQuery(searchQuery);
@@ -37,11 +75,14 @@ const UserManagement = ({ searchQuery }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (debouncedSearchQuery && user.role === "admin") {
+    if (user.role === "admin") {
       const fetchData = async () => {
         try {
           const res = await dispatch(
-            fetchUserByFields(currentPage, debouncedSearchQuery)
+            fetchUserByFields({
+              currentPage,
+              searchQuery: debouncedSearchQuery,
+            })
           ).unwrap();
           if (res.status === "success") {
             setTotalPages(res.totalPages);
@@ -94,8 +135,6 @@ const UserManagement = ({ searchQuery }) => {
         addNotification(`Delete user ${fullname} successfully`),
         user._id
       );
-      addNotification(`Delete user ${fullname} successfully`);
-      toast.success("Delete user successfully");
     } catch (err) {
       toast.error("Error delete user");
     }
@@ -121,7 +160,7 @@ const UserManagement = ({ searchQuery }) => {
     if (editId === "Edit") {
       // Update user
       if (!email || !address || !phone || !fullname || !role) {
-        console.log("Please fill input");
+        toast.error("Please fill input");
         return;
       }
       // Add new user
@@ -135,12 +174,10 @@ const UserManagement = ({ searchQuery }) => {
         role,
       };
       try {
-        dispatch(updateUser(id, newUser));
+        dispatch(updateUser({ userId: id, user: newUser, currentPage }));
         dispatch(
           addNotification(`Update user ${fullname} successfully`, user._id)
         );
-
-        toast.success("Update user successfully");
       } catch (err) {
         toast.error("Error update user");
       }
@@ -223,215 +260,252 @@ const UserManagement = ({ searchQuery }) => {
   };
 
   return (
-    <div className="container mt-2">
-      <h2 className=" text-center">User Management</h2>
+    <>
+      {isPending ? (
+        <Loading />
+      ) : (
+        <div className="container mt-2">
+          <h2 className=" text-center">User Management</h2>
 
-      {/* Nút thêm người dùng */}
-      <div className="mb-3 text-end">
-        <button className="btn btn-primary" onClick={handleAddUser}>
-          Add User
-        </button>
-      </div>
+          {/* Nút thêm người dùng */}
+          <div className="mb-3 text-end">
+            <button className="btn btn-primary" onClick={handleAddUser}>
+              Add User
+            </button>
+          </div>
 
-      {/* Danh sách người dùng */}
-      <div className="card p-4 shadow-sm h-100 d-flex flex-column">
-        <h4 className="text-center mb-3">Users List</h4>
-        <div className="table-responsive flex-grow-1 overflow-auto">
-          <table className="table table-striped table-hover">
-            <thead className="table-primary">
-              <tr>
-                <th>Email</th>
-                <th>FullName</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Role</th>
-                <th className="text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users &&
-                users.map((user) => (
-                  <tr key={user._id}>
-                    <td className="d-flex align-items-center">
-                      <img
-                        src={
-                          user.photo === "default.jpg"
-                            ? "/images/default.jpg"
-                            : user.photo
-                        }
-                        alt="Profile"
-                        style={{
-                          width: "60px",
-                          height: "60px",
-                          borderRadius: "50%",
-                          objectFit: "cover",
-                          marginRight: "15px",
-                        }}
-                        onError={(e) => (e.target.src = "/images/default.jpg")} // Nếu ảnh lỗi, hiển thị ảnh mặc định
-                      />
-                      {user.email}
-                    </td>
-                    <td>{user.fullname}</td>
-                    <td>{user.phone}</td>
-                    <td>{user.address}</td>
-                    <td>{user.role}</td>
-                    <td className="text-center">
-                      <button
-                        className="btn btn-sm btn-warning me-2"
-                        onClick={() => handleEditUser(user._id)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleDeleteUser(user._id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
+          {/* Danh sách người dùng */}
+          <div className="card p-4 shadow-sm h-100 d-flex flex-column">
+            <h4 className="text-center mb-3">Users List</h4>
+            <div className="table-responsive flex-grow-1 overflow-auto">
+              <table className="table table-striped table-hover">
+                <thead className="table-primary">
+                  <tr>
+                    <th>Email</th>
+                    <th>FullName</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Role</th>
+                    <th className="text-center">Actions</th>
                   </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-        {users?.length === 0 && (
-          <p className="text-center text-muted">No users found.</p>
-        )}
-      </div>
-      {users && users.length > 0 && renderPagination()}
+                </thead>
+                <tbody>
+                  {users &&
+                    users.map((user) => (
+                      <tr key={user._id}>
+                        <td className="d-flex align-items-center">
+                          <img
+                            src={
+                              user.photo === "default.jpg"
+                                ? "/images/default.jpg"
+                                : user.photo
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "60px",
+                              height: "60px",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              marginRight: "15px",
+                            }}
+                            onError={(e) =>
+                              (e.target.src = "/images/default.jpg")
+                            } // Nếu ảnh lỗi, hiển thị ảnh mặc định
+                          />
+                          {user.email}
+                        </td>
+                        <td>{user.fullname}</td>
+                        <td>{user.phone}</td>
+                        <td>{user.address}</td>
+                        <td>{user.role}</td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-sm btn-warning me-2"
+                            onClick={() => handleEditUser(user._id)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => handleDeleteUser(user._id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+            {users?.length === 0 && (
+              <p className="text-center text-muted">No users found.</p>
+            )}
+          </div>
+          {users && users.length > 0 && renderPagination()}
 
-      {/* Modal Thêm/Sửa */}
-      {showModal && (
-        <div
-          className="modal show fade"
-          style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-          tabIndex="-1"
-        >
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editId === "Edit" ? "Edit User" : "Add User"}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowModal(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label">Email</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={editId === "Edit" ? true : false}
-                  />
+          {/* Modal Thêm/Sửa */}
+          {showModal && (
+            <div
+              className="modal show fade"
+              style={{
+                display: "block",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+              }}
+              tabIndex="-1"
+            >
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      {editId === "Edit" ? "Edit User" : "Add User"}
+                    </h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setShowModal(false)}
+                    ></button>
+                  </div>
+                  <div className="modal-body">
+                    <div className="mb-3">
+                      <label className="form-label">Email</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={editId === "Edit" ? true : false}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">FullName</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={fullname}
+                        onChange={(e) => setFullName(e.target.value)}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Address</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Phone</label>
+                      <input
+                        disabled={editId === "Edit" ? true : false}
+                        type="text"
+                        className="form-control"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Role</label>
+                      <select
+                        className="form-select"
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="owner">Owner</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    {!isCreating || !isUpdating ? (
+                      <>
+                        <Button
+                          variant="warning"
+                          onClick={() => setShowModal(false)}
+                          className="mr-2"
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={() => handleSaveUser()}>Save</Button>
+                      </>
+                    ) : (
+                      <Button variant="primary" disabled>
+                        <Spinner
+                          as="span"
+                          animation="grow"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                        <></>Loading...
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="mb-3">
-                  <label className="form-label">FullName</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={fullname}
-                    onChange={(e) => setFullName(e.target.value)}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Address</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Phone</label>
-                  <input
-                    disabled={editId === "Edit" ? true : false}
-                    type="text"
-                    className="form-control"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Role</label>
-                  <select
-                    className="form-select"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                    <option value="owner">Owner</option>
-                  </select>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowModal(false)}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleSaveUser}
-                >
-                  Save changes
-                </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-      {showModalDelete && (
-        <div
-          className="modal show fade"
-          style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-          tabIndex="-1"
-        >
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Delete User</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowModalDelete(false)}
-                ></button>
-              </div>
-              <div class="modal-body">
-                <p>{`Do you want to delete ${fullname}`} </p>
-              </div>
+          )}
+          {showModalDelete && (
+            <div
+              className="modal show fade"
+              style={{
+                display: "block",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+              }}
+              tabIndex="-1"
+            >
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Delete User</h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setShowModalDelete(false)}
+                    ></button>
+                  </div>
+                  <div class="modal-body">
+                    <p>{`Do you want to delete ${fullname}`} </p>
+                  </div>
 
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowModalDelete(false)}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={deleteUserNow}
-                >
-                  Delete
-                </button>
+                  <div className="modal-footer">
+                    {!isDelete ? (
+                      <>
+                        <Button
+                          variant="warning"
+                          onClick={() => setShowModalDelete(false)}
+                          className="mr-2"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="danger"
+                          onClick={() => deleteUserNow()}
+                        >
+                          Delete
+                        </Button>
+                      </>
+                    ) : (
+                      <Button variant="primary" disabled>
+                        <Spinner
+                          as="span"
+                          animation="grow"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                        <></>Loading...
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

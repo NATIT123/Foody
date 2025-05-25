@@ -17,10 +17,9 @@ export const addNotification = createAsyncThunk(
       const res = await callAddNotification(notification);
 
       const data = res.data;
-      if (data.status === "error" || data.status === "fail") {
+      if (res.status === "error" || res.status === "fail") {
         return rejectWithValue(data.message || "Failed to add notification");
       }
-
       return {
         _id: data.data,
         description: message,

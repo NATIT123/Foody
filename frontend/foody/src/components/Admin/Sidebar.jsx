@@ -54,6 +54,18 @@ const Sidebar = ({ setActiveTab }) => {
               </button>
             </li>
           )}
+          {user?.role === "admin" && (
+            <li className="nav-item">
+              <button
+                onClick={() => setActiveTab("Xét duyệt đơn hàng")}
+                className="btn nav-link text-dark d-flex align-items-center w-100"
+              >
+                {/* Thay đổi icon ở đây */}
+                <i className="bi bi-cart-check-fill me-2 text-danger"></i>
+                <span>Xét duyệt đơn hàng</span>
+              </button>
+            </li>
+          )}
         </ul>
       </div>
 

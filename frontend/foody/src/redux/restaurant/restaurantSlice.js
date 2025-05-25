@@ -6,6 +6,7 @@ import {
   callFetchOwnerRestaurants,
   callFetchRestaurantsByFields,
   callFetchRestaurantsOwnerByFields,
+  callUpdateRestaurant,
 } from "../../services/api";
 
 // Async Thunks
@@ -13,14 +14,13 @@ export const fetchRestaurants = createAsyncThunk(
   "restaurant/fetchRestaurants",
   async (currentPage) => {
     const res = await callFetchListRestaurant(currentPage);
-
     return res;
   }
 );
 
 export const fetchOwnerRestaurants = createAsyncThunk(
   "restaurant/fetchOwnerRestaurants",
-  async (userId, currentPage) => {
+  async ({ userId, currentPage }) => {
     const res = await callFetchOwnerRestaurants(userId, currentPage);
     const data = res.data;
     return data;
@@ -29,23 +29,30 @@ export const fetchOwnerRestaurants = createAsyncThunk(
 
 export const fetchRestaurantsByFields = createAsyncThunk(
   "restaurant/fetchRestaurantsByFields",
-  async (currentPage, searchQuery) => {
-    const res = await callFetchRestaurantsByFields(currentPage, searchQuery);
-    const data = res.data;
-    return data;
+  async ({ currentPage, searchQuery }, thunkAPI) => {
+    if (searchQuery === undefined) {
+      thunkAPI.dispatch(fetchRestaurants(currentPage));
+    } else {
+      const res = await callFetchRestaurantsByFields(currentPage, searchQuery);
+      return res.data.data;
+    }
   }
 );
 
 export const fetchRestaurantsOwnerByFields = createAsyncThunk(
   "restaurant/fetchRestaurantsOwnerByFields",
-  async (userId, currentPage, searchQuery) => {
-    const res = await callFetchRestaurantsOwnerByFields(
-      userId,
-      currentPage,
-      searchQuery
-    );
-    const data = res.data;
-    return data;
+  async ({ userId, currentPage, searchQuery }, thunkAPI) => {
+    if (searchQuery === undefined) {
+      thunkAPI.dispatch(fetchRestaurants(currentPage));
+    } else {
+      const res = await callFetchRestaurantsOwnerByFields(
+        userId,
+        currentPage,
+        searchQuery
+      );
+      const data = res.data;
+      return data;
+    }
   }
 );
 
@@ -63,8 +70,8 @@ export const createRestaurant = createAsyncThunk(
 
 export const updateRestaurant = createAsyncThunk(
   "restaurant/updateRestaurant",
-  async (restaurantId, restaurant, thunkAPI) => {
-    const res = callCreateRestaurant(restaurantId, restaurant);
+  async ({ restaurantId, restaurant }, thunkAPI) => {
+    const res = callUpdateRestaurant(restaurantId, restaurant);
     const data = res.data;
     if (data && data.id) {
       thunkAPI.dispatch(fetchRestaurants());

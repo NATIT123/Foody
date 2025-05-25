@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom"; // For navigation
 import ManageUserPage from "./user";
 import ManageRestaurantPage from "./restaurant";
 import AdminRestaurantApproval from "../../components/Admin/Restaurant/AdminApproval";
+import AdminOrderApproval from "../../components/Admin/Order/OrderApproval";
 import { useAppSelector } from "../../redux/hooks";
 import Sidebar from "../../components/Admin/Sidebar";
 import {
@@ -51,8 +52,8 @@ const AdminPage = () => {
       try {
         const [users, albums, restaurants, comments] = await Promise.all([
           callFetchUserCount(),
-          callFetchRestaurantCount(),
           callFetchAlbumCount(),
+          callFetchRestaurantCount(),
           callFetchCommentCount(),
         ]);
 
@@ -175,6 +176,12 @@ const AdminPage = () => {
           {user?.role === "admin" && activeTab === "Xét duyệt nhà hàng" && (
             <div>
               <AdminRestaurantApproval searchQuery={searchQuery} />
+            </div>
+          )}
+
+          {user?.role === "admin" && activeTab === "Xét duyệt đơn hàng" && (
+            <div>
+              <AdminOrderApproval searchQuery={searchQuery} />
             </div>
           )}
         </div>

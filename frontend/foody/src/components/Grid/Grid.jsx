@@ -133,7 +133,8 @@ const Grid = () => {
       return;
     }
   };
-
+  const [isPending, setIsPending] = useState(false);
+  const [isPendingEat, setIsPendingEat] = useState(false);
   const handleLogin = () => {
     setShowLoginModal(false);
     navigate("/login");
@@ -142,6 +143,7 @@ const Grid = () => {
   const fetchRestaurants = useCallback(async () => {
     setCurrentItems([]);
     try {
+      setIsPending(true);
       const res = await callFetchListRestaurant(currentPage, {
         selectedCity: selectedCity?._id || "",
         selectedCategory: selectedCategory?._id || "",
@@ -150,6 +152,7 @@ const Grid = () => {
         district: filtersState[2],
       });
       if (res.status === "success") {
+        setIsPending(false);
         setTotalPages(res.data.totalPages);
         setCurrentItems(res.data.data);
       }
@@ -160,6 +163,7 @@ const Grid = () => {
 
   const fetchFavoriteRestaurants = useCallback(async () => {
     setCurrentItems([]);
+    setIsPending(true);
     if (user) {
       try {
         const res = await callFetchFavoriteRestaurantByUserId(
@@ -172,6 +176,7 @@ const Grid = () => {
           }
         );
         if (res.status === "success") {
+          setIsPending(false);
           setTotalPages(res.data.totalPages);
           setCurrentItems(res.data.data);
         }
@@ -183,6 +188,7 @@ const Grid = () => {
 
   const fetchNearestRestaurants = useCallback(() => {
     setCurrentItems([]);
+    setIsPending(true);
     navigator.geolocation.getCurrentPosition(async (position) => {
       try {
         const res = await callFetchNearestRestaurant(currentPage, {
@@ -194,6 +200,7 @@ const Grid = () => {
           maxDistance: 1000,
         });
         if (res.status === "success") {
+          setIsPending(false);
           setTotalPages(res.data.totalPages);
           setCurrentItems(res.data.data);
         }
@@ -205,6 +212,7 @@ const Grid = () => {
 
   const fetchRateRestaurants = useCallback(async () => {
     setCurrentItems([]);
+    setIsPending(true);
     try {
       const res = await callFetchRestaurantsByRate(currentPage, {
         selectedCity: selectedCity?._id || "",
@@ -214,6 +222,7 @@ const Grid = () => {
         district: filtersState[2],
       });
       if (res.status === "success") {
+        setIsPending(false);
         setTotalPages(res.data.totalPages);
         setCurrentItems(res.data.data);
       }
@@ -245,6 +254,7 @@ const Grid = () => {
 
   const fetchAllRestaurants = useCallback(async () => {
     setItemEat([]);
+    setIsPendingEat(true);
     try {
       const res = await callFetchListRestaurant(currentPageEat, {
         selectedCity: selectedCity?._id || "",
@@ -254,6 +264,7 @@ const Grid = () => {
         district: filtersState[2],
       });
       if (res.status === "success") {
+        setIsPendingEat(false);
         setTotalPagesEat(res.data.totalPages);
         setItemEat(res.data.data);
       }
@@ -264,6 +275,7 @@ const Grid = () => {
 
   const fetchTopDeals = useCallback(async () => {
     setItemEat([]);
+    setIsPendingEat(true);
     try {
       const res = await callFetchTopDeals(currentPageEat, {
         selectedCity: selectedCity?._id || "",
@@ -273,6 +285,7 @@ const Grid = () => {
         district: filtersState[2],
       });
       if (res.status === "success") {
+        setIsPendingEat(false);
         setTotalPagesEat(res.data.totalPages);
         setItemEat(res.data.data);
       }
@@ -283,6 +296,7 @@ const Grid = () => {
 
   const fetchMostViewed = useCallback(async () => {
     setItemEat([]);
+    setIsPendingEat(true);
     try {
       const res = await callfetchMostViewed(currentPageEat, {
         selectedCity: selectedCity?._id || "",
@@ -292,6 +306,7 @@ const Grid = () => {
         district: filtersState[2],
       });
       if (res.status === "success") {
+        setIsPendingEat(false);
         setTotalPagesEat(res.data.totalPages);
         setItemEat(res.data.data);
       }
@@ -302,6 +317,7 @@ const Grid = () => {
 
   const fetchFavoriteRestaurantsEat = useCallback(async () => {
     setItemEat([]);
+    setIsPendingEat(true);
     if (user) {
       try {
         const res = await callfetchFavoriteRestaurantsEat(
@@ -314,6 +330,7 @@ const Grid = () => {
           }
         );
         if (res.status === "success") {
+          setIsPendingEat(false);
           setTotalPagesEat(res.data.totalPages);
           setItemEat(res.data.data);
         }
@@ -431,6 +448,7 @@ const Grid = () => {
               categories={categories}
               currentItems={currentItems}
               handleShowModal={handleShowModal}
+              isPending={isPending}
             />
 
             {/* Pagination */}
@@ -456,6 +474,7 @@ const Grid = () => {
               items={itemsEat} // Truyền danh sách dữ liệu gốc
               itemsPerPage={itemsPerPage} // Truyền số mục mỗi trang
               handleShowModal={handleShowModal}
+              isPendingEat={isPendingEat}
             />
           </>
         )}

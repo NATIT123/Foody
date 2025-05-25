@@ -92,7 +92,7 @@ const Payment = (props) => {
     setSelectedBank(e.target.value);
   };
 
-  const handlePaymentVNPAY = async (fullName, phoneNumber, address) => {
+  const handlePaymentVNPAY = async (data) => {
     try {
       const contentPaymentDefault = `Thanh toan don hang ${new Date().toISOString()}`;
       if (!totalPrice || totalPrice <= 0 || !contentPaymentDefault) {
@@ -100,33 +100,7 @@ const Payment = (props) => {
         return;
       }
 
-      const contentInfo = {
-        amountInput: totalPrice,
-        contentPayment: contentPaymentDefault,
-        bankSelect: selectedBank,
-        fullName,
-        phoneNumber,
-        address,
-        orderItems: carts.map((item) => ({
-          restaurantId: item.detail.restaurantId,
-          productId: item._id,
-          quantity: item.quantity,
-          price:
-            item.detail.priceDiscount === "empty"
-              ? Number(
-                  item.detail.priceOriginal
-                    .substring(0, item.detail.priceOriginal.length - 1)
-                    .replace(/\./g, "")
-                )
-              : Number(
-                  item.detail.priceDiscount
-                    .substring(0, item.detail.priceDiscount.length - 1)
-                    .replace(/\./g, "")
-                ),
-        })),
-      };
-
-      const res = await callPayment(contentInfo);
+      const res = await callPayment(data);
       if (res.status === "success") {
         const paymentUrl = res.url;
         if (paymentUrl) {
@@ -149,26 +123,35 @@ const Payment = (props) => {
   };
 
   const onFinish = async (values) => {
-    const detailOrder = carts.map((item) => {
-      return {
-        bookName: item.detail.mainText,
-        quantity: item.quantity,
-        _id: item._id,
-      };
-    });
     const data = {
       fullName: values.name,
       address: values.address,
       phoneNumber: values.phone,
       totalAmount: totalPrice,
-      detail: detailOrder,
+      orderItems: carts.map((item) => ({
+        restaurantId: item.detail.restaurantId,
+        productId: item._id,
+        quantity: item.quantity,
+        price:
+          item.detail.priceDiscount === "empty"
+            ? Number(
+                item.detail.priceOriginal
+                  .substring(0, item.detail.priceOriginal.length - 1)
+                  .replace(/\./g, "")
+              )
+            : Number(
+                item.detail.priceDiscount
+                  .substring(0, item.detail.priceDiscount.length - 1)
+                  .replace(/\./g, "")
+              ),
+      })),
     };
     if (values.paymentMethod === "vnpay") {
       if (!selectedBank) {
         toast.error("Vui lòng chọn ngân hàng trước khi tiếp tục.");
         return;
       }
-      handlePaymentVNPAY(values.name, values.phone, values.address);
+      handlePaymentVNPAY(data);
       setIsSubmit(true);
     } else {
       setIsSubmit(true);
