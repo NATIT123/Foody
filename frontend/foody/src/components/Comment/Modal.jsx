@@ -98,9 +98,7 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
     try {
       const res = await callLikeComment(commentId, user._id);
       const data = res.data;
-      console.log("dara", data);
       if (res.status === "success") {
-        // Cập nhật số lượt like
         setLikes((prevLikes) => {
           const currentLikes = prevLikes[commentId] || 0;
           return {
@@ -111,7 +109,6 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
           };
         });
 
-        // Cập nhật trạng thái liked/unliked
         setLikedComments((prevLikedComments) => {
           const newLikedComments = new Set(prevLikedComments);
           if (data != null) {
@@ -122,7 +119,6 @@ const Modal = ({ show, onClose, item, currentItems, setCurrentItems }) => {
           return newLikedComments;
         });
 
-        // Cập nhật số like thực tế trong currentItems
         setCurrentItems((prevCurrent) => {
           return prevCurrent.map((current) =>
             current._id.toString() === item._id.toString()

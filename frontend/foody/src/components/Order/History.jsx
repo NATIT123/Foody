@@ -13,7 +13,6 @@ const History = () => {
       try {
         const res = await callOrderHistory();
         if (res && res.status === "success") {
-          console.log(res);
           setOrderHistory(res.data);
         }
       } catch (error) {

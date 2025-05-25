@@ -39,7 +39,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
   }, [user, dispatch]);
   const handleToggleNotifications = () => {
     if (showNotifications && unreadExists) {
-      dispatch(markAllNotificationsAsRead());
+      dispatch(markAllNotificationsAsRead(user._id));
     }
 
     // Đảo trạng thái show/hide thông báo

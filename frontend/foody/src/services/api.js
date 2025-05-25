@@ -420,3 +420,17 @@ export const callVnPayReturn = (queryString) => {
 export const callVnPayIpn = (queryString) => {
   return axios.get(`/payment/vnpay-ipn/${queryString}`);
 };
+
+export const callFetchPendingOrders = (currentPage) => {
+  return axios.get(`/payment/pending-orders?page=${currentPage}`);
+};
+
+export const callSearchPendingOrders = (currentPage, searchQuery) => {
+  return axios.get(
+    `/payment/search-pending-orders?page=${currentPage}&searchQuery=${searchQuery}`
+  );
+};
+
+export const callUpdateOrderStatus = (orderId, status) => {
+  return axios.patch(`/payment/update-order-status/${orderId}`, status);
+};

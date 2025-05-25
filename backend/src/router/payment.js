@@ -209,4 +209,125 @@ router.post(
     }
   })
 );
+
+router.get(
+  "/pending-orders",
+  catchAsync(async (req, res, next) => {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const [pendingOrders, total] = await Promise.all([
+        Order.find({ status: "pending" })
+          .populate("orderItems.productId", "name price")
+          .populate("orderItems.restaurantId", "name")
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit),
+
+        Order.countDocuments({ status: "pending" }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
+        status: "success",
+        data: pendingOrders,
+        total,
+        totalPages,
+        currentPage: page,
+      });
+    } catch (error) {
+      console.error(error);
+      return next(new AppError("Server error", 500));
+    }
+  })
+);
+
+router.get(
+  "/search-pending-orders",
+  catchAsync(async (req, res, next) => {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = 10;
+      const skip = (page - 1) * limit;
+      const searchQuery = req.query.searchQuery?.trim() || "";
+
+      // Điều kiện tìm kiếm
+      const searchRegex = { $regex: searchQuery, $options: "i" };
+      const searchCondition = {
+        status: "pending",
+        $or: [
+          { "orderItems.productId.name": searchRegex },
+          { "orderItems.restaurantId.name": searchRegex },
+          { address: searchRegex },
+          { fullName: searchRegex },
+          { phoneNumber: searchRegex },
+        ],
+      };
+
+      // Truy vấn
+      const [orders, total] = await Promise.all([
+        Order.find(searchCondition)
+          .populate("orderItems.productId", "name")
+          .populate("orderItems.restaurantId", "name")
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit),
+
+        Order.countDocuments(searchCondition),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
+        status: "success",
+        data: {
+          data: orders,
+          totalPages,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      return next(new AppError("Server error", 500));
+    }
+  })
+);
+
+router.patch(
+  "/update-order-status/:id",
+  catchAsync(async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!["paid", "failed", "shipped", "delivered"].includes(status)) {
+        return next(new AppError("Invalid status", 400));
+      }
+
+      const updatedOrder = await Order.findByIdAndUpdate(
+        id,
+        { status },
+        { new: true }
+      );
+
+      if (!updatedOrder) {
+        return next(new AppError("Order not found", 404));
+      }
+
+      res.status(customResourceResponse.success.statusCode).json({
+        message: customResourceResponse.success.message,
+        status: "success",
+        data: updatedOrder,
+      });
+    } catch (error) {
+      console.error(error);
+      return next(new AppError("Server error", 500));
+    }
+  })
+);
+
 export default router;
