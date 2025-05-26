@@ -312,6 +312,7 @@ class AuthRepository {
     });
 
   getMe = () => (req, res, next) => {
+    console.log("getMe middleware called");
     req.params.id = req.user.id;
     next();
   };

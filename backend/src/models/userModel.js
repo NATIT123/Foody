@@ -5,10 +5,18 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 const UserDetailSchema = new mongoose.Schema(
   {
+    googleId: { type: String, required: true, unique: true },
     fullname: {
       type: String,
       required: [true, "Please tell us your fullname"],
     },
+    type: {
+      type: String,
+      default: "local",
+      required: [true, "Please tell us your type of user"],
+      enum: ["google", "facebook", "local"],
+    },
+
     email: {
       type: String,
       required: [true, "Please provide your email"],

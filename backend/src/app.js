@@ -46,6 +46,10 @@ import FavoriteRestaurantModel from "./models/favoriteRestaurantModel.js";
 import NotificationModel from "./models/notificationModel.js";
 import bankRoute from "./router/bank.js";
 import paymentRoute from "./router/payment.js";
+import googleRoute from "./router/google.js";
+import passport from "./utils/passport.js";
+import passportFacebook from "./utils/passportFacebook.js";
+import facebookRoute from "./router/facebook.js";
 ///Connect DB
 connectDb();
 
@@ -111,6 +115,10 @@ app.use(
     ],
   })
 );
+
+///Passport authentication
+app.use(passport.initialize());
+app.use(passportFacebook.initialize());
 
 //Middlewares
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
@@ -190,6 +198,12 @@ app.use("/api/v1/bank", bankRoute);
 
 //Payment
 app.use("/api/v1/payment", paymentRoute);
+
+//Google
+app.use("/api/v1/google", googleRoute);
+
+//Facebook
+app.use("/api/v1/facebook", facebookRoute);
 
 app.all("*", (req, res, next) => {
   ///Stop all middleware and run immdiatelty to below

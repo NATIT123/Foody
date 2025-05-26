@@ -13,6 +13,7 @@ import LayoutUser from "./components/LayoutUser/LayoutUser";
 import NotFound from "./components/NotFound";
 import AdminPage from "./pages/admin";
 import PaymentResult from "./pages/order/PaymentResult";
+import LoginSuccess from "./pages/login/LoginSuccess";
 import { useEffect } from "react";
 import { callFetchAccount } from "./services/api";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
@@ -45,11 +46,7 @@ const router = createBrowserRouter([
       },
       {
         path: "forgot",
-        element: (
-          <ProtectedRoute>
-            <ForgotPasswordPage />
-          </ProtectedRoute>
-        ),
+        element: <ForgotPasswordPage />,
       },
       {
         path: "order",
@@ -69,6 +66,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: "/login-success", element: <LoginSuccess /> },
   { path: "/payment-result", element: <PaymentResult /> },
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
@@ -112,6 +110,7 @@ const App = () => {
     <>
       {isLoading === false ||
       window.location.pathname === "/login" ||
+      window.location.pathname === "/login-success" ||
       window.location.pathname === "/register" ||
       window.location.pathname === "/" ||
       window.location.pathname.startsWith("/details") ? (
