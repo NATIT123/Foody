@@ -29,6 +29,12 @@ export const accountSlide = createSlice({
       state.isLoading = false;
       state.user = action.payload.user;
     },
+
+    doLoginGoogleAction: (state, action) => {
+      state.isAuthenticated = true;
+      state.isLoading = false;
+      state.user = action.payload.data;
+    },
     doGetAccountAction: (state, action) => {
       // Redux Toolkit allows us to write "mutating" logic in reducers. It
       // doesn't actually mutate the state because it uses the Immer library,
@@ -73,6 +79,7 @@ export const {
   doLogoutAction,
   doUpdateUserInfoAction,
   doUploadAvatarAction,
+  doLoginGoogleAction,
 } = accountSlide.actions;
 
 export default accountSlide.reducer;

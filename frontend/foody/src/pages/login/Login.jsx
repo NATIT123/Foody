@@ -154,6 +154,36 @@ const LoginPage = () => {
           <button type="submit" className="btn btn-primary w-100">
             Đăng nhập
           </button>
+          <div>
+            <div className="text-center mt-3">
+              <span className="text-muted">Hoặc đăng nhập bằng</span>
+            </div>
+
+            <div className="d-flex justify-content-center mt-2">
+              <a
+                href={`${process.env.REACT_APP_BASE_URL}/google/auth`}
+                className="btn btn-outline-secondary me-2"
+                style={{ width: "100px" }}
+              >
+                <img
+                  src="https://developers.google.com/identity/images/g-logo.png"
+                  alt="Google Logo"
+                  style={{ width: "20px", marginRight: "8px" }}
+                />
+              </a>
+              <a
+                href={`${process.env.REACT_APP_BASE_URL}/facebook/auth`}
+                className="btn btn-outline-secondary"
+                style={{ width: "100px" }}
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
+                  alt="Facebook Logo"
+                  style={{ width: "20px", marginRight: "8px" }}
+                />
+              </a>
+            </div>
+          </div>
         </form>
         <div className="text-center mt-4">
           Chưa có tài khoản tại Foody.vn?{" "}

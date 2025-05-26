@@ -20,8 +20,8 @@ const handleRefreshToken = async () => {
   // else null;
 
   return await mutex.runExclusive(async () => {
-    const res = await instance.get("/api/v1/auth/refresh");
-    if (res && res.data) return res.data.access_token;
+    const res = await instance.get("/user/refresh");
+    if (res.status === "success" && res.data) return res.access_token;
     else return null;
   });
 };
@@ -78,7 +78,7 @@ instance.interceptors.response.use(
       error.config &&
       error.response &&
       +error.response.status === 400 &&
-      error.config.url === "/api/v1/auth/refresh"
+      error.config.url === "/user/refresh"
     ) {
       if (
         window.location.pathname !== "/" &&
