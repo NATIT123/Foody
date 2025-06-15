@@ -20,6 +20,7 @@ import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import { doGetAccountAction } from "./redux/account/accountSlice";
 import Loading from "./components/Loading";
 import ProtectedRoute from "./components/ProtectedRoute";
+import RevenueDashboard from "./components/Admin/Restaurant/RevenueDashboard";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -66,6 +67,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: "/revenue-dashboard", element: <RevenueDashboard /> },
   { path: "/login-success", element: <LoginSuccess /> },
   { path: "/payment-result", element: <PaymentResult /> },
   { path: "/login", element: <LoginPage /> },
@@ -108,7 +110,9 @@ const App = () => {
   }, []);
   return (
     <>
-      {isLoading === false ||
+      {window.location.pathname === "/revenue-dashboard" ||
+      isLoading === false ||
+      window.location.pathname === "/forgot" ||
       window.location.pathname === "/login" ||
       window.location.pathname === "/login-success" ||
       window.location.pathname === "/register" ||

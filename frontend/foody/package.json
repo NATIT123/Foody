@@ -38,6 +38,7 @@
     "react-scripts": "5.0.1",
     "react-spinners": "^0.17.0",
     "react-toastify": "^7.0.0",
+    "recharts": "^2.15.3",
     "redux-persist": "^6.0.0",
     "styled-components": "^6.1.14",
     "web-vitals": "^4.2.4"
