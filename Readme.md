@@ -1,5 +1,3 @@
-Based on the codebase context, you're asking me to create a README.md for the Foody project, which is a comprehensive restaurant discovery and food ordering platform built with React frontend and Node.js backend.
-
 # Foody - Restaurant Discovery & Food Ordering Platform
 
 A full-stack web application that enables users to discover restaurants, browse menus, place orders, and leave reviews. Built with modern web technologies including React, Redux, Node.js, and MongoDB.
